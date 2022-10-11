@@ -1,0 +1,470 @@
+<div class="eqLogic eqLogic-widget allowResize allowReorderCmd #custom_layout# #eqLogic_class# #class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
+  <center class="widget-name">
+    <span class="warning" title="#alert_name#">
+      <i class='#alert_icon#'></i>
+    </span>
+    <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+      <i class="fas fa-sync"></i>
+    </span>
+    <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+    <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+  </center>
+  <div class="#isVerticalAlign#">
+    <center>
+      <!--         HEURE ACTUELLE
+      <div>
+        <i class="fa fa-circle fa-lg valueH0"></i>
+        <span style="font-weight: bold">#datenow# &nbsp;
+        </span>
+      </div>
+      <br>
+      -->
+
+        <!--           JOUR 0
+        -->
+      <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px;">
+        <!-- #dataHourD0# -->
+        <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
+        #date0#
+        <div id="highchartDataHourD0AM#id#" style="width: 130px; height: 140px;margin-left: 5px;">
+        </div>
+      </div>
+      <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px;">
+        <br>
+        <div id="highchartDataHourD0PM#id#" style="width: 130px; height: 140px;margin-left: 5px;">
+        </div>
+      </div>
+        <!--
+      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin-left: 5px;margin-right: 5px;">
+        <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
+        &nbsp; #date0#
+        <div id="highchartColumnHourD#id#" style="width: 100%; height: 50px;margin-left: 5px;">
+        </div>
+        <div id="highchartBarHourD#id#" style="width: 100%; height: 50px;margin-left: 5px;">
+        </div>
+      </div>
+        -->
+
+      <div class="cmd cmd-widget" style="width: 100% !important;text-align: left;margin-left: 5px;margin-right: 5px;">
+          <i title = "#messageD1#" class="fa fa-circle fa-lg dayValueD1"></i>
+        &nbsp; #date1#
+        #dataHourD1#
+      </div>
+      <!--             JOUR 1
+      <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px;">
+        #date1#
+        <div id="highchartDataHourD1#id#" style="width: 150px; height: 150px;margin-left: 5px;">
+        </div>
+      </div>
+        -->
+
+      <div class="cmd cmd-widget" style="width: 100% !important;width: '500px'; text-align: left;margin-left: 5px;margin-right: 5px">
+        <i title = "#messageD2#" class="fa fa-circle fa-lg dayValueD2"></i>
+        &nbsp; #date2#
+        #dataHourD2#
+      </div>
+      <!--             JOUR 2
+      <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px">
+        #date2#
+        <div id="highchartDataHourD2#id#" style="width: 150px; height: 150px;margin-left: 5px;">
+        </div>
+      </div>
+        -->
+
+      <div class="cmd cmd-widget" style="width: 100% !important;text-align: left;margin-left: 5px;margin-right: 5px">
+        <i title = "#messageD3#" class="fa fa-circle fa-lg dayValueD3"></i>
+        &nbsp; #date3#
+        #dataHourD3#
+      </div>
+      <!--             JOUR 3
+      <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px">
+        #date3#
+        <div id="highchartDataHourD3#id#" style="width: 150px; height: 150px;margin-left: 5px;">
+        </div>
+      </div>
+        -->
+      <!--  Heure par heure
+      <br>
+      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin-left: 5px;margin-right: 5px">
+        Données par heure
+        #dataHours#
+      </div>
+        -->
+    </center>
+    <div style="font-size: 10px; font-style: italic; text-align:left">
+      #dataActuEcowatt#
+    </div>
+	</div>
+	<script>
+		if("#valueH0#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .valueH0').css('color','#color1#');
+		else if("#valueH0#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .valueH0').css('color','#color2#');
+		else if("#valueH0#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .valueH0').css('color','#color3#');
+		else $('.eqLogic[data-eqLogic_id=#id#] .valueH0').css('color','#color0#');
+
+		if("#dayValueD0#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD0').css('color','#color1#');
+		else if("#dayValueD0#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD0').css('color','#color2#');
+		else if("#dayValueD0#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD0').css('color','#color3#');
+		else $('.eqLogic[data-eqLogic_id=#id#] .dayValueD0').css('color','#color0#');
+    
+		if("#dayValueD1#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD1').css('color','#color1#');
+		else if("#dayValueD1#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD1').css('color','#color2#');
+		else if("#dayValueD1#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD1').css('color','#color3#');
+		else $('.eqLogic[data-eqLogic_id=#id#] .dayValueD1').css('color','#color0#');
+
+		if("#dayValueD2#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD2').css('color','#color1#');
+		else if("#dayValueD2#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD2').css('color','#color2#');
+		else if("#dayValueD2#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD2').css('color','#color3#');
+		else $('.eqLogic[data-eqLogic_id=#id#] .dayValueD2').css('color','#color0#');
+
+		if("#dayValueD3#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD3').css('color','#color1#');
+		else if("#dayValueD3#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD3').css('color','#color2#');
+		else if("#dayValueD3#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD3').css('color','#color3#');
+		else $('.eqLogic[data-eqLogic_id=#id#] .dayValueD3').css('color','#color0#');
+
+    if ('#refresh_id#' != '') {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+        jeedom.cmd.execute({id: '#refresh_id#'})
+      })
+    } else {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
+    }
+
+    Highcharts.chart('highchartDataHourD0AM#id#', {
+      chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie',
+          width: 130, height: 130,
+          spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
+      },
+      credits: { enabled: false },
+      exporting : { enabled: false },
+      legend: { enabled: false },
+      title: {
+        text: 'Matin',
+        margin: 0,
+        style: { "color": "var(--txt-color)", "fontSize": "14px" },
+        y: 25
+      },
+      tooltip: { pointFormat: '{series.name}' },
+      accessibility: {
+        point: { valueSuffix: '' }
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: { enabled: false },
+          // borderWidth: 1, borderColor: 'var(--bg-color)'
+        }
+      },
+      series: [
+        { name: 'Matin #date0dm#',
+            colorByPoint: false,
+            data: [ #dataHour0HCpieAM# ]
+        }
+      ]
+    });
+
+    Highcharts.chart('highchartDataHourD0PM#id#', {
+      chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie',
+          width: 130, height: 130,
+          spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
+      },
+      credits: { enabled: false },
+      exporting : { enabled: false },
+      legend: { enabled: false },
+      title: {
+        text: 'Soir',
+        margin: 0,
+        style: { "color": "var(--txt-color)", "fontSize": "14px" },
+        y: 25
+      },
+      tooltip: { pointFormat: '{series.name}' },
+      accessibility: {
+        point: { valueSuffix: '' }
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: { enabled: false },
+          // borderWidth: 1, borderColor: 'var(--bg-color)'
+        }
+      },
+      series: [
+        { name: 'Soir #date0dm#',
+          colorByPoint: false,
+          data: [ #dataHour0HCpiePM# ]
+        },
+      ]
+    });
+
+    Highcharts.chart('highchartDataHourD0#id#', {
+      chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie',
+          width: 150, height: 150,
+          spacingTop: 0, spacingLeft: 0, spacingRight: 0, spacingBottom: 0
+      },
+      credits: { enabled: false },
+      exporting : { enabled: false },
+      legend: { enabled: false },
+      title: {
+        text: null,
+      },
+      tooltip: { pointFormat: '{series.name}' },
+      accessibility: {
+        point: { valueSuffix: '' }
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: { enabled: false },
+          // borderWidth: 1, borderColor: 'var(--bg-color)'
+        }
+      },
+      series: [
+        { name: '#date0dm#',
+          colorByPoint: false,
+          size: '10%',
+          data: [ #dataDay0HC# ]
+        },
+        { name: 'Aprés-midi #date0dm#',
+          colorByPoint: false,
+          size: '100%',
+          innerSize: '75%',
+          data: [ #dataHour0HCpiePM# ]
+        },
+        { name: 'Matin #date0dm#',
+            colorByPoint: false,
+            size: '75%',
+            innerSize: '72%',
+            data: [ #dataHour0HCpieAM# ]
+        }
+      ]
+    });
+
+    Highcharts.chart('highchartDataHourD1#id#', {
+      chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie',
+          width: 150, height: 150,
+          spacingTop: 0, spacingLeft: 0, spacingRight: 0, spacingBottom: 0
+      },
+      credits: { enabled: false },
+      exporting : { enabled: false },
+      legend: { enabled: false },
+      title: {
+        text: null,
+      },
+      tooltip: { pointFormat: '{series.name}' },
+      accessibility: {
+        point: { valueSuffix: '' }
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: { enabled: false },
+        }
+      },
+      series: [
+        { name: '#date0dm#',
+          colorByPoint: false,
+          size: '10%',
+          data: [ #dataDay1HC# ]
+        },
+        { name: 'Aprés-midi #date1dm#',
+          colorByPoint: false,
+          size: '100%',
+          innerSize: '75%',
+          data: [ #dataHour1HCpiePM# ]
+        },
+        { name: 'Matin #date0dm#',
+            colorByPoint: false,
+            size: '75%',
+            innerSize: '72%',
+            data: [ #dataHour1HCpieAM# ]
+        }
+      ]
+    });
+
+    Highcharts.chart('highchartDataHourD2#id#', {
+      chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie',
+          width: 150, height: 150,
+          spacingTop: 0, spacingLeft: 0, spacingRight: 0, spacingBottom: 0
+      },
+      credits: { enabled: false },
+      exporting : { enabled: false },
+      legend: { enabled: false },
+      title: {
+        text: null,
+      },
+      tooltip: { pointFormat: '{series.name}' },
+      accessibility: {
+        point: { valueSuffix: '' }
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: { enabled: false },
+        }
+      },
+      series: [
+        { name: 'Jour',
+          colorByPoint: false,
+          size: '10%',
+          data: [ #dataDay2HC# ]
+        },
+        { name: 'Aprés-midi',
+          colorByPoint: false,
+          size: '100%',
+          innerSize: '75%',
+          data: [ #dataHour2HCpiePM# ]
+        },
+        { name: 'Matin',
+            colorByPoint: false,
+            size: '75%',
+            innerSize: '72%',
+            data: [ #dataHour2HCpieAM# ]
+        }
+      ]
+    });
+
+
+
+    Highcharts.chart('highchartDataHourD3#id#', {
+      chart: {
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie',
+          width: 150, height: 150,
+          spacingTop: 0, spacingLeft: 0, spacingRight: 0, spacingBottom: 0
+      },
+      credits: { enabled: false },
+      exporting : { enabled: false },
+      legend: { enabled: false },
+      title: { text: null, },
+      tooltip: { pointFormat: '{series.name}' },
+      accessibility: {
+        point: { valueSuffix: '' }
+      },
+      plotOptions: {
+        pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: { enabled: false },
+        }
+      },
+      series: [
+        { name: 'Jour',
+          colorByPoint: false,
+          size: '10%',
+          data: [ #dataDay3HC# ]
+        },
+        { name: 'Aprés-midi',
+          colorByPoint: false,
+          size: '100%',
+          innerSize: '75%',
+          data: [ #dataHour3HCpiePM# ]
+        },
+        { name: 'Matin',
+            colorByPoint: false,
+            size: '75%',
+            innerSize: '72%',
+            data: [ #dataHour3HCpieAM# ]
+        }
+      ]
+    });
+
+Highcharts.chart('highchartColumnHourD#id#', {
+    chart: {
+          width: 480, height: 45,
+          spacingTop: 0, spacingLeft: 0, spacingRight: 0, spacingBottom: 0,
+        type: 'column'
+    },
+      credits: { enabled: false },
+      exporting : { enabled: false },
+      legend: { enabled: false },
+      title: { text: null, },
+    xAxis: {
+      lineColor: 'var(--bg-color)',
+      categories: [
+          '0h', '1h', '2h', '3h', '4h', '5h', '6h', '7h', '8h', '9h', '10', '11', '12h',
+          '13h', '14h', '15h', '16h', '17h', '18h', '19h', '20h', '21h', '22h', '23h' ],
+      labels: { y: 12, step: 4, padding: 0 },
+    },
+    yAxis: {
+      visible: false,
+      title: { text: undefined },
+      labels: { enabled: false }
+    },
+    tooltip: {
+      headerFormat: '<span style="font-size:10px">{point.key}</span><br>',
+      pointFormat: '<span style="padding:0">{series.name}</span><br>',
+      footerFormat: '',
+      shared: true,
+      useHTML: true
+    },
+    plotOptions: {
+      column: { borderWidth: 1, borderColor: 'var(--bg-color)' }
+    },
+    series: [{
+      pointWidth: 20,
+      name: '#date0#',
+      data: [ #dataHour0HCcolumn# ]
+    }]
+});
+
+Highcharts.chart('highchartBarHourD#id#', {
+    chart: {
+          width: 480, height: 50,
+          spacingTop: 0, spacingLeft: 0, spacingRight: 0, spacingBottom: 0,
+        type: 'bar'
+    },
+      credits: { enabled: false },
+      exporting : { enabled: false },
+      legend: { enabled: false },
+      title: { text: null, },
+    xAxis: {
+      visible: false,
+      lineColor: 'var(--bg-color)',
+      categories: [
+          '#date0#' ],
+    },
+    yAxis: {
+      visible: false,
+      min:0, max: 24,
+      title: { text: undefined },
+      lineColor: 'var(--bg-color)',
+      labels: { enabled: true, y: 12, step: 1, padding: 0 },
+    },
+    tooltip: {
+      tooltip: { pointFormat: '{series.name}' },
+    },
+    plotOptions: {
+      bar: { borderWidth: 1, borderColor: 'var(--bg-color)' },
+      series: { stacking: 'normal', pointWidth: 10 }
+    },
+    series: [ #dataHour0HCbar# ].reverse()
+});
+
+	</script>
+</div>

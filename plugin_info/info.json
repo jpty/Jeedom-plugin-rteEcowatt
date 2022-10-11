@@ -1,0 +1,16 @@
+{
+	"id" : "rteEcowatt",
+	"name" : "Rte Ecowatt Tempo",
+	"description" : "Plugin qui extrait les informations Ecowatt, Tempo des APIs RTE",
+	"licence" : "AGPL",
+	"author" : "jpty",
+	"require" : "4.2",
+	"category" : "energy",
+  "changelog" : "https://jpty.github.io/jeedom/plugins/rteEcowatt/fr_FR/changelog.html",
+	"documentation" : "https://jpty.github.io/jeedom/plugins/rteEcowatt/fr_FR/index.html",
+	"changelog_beta" : "https://jpty.github.io/jeedom/plugins/rteEcowatt/fr_FR/changelog.html",
+	"documentation_beta" : "https://jpty.github.io/jeedom/plugins/rteEcowatt/fr_FR/index.html",
+	
+	"language" : ["fr_FR"],
+  "compatibility" : ["miniplus","smart","rpi","docker","diy","mobile","v4"]
+}
