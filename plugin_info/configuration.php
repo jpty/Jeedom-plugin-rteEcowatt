@@ -54,5 +54,13 @@ if(!isConnect('admin')) {
         <input class="configKey form-control" data-l1key="execGetDataEcowattRTE" placeholder="40 par défaut"/>
       </div>
     </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Ecowatt: Mode demo}}
+        <sup><i class="fas fa-question-circle tooltips" title="{{Le plugin utilisera les données du bac à sable de RTE}}"></i></sup>
+      </label>
+      <div class="col-md-2">
+        <input type="checkbox" class="configKey form-control" data-l1key="demoMode">
+      </div>
+    </div>
   </fieldset>
 </form>
