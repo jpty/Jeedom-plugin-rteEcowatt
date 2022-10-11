@@ -49,6 +49,14 @@ class rteEcowatt extends eqLogic {
     }
   }
 
+	public static function setMinuteGetDataRte() {
+    $minuteExec = config::byKey('execGetDataEcowattRTE', __CLASS__,70);
+    if($minuteExec == 70) { // cle non existante
+      $minute = rand(1,59);
+      config::save('execGetDataEcowattRTE', $minute, __CLASS__);
+    }
+  }
+
   public static function initParamRTE($datasource) {
     $params = [ "IDclientSecretB64" => '', "tokenRTE" => '', "tokenExpires" => 0 ];
     $params['IDclientSecretB64'] = config::byKey('IDclientSecretB64', __CLASS__);
