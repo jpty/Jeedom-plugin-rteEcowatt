@@ -23,21 +23,21 @@ class rteEcowatt extends eqLogic {
 	public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
 
 	public static function cronHourly() {
-message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
+// message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
 		$hour = array( 'tempoRTE' => array(0, 11, 12, 14, 20));
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
       $datasource = $rteEcowatt->getConfiguration('datasource');
       if (isset($hour[$datasource]) && !in_array(date('H'), $hour[$datasource])) {
         continue;
       }
-message::add(__CLASS__, __FUNCTION__ .' ' .$datasource .' ' .date('H:i:s'));
+// message::add(__CLASS__, __FUNCTION__ .' ' .$datasource .' ' .date('H:i:s'));
       $rteEcowatt->updateInfo(0);
     }
   }
 	public static function cron() { // TODO creation d'un cron pour recup données
     $minute = config::byKey('execGetDataEcowattRTE', __CLASS__,40);
     if(date('i') == $minute) {
-message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
+// message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
       $recup = 1;
       // MAJ tous les équipements
       foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
@@ -213,7 +213,7 @@ message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
 				),
 			);
 		}
-    /* TODO crash si suppression ancienne commande si chgtt type
+    /* TODO crash si suppression ancienne commande si chgt type
 		foreach ($this->getCmd() as $cmd) { // Chgt type => suppression commandes type precedent
       $cmdLogicalId = $cmd->getLogicalId();
 			if (!isset($cmd_list[$cmdLogicalId]) && $cmdLogicalId != 'refresh') {
@@ -264,16 +264,16 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
 	}
 
   public static function fetchDataEcowattRTE() {
-    $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
-    $demo = 0;
-message::add(__CLASS__,"Appel ".__FUNCTION__ ." ecowattRTE ".date('H:i:s'));
+    $demo = config::byKey('demoMode', __CLASS__, 0);
+// message::add(__CLASS__,"Appel ".__FUNCTION__ ." ecowattRTE ".date('H:i:s'));
     $params = self::initParamRTE('ecowattRTE');
-    if($demo) {
-        // mode demo. Données du bac à sable RTE
+    if($demo) { // mode demo. Données du bac à sable RTE
       $api = "https://digital.iservices.rte-france.com/open_api/ecowatt/v4/sandbox/signals";
+      $fileEcowatt = __DIR__ ."/../../data/ecowattRTEsandbox.json";
     }
     else {
       $api = "https://digital.iservices.rte-france.com/open_api/ecowatt/v4/signals";
+      $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
     }
     log::add(__CLASS__, 'debug', 'Lastcall: '.$params['lastcall'] .'s');
     // limitation des requetes 15 minutes pour l'API ecowatt
@@ -298,20 +298,26 @@ message::add(__CLASS__,"Appel ".__FUNCTION__ ." ecowattRTE ".date('H:i:s'));
 
 	public function updateInfo($fetch) {
 		$datasource = $this->getConfiguration('datasource');
-message::add(__CLASS__, __FUNCTION__ ." DataSource $datasource Fetch: $fetch");
+// message::add(__CLASS__, __FUNCTION__ ." DataSource $datasource Fetch: $fetch");
 		switch ($datasource) {
       case 'ecowattRTE':
-        $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
-        if(!$fetch && file_exists($fileEcowatt)) { // && time() > (filemtime($fileEcowatt)+7140)) {
-          $response = file_get_contents($fileEcowatt);
-message::add(__CLASS__, "Using file $fileEcowatt " .date('H:i:s',filemtime($fileEcowatt)));
+        $demo = config::byKey('demoMode', __CLASS__, 0);
+        if($demo) {
+          $fileEcowatt = __DIR__ ."/../../data/ecowattRTEsandbox.json";
+          $nowTS = strtotime('2022-06-04 ' .date('H:i:s')); // date dans la plage du bac à sable
         }
         else {
-message::add(__CLASS__, "Fetching data");
+          $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
+          $nowTS = time();
+        }
+        if(!$fetch && file_exists($fileEcowatt)) { // && time() > (filemtime($fileEcowatt)+7140)) {
+          $response = file_get_contents($fileEcowatt);
+// message::add(__CLASS__, "Using file $fileEcowatt " .date('H:i:s',filemtime($fileEcowatt)));
+        }
+        else {
+// message::add(__CLASS__, "Fetching data");
           $response = self::fetchDataEcowattRTE();
         }
-        // $nowTS = strtotime('2022-06-04 ' .date('H:i:s')); // date dans la plage du bac à sable
-        $nowTS = time();
         $foundTS = 0;
         if($response === false) {
           log::add(__CLASS__, 'debug', 'Pas de données de RTE');
@@ -340,6 +346,7 @@ message::add(__CLASS__, "Fetching data");
           }
           sort($data); // les données de la sandbox ne sont pas dans l'ordre chronologique
           $start = -1;
+          $valueNow = 0;
           $valHour = array();
           for($day=0;$day<4;$day++) {
             if(!isset($data[$day])) {
@@ -361,6 +368,7 @@ message::add(__CLASS__, "Fetching data");
 log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'][$i] ." " .date('Y-m-d H:i',$tsDay));
                   $foundTS = 1;
                   $nowTS = $tsDay;
+                  $valueNow = $data[$day]['value'][$i];
                 }
                 if($start >= 0) {
                   $hValue = $data[$day]['value'][$i];
@@ -375,6 +383,7 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
           $this->checkAndUpdateCmd("dataHours", json_encode($valHour));
           unset($data);
         }
+        $this->checkAndUpdateCmd("valueNow", $valueNow);
         $this->checkAndUpdateCmd("datenowTS", (($foundTS)?$nowTS:0));
         break;
       case 'tempoRTE':
@@ -585,7 +594,7 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
       if(file_exists($file)) {
         $fileTS = filemtime($file);
         $replace['#dataActuEcowatt#'] = 'Données RTE téléchargées le '.date('d/m/Y H:i:s',$fileTS) 
-          .'. Requête à '.date('H:i:s',$lastcallEcoTS) 
+          .'. Requête RTE à '.date('H:i:s',$lastcallEcoTS) 
           .'. Affichage: '.date('H:i:s')
           .' en '.round($t0+microtime(true),3).'s';
 
@@ -600,9 +609,11 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
       } else {
           $replace['#refresh_id#'] = '';
       }
+      /*
 $fileReplace = __DIR__ ."/../../data/ecowattReplace.json";
 $hdle = fopen($fileReplace, "wb");
 if($hdle !== FALSE) { fwrite($hdle, json_encode($replace)); fclose($hdle); }
+       */
       if ($this->getConfiguration('datasource') == 'ecowattRTE') $template = 'rte_ecowatt';
       else $template = 'rte_tempo';
       return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, $template, __CLASS__)));
