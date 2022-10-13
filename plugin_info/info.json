@@ -6,7 +6,7 @@
   },
 	"licence" : "AGPL",
 	"author" : "jpty",
-	"require" : "4.2",
+	"require" : "4.1",
 	"category" : "energy",
   "hasDependancy": false,
   "hasOwnDeamon": false,
