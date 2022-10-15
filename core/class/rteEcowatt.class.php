@@ -328,8 +328,8 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
         $demo = config::byKey('demoMode', __CLASS__, 0);
         if($demo) {
           $fileEcowatt = __DIR__ ."/../../data/ecowattRTEsandbox.json";
-          $nowTS = strtotime('2022-06-03 20:15:00');
           $nowTS = strtotime('2022-06-03 ' .date('H:i:s')); // date dans la plage du bac à sable
+          $nowTS = strtotime('2022-06-05 18:15:00');
 // message::add(__CLASS__,"Now: ".date('d/m/Y H:i:s',$nowTS));
         }
         else {
@@ -406,7 +406,7 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
                     }
                     $firstAlert++;
                   }
-                  $valHours[] = array("TS" => $tsDay, "datetime"=>date('c',$tsDay),"hValue" => $hValue);
+                  $valHours[date('c',$tsDay)] = array("TS" => $tsDay,"hValue" => $hValue);
                   $this->checkAndUpdateCmd("valueH$start", $hValue);
                 }
                 $tsDay += 3600;
@@ -627,8 +627,13 @@ message::add(__CLASS__, "startAlert : " .date('d/m H:i:s',$startAlert)." endAler
         }
         else if($cmdLogicalId == 'valueNow') {
           $valueNow = $cmd->execCmd();
+          /* une puniase de couleur
           $replace['#valueNow#'] = '<i class="fa fa-circle fa-lg" style="color: '.$color[$valueNow] .'"></i>';
-          $replace['#valueNow#'] = '<img width="40" src="plugins/rteEcowatt/core/template/images/franceRegions'.$valueNow .'.svg">';
+           */
+          // La carte de France
+          $svg = file_get_contents(__DIR__ ."/../template/images/franceRegions.svg");
+          $svg = str_replace('#fbfaf9',$color[$valueNow],$svg);
+          $replace['#valueNow#'] = $svg;
           if(!$valueNow) $replace['#curAlertColor#'] = 'transparent';
           else $replace['#curAlertColor#'] = $color[$valueNow];
         }
@@ -690,11 +695,21 @@ message::add(__CLASS__, "startAlert : " .date('d/m H:i:s',$startAlert)." endAler
           $datas = json_decode($cmd->execCmd(),true);
           $numCmdsHour = min(count($datas),$numCmdsHour);
           $tab = '';
+          $i = 0;
+          foreach($datas as $data) {
+            if($i >= $numCmdsHour) break;
+            $tab .= '<td title="' .date('d/m G',$data['TS']) .'h-' .date('G',$data['TS']+3600) .'h" style="background-color:' .$color[$data['hValue']] .'; font-size:8px!important;';
+            if(date('G',$data['TS']) % 2 && $i != $numCmdsHour) $tab .= 'border-right: 1px solid #000;';
+            $tab .= '">&nbsp;</td>';
+            $i++;
+          }
+            /*
           for($i=0;$i<$numCmdsHour;$i++) {
             $tab .= '<td title="' .date('d/m G',$datas[$i]['TS']) .'h-' .date('G',$datas[$i]['TS']+3600) .'h" style="background-color:' .$color[$datas[$i]['hValue']] .'; font-size:8px!important;';
             if(date('G',$datas[$i]['TS']) % 2 && $i != $numCmdsHour) $tab .= 'border-right: 1px solid #000;';
             $tab .= '">&nbsp;</td>';
           }
+             */
           $replace['#dataHoursJson#'] = (($tab!='')?"<table width=100%><tr>$tab</tr></table>":'');
         }
         else if($cmdLogicalId == 'nextAlertTS') {
