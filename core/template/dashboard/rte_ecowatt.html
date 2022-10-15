@@ -12,17 +12,8 @@
   <div class="#isVerticalAlign#">
     <center>
       <!--         HEURE ACTUELLE Prochaine alerte -->
-    <!--
-      <div  style='background-image: url("plugins/rteEcowatt/core/template/images/courbe-signal-orange.png");
-  background-repeat: no-repeat;
-  background-blend-mode: lighten;
-  background-size: cover;
-    '>
-      <div  style="background-color: #curAlertColor#">
-      <div style="border-bottom:10px solid #curAlertColor#;margin-bottom:5px">
-        -->
-      <div>
-          #valueNow# #datenow#<br>#nextAlert#
+      <div style="border-bottom:2px solid #curAlertColor#;margin-bottom:0px">
+        #valueNow# #datenow#<br>#nextAlert#
       </div>
 
         <!--           JOUR 0        -->
@@ -113,7 +104,7 @@
 
       <!--  Heure par heure à partir de l'heure actuelle
       <br>
-      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin: 5px">
+      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin: 5px">
         Données par heure.
         #dataHoursJson#
       </div>
