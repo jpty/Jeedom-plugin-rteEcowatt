@@ -34,7 +34,7 @@ class rteEcowatt extends eqLogic {
       $rteEcowatt->updateInfo(0);
     }
   }
-	public static function cron() { // TODO creation d'un cron pour recup données
+	public static function pullDataEcowatt() {
     $minute = config::byKey('execGetDataEcowattRTE', __CLASS__,40);
     if(date('i') == $minute) {
 // message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
@@ -49,11 +49,29 @@ class rteEcowatt extends eqLogic {
     }
   }
 
-	public static function setMinuteGetDataRte() {
-    $minuteExec = config::byKey('execGetDataEcowattRTE', __CLASS__,70);
-    if($minuteExec == 70) { // cle non existante
-      $minute = rand(1,59);
-      config::save('execGetDataEcowattRTE', $minute, __CLASS__);
+  public static function setCronDataEcowatt($create) {
+    if($create == 1) {
+      $cron = cron::byClassAndFunction(__CLASS__, 'pullDataEcowatt');
+      if(!is_object($cron)) {
+        $cron = new cron();
+        $cron->setClass(__CLASS__);
+        $cron->setFunction('pullDataEcowatt');
+        $cron->setEnable(1);
+        $cron->setDeamon(0);
+        $minute = config::byKey('execGetDataEcowattRTE', __CLASS__,70);
+        if($minute == 70) { // cle non existante
+          $minute = rand(1,59);
+          config::save('execGetDataEcowattRTE', $minute, __CLASS__);
+        }
+        $cron->setSchedule( $minute .' * * * *');
+        $cron->save();
+      }
+    }
+    else {
+      $cron = cron::byClassAndFunction(__CLASS__, 'pullDataEcowatt');
+      if(is_object($cron)) {
+        $cron->remove();
+      }
     }
   }
 
