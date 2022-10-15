@@ -58,12 +58,7 @@ class rteEcowatt extends eqLogic {
         $cron->setFunction('pullDataEcowatt');
         $cron->setEnable(1);
         $cron->setDeamon(0);
-        $minute = config::byKey('execGetDataEcowattRTE', __CLASS__,70);
-        if($minute == 70) { // cle non existante
-          $minute = rand(1,59);
-          config::save('execGetDataEcowattRTE', $minute, __CLASS__);
-        }
-        $cron->setSchedule( $minute .' * * * *');
+        $cron->setSchedule(rand(1,59) .' * * * *');
         $cron->save();
       }
     }
