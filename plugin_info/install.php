@@ -19,7 +19,7 @@ require_once __DIR__ . '/../../../core/php/core.inc.php';
 
 // Fonction exécutée automatiquement après l'installation du plugin
 function rteEcowatt_install() {
-  rteEcowatt::setupCronDataEcowatt(1);
+  rteEcowatt::setCronDataEcowatt(1);
 }
 
 // Fonction exécutée automatiquement après la mise à jour du plugin
