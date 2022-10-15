@@ -9,89 +9,113 @@
     <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
     <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
   </center>
-  <div class="#isVerticalAlign#">
+  <div class="#isVerticalAlign#"
+>
     <center>
       <!--         HEURE ACTUELLE Prochaine alerte -->
+    <!--
+      <div  style='background-image: url("plugins/rteEcowatt/core/template/images/courbe-signal-orange.png");
+  background-repeat: no-repeat;
+  background-blend-mode: lighten;
+  background-size: cover;
+    '>
+      <div  style="background-color: #curAlertColor#">
+      <div style="border-bottom:10px solid #curAlertColor#;margin-bottom:5px">
+        -->
       <div>
-        #valueNow# #datenow#<br>#nextAlert#
+          #valueNow# #datenow#<br>#nextAlert#
       </div>
-      <span style="font-size: 8px"><br></span>
 
         <!--           JOUR 0        -->
-      <!-- Camemberts -->
-      <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px;">
+        <!-- Titre -->
+      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
         <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
         #date0#
-        <div id="highchartDataHourD0AM#id#" style="width: 130px; height: 140px;margin-left: 5px;">
+      </div>
+      <!-- Camemberts
+      -->
+      <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px">
+        <div id="highchartDataHourD0AM-#id#" style="width: 130px; height: 140px;margin-left: 5px;">
         </div>
       </div>
       <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px;">
         <br>
-        <div id="highchartDataHourD0PM#id#" style="width: 130px; height: 140px;margin-left: 5px;">
+        <div id="highchartDataHourD0PM-#id#" style="width: 130px; height: 140px;margin-left: 5px;">
         </div>
       </div>
-      <!-- Barre
+      <!-- Table html
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;">
-          <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
-        &nbsp; #date0#
         #dataHourD0#
       </div>
       -->
-        <!--
+        <!-- Column
       <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin-left: 5px;margin-right: 5px;">
-        <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
-        &nbsp; #date0#
         <div id="highchartColumnHourD#id#" style="width: 100%; height: 50px;margin-left: 5px;">
         </div>
+      </div>
+        -->
+        <!-- Bar
+      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin-left: 5px;margin-right: 5px;">
         <div id="highchartBarHourD#id#" style="width: 100%; height: 50px;margin-left: 5px;">
         </div>
       </div>
         -->
 
         <!--             JOUR 1        -->
-      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;">
-          <i title = "#messageD1#" class="fa fa-circle fa-lg dayValueD1"></i>
-        &nbsp; #date1#
+        <!-- Titre -->
+      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
+        <i title = "#messageD1#" class="fa fa-circle fa-lg dayValueD1"></i> #date1#
+      </div>
+      <!-- Camemberts
+      <!-- Table html
+      -->
+      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD1#
       </div>
-      <!--
+      <!-- Donut
       <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px;">
-        #date1#
-        <div id="highchartDataHourD1#id#" style="width: 150px; height: 150px;margin-left: 5px;">
+        <div id="highchartDataHourD1-#id#" style="width: 150px; height: 150px;margin-left: 5px;">
         </div>
       </div>
-        -->
+      -->
 
         <!--             JOUR 2        -->
-      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;width: '500px'; text-align: left;margin-left: 5px;margin-right: 5px">
-        <i title = "#messageD2#" class="fa fa-circle fa-lg dayValueD2"></i>
-        &nbsp; #date2#
+        <!-- Titre -->
+      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
+        <i title = "#messageD2#" class="fa fa-circle fa-lg dayValueD2"></i> #date2#
+      </div>
+        <!-- Table html
+        -->
+      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important; text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD2#
       </div>
-      <!--
+      <!-- Donut
       <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px">
-        #date2#
-        <div id="highchartDataHourD2-#id#" style="width: 200px; height: 200px;margin-left: 5px;">
+        <div id="highchartDataHourD2-#id#" style="width: 150px; height: 150px;margin-left: 5px;">
         </div>
       </div>
         -->
 
         <!--             JOUR 3        -->
-      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px">
-        <i title = "#messageD3#" class="fa fa-circle fa-lg dayValueD3"></i>
-        &nbsp; #date3#
+        <!-- Titre -->
+      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
+        <i title = "#messageD3#" class="fa fa-circle fa-lg dayValueD3"></i> #date3#
+      </div>
+        <!-- Table html
+        -->
+      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD3#
       </div>
-      <!--
+      <!-- Donut
       <div class="cmd cmd-widget" style="text-align: left;margin-left: 5px;margin-right: 5px">
-        #date3#
         <div id="highchartDataHourD3#id#" style="width: 150px; height: 150px;margin-left: 5px;">
         </div>
       </div>
         -->
-      <!--  Heure par heure
+
+      <!--  Heure par heure à partir de l'heure actuelle
       <br>
-      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin-left: 5px;margin-right: 5px">
+      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin: 5px">
         Données par heure.
         #dataHoursJson#
       </div>
@@ -130,7 +154,7 @@
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
     }
 
-    Highcharts.chart('highchartDataHourD0AM#id#', {
+    Highcharts.chart('highchartDataHourD0AM-#id#', {
       chart: {
           plotBackgroundColor: null,
           plotBorderWidth: null,
@@ -146,7 +170,7 @@
         text: 'Minuit - midi',
         margin: 0,
         style: { "color": "var(--txt-color)", "fontSize": "12px" },
-        y: 22
+        y: 16
       },
       tooltip: { pointFormat: '{series.name}' },
       accessibility: {
@@ -157,18 +181,19 @@
           allowPointSelect: true,
           cursor: 'pointer',
           dataLabels: { enabled: false },
-          // borderWidth: 1, borderColor: 'var(--bg-color)'
+          slicedOffset: 6, 
         }
       },
       series: [
         { name: '#date0dm#',
             colorByPoint: false,
+            innerSize: '75%',
             data: [ #dataHour0HCpieAM# ]
         }
       ]
     });
 
-    Highcharts.chart('highchartDataHourD0PM#id#', {
+    Highcharts.chart('highchartDataHourD0PM-#id#', {
       chart: {
           plotBackgroundColor: null,
           plotBorderWidth: null,
@@ -184,7 +209,7 @@
         text: 'Midi - minuit',
         margin: 0,
         style: { "color": "var(--txt-color)", "fontSize": "12px" },
-        y: 22
+        y: 16
       },
       tooltip: { pointFormat: '{series.name}' },
       accessibility: {
@@ -195,18 +220,21 @@
           allowPointSelect: true,
           cursor: 'pointer',
           dataLabels: { enabled: false },
+          slicedOffset: 6, 
           // borderWidth: 1, borderColor: 'var(--bg-color)'
         }
       },
       series: [
         { name: '#date0dm#',
           colorByPoint: false,
+          innerSize: '75%',
           data: [ #dataHour0HCpiePM# ]
         },
       ]
     });
 
-    Highcharts.chart('highchartDataHourD0#id#', {
+/*
+    Highcharts.chart('highchartDataHourD0-#id#', {
       chart: {
           plotBackgroundColor: null,
           plotBorderWidth: null,
@@ -219,12 +247,13 @@
       exporting : { enabled: false },
       legend: { enabled: false },
       title: {
-        text: null,
+        text: '#date0#',
+        margin: 0,
+        style: { "color": "var(--txt-color)", "fontSize": "12px" },
+        y: 22
       },
       tooltip: { pointFormat: '{series.name}' },
-      accessibility: {
-        point: { valueSuffix: '' }
-      },
+      accessibility: { point: { valueSuffix: '' } },
       plotOptions: {
         pie: {
           allowPointSelect: true,
@@ -253,8 +282,9 @@
         }
       ]
     });
+*/
 
-    Highcharts.chart('highchartDataHourD1#id#', {
+    Highcharts.chart('highchartDataHourD1-#id#', {
       chart: {
           plotBackgroundColor: null,
           plotBorderWidth: null,
@@ -267,12 +297,13 @@
       exporting : { enabled: false },
       legend: { enabled: false },
       title: {
-        text: null,
+        text: '#date1#',
+        margin: 0,
+        style: { "color": "var(--txt-color)", "fontSize": "12px" },
+        y: 22
       },
       tooltip: { pointFormat: '{series.name}' },
-      accessibility: {
-        point: { valueSuffix: '' }
-      },
+      accessibility: { point: { valueSuffix: '' } },
       plotOptions: {
         pie: {
           allowPointSelect: true,
@@ -281,7 +312,7 @@
         }
       },
       series: [
-        { name: '#date0dm#',
+        { name: '#date1dm#',
           colorByPoint: false,
           size: '10%',
           data: [ #dataDay1HC# ]
@@ -292,7 +323,7 @@
           innerSize: '75%',
           data: [ #dataHour1HCpiePM# ]
         },
-        { name: 'Matin #date0dm#',
+        { name: 'Matin #date1dm#',
             colorByPoint: false,
             size: '75%',
             innerSize: '72%',
@@ -314,7 +345,10 @@
       exporting : { enabled: false },
       legend: { enabled: false },
       title: {
-        text: null,
+        text: '#date2#',
+        margin: 0,
+        style: { "color": "var(--txt-color)", "fontSize": "12px" },
+        y: 22
       },
       tooltip: { pointFormat: '{series.name}' },
       accessibility: {
@@ -328,18 +362,18 @@
         }
       },
       series: [
-        { name: 'Jour',
+        { name: 'Jour #date2dm#',
           colorByPoint: false,
           size: '10%',
           data: [ #dataDay2HC# ]
         },
-        { name: 'Aprés-midi',
+        { name: 'Aprés-midi #date2dm#',
           colorByPoint: false,
           size: '100%',
           innerSize: '75%',
           data: [ #dataHour2HCpiePM# ]
         },
-        { name: 'Matin',
+        { name: 'Matin #date2dm#',
             colorByPoint: false,
             size: '75%',
             innerSize: '72%',
@@ -362,7 +396,11 @@
       credits: { enabled: false },
       exporting : { enabled: false },
       legend: { enabled: false },
-      title: { text: null, },
+      title: { text: '#date3#',
+        margin: 0,
+        style: { "color": "var(--txt-color)", "fontSize": "12px" },
+        y: 22
+      },
       tooltip: { pointFormat: '{series.name}' },
       accessibility: {
         point: { valueSuffix: '' }
@@ -375,18 +413,18 @@
         }
       },
       series: [
-        { name: 'Jour',
+        { name: 'Jour #date3dm#',
           colorByPoint: false,
           size: '10%',
           data: [ #dataDay3HC# ]
         },
-        { name: 'Aprés-midi',
+        { name: 'Aprés-midi #date3dm#',
           colorByPoint: false,
           size: '100%',
           innerSize: '75%',
           data: [ #dataHour3HCpiePM# ]
         },
-        { name: 'Matin',
+        { name: 'Matin #date3dm#',
             colorByPoint: false,
             size: '75%',
             innerSize: '72%',
