@@ -132,8 +132,8 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </label>
                 <div class="col-sm-6">
                   <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="datasource">
-                    <option value="tempoRTE">{{Tempo (RTE)}}</option>
                     <option value="ecowattRTE">{{Ecowatt (RTE)}}</option>
+                    <option value="tempoRTE">{{Tempo (RTE)}}</option>
                   </select>
                 </div>
               </div>
@@ -145,17 +145,17 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </div>
               </div>
 
-<!--
               <div class="datasource ecowattRTE">
                 <div class="form-group">
-                  <label class="col-sm-4 control-label">Nombre d'heures à afficher
+                  <label class="col-sm-4 control-label">Mode demo
+<sup><i class="fas fa-question-circle tooltips" title="{{Pour cet équipement, les données du bac à sable RTE fournies avec le plugin seront utilisées sans requête à RTE.}}"></i></sup>
                   </label>
                   <div class="col-sm-6">
-                    <input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="numCmdsHour" placeholder="Défaut: 24. Maximum: 72">
+                    <input type="checkbox" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="demoMode">
                   </div>
                 </div>
               </div>
--->
+
             </div>
           </fieldset>
         </form>
