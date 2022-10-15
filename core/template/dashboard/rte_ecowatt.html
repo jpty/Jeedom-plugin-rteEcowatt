@@ -9,8 +9,7 @@
     <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
     <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
   </center>
-  <div class="#isVerticalAlign#"
->
+  <div class="#isVerticalAlign#">
     <center>
       <!--         HEURE ACTUELLE Prochaine alerte -->
     <!--
@@ -28,7 +27,7 @@
 
         <!--           JOUR 0        -->
         <!-- Titre -->
-      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;">
+      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
         <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
         #date0#
       </div>
@@ -43,30 +42,32 @@
         <div id="highchartDataHourD0PM-#id#" style="width: 130px; height: 140px;margin-left: 5px;">
         </div>
       </div>
-      <!-- Barre
+      <!-- Table html
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;">
-          <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
-        &nbsp; #date0#
         #dataHourD0#
       </div>
       -->
-        <!--
+        <!-- Column
       <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin-left: 5px;margin-right: 5px;">
-        <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
-        &nbsp; #date0#
         <div id="highchartColumnHourD#id#" style="width: 100%; height: 50px;margin-left: 5px;">
         </div>
+      </div>
+        -->
+        <!-- Bar
+      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin-left: 5px;margin-right: 5px;">
         <div id="highchartBarHourD#id#" style="width: 100%; height: 50px;margin-left: 5px;">
         </div>
       </div>
         -->
 
         <!--             JOUR 1        -->
-      <!-- Barre
+        <!-- Titre -->
+      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
+        <i title = "#messageD1#" class="fa fa-circle fa-lg dayValueD1"></i> #date1#
+      </div>
+      <!-- Table html
       -->
-      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px">
-          <i title = "#messageD1#" class="fa fa-circle fa-lg dayValueD1"></i>
-          <span style="margin-bottom:2px">&nbsp; #date1#</span>
+      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD1#
       </div>
       <!-- Donut
@@ -77,11 +78,13 @@
       -->
 
         <!--             JOUR 2        -->
-        <!-- Barre
+        <!-- Titre -->
+      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
+        <i title = "#messageD2#" class="fa fa-circle fa-lg dayValueD2"></i> #date2#
+      </div>
+        <!-- Table html
         -->
-      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;width: '500px'; text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px">
-        <i title = "#messageD2#" class="fa fa-circle fa-lg dayValueD2"></i>
-        &nbsp; #date2#
+      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important; text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD2#
       </div>
       <!-- Donut
@@ -92,11 +95,13 @@
         -->
 
         <!--             JOUR 3        -->
-        <!-- Barre
+        <!-- Titre -->
+      <div class="cmd cmd-widget" style="width:100%;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
+        <i title = "#messageD3#" class="fa fa-circle fa-lg dayValueD3"></i> #date3#
+      </div>
+        <!-- Table html
         -->
-      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px">
-        <i title = "#messageD3#" class="fa fa-circle fa-lg dayValueD3"></i>
-        &nbsp; #date3#
+      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD3#
       </div>
       <!-- Donut
@@ -106,9 +111,9 @@
       </div>
         -->
 
-      <!--  Heure par heure
+      <!--  Heure par heure à partir de l'heure actuelle
       <br>
-      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin-left: 5px;margin-right: 5px">
+      <div class="cmd cmd-widget" style="width: 100%; text-align: left;margin: 5px">
         Données par heure.
         #dataHoursJson#
       </div>
