@@ -138,17 +138,16 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </div>
               </div>
               <div class="form-group">
-                <label class="col-sm-4 control-label" ></label>
-                <div class="col-sm-7">
-                  <label class="checkbox-inline">
-                  <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplate" checked>{{Utiliser la template du plugin}}</label>
+                <label class="col-sm-4 control-label">{{Utiliser la template du plugin}}</label>
+                <div class="col-sm-6">
+                  <input type="checkbox" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="usePluginTemplate">
                 </div>
               </div>
 
               <div class="datasource ecowattRTE">
                 <div class="form-group">
-                  <label class="col-sm-4 control-label">Mode demo
-<sup><i class="fas fa-question-circle tooltips" title="{{Pour cet équipement, les données du bac à sable RTE fournies avec le plugin seront utilisées sans requête à RTE.}}"></i></sup>
+                  <label class="col-sm-4 control-label">{{Mode demo}}
+                  <sup><i class="fas fa-question-circle tooltips" title="{{Pour cet équipement, les données du bac à sable RTE fournies avec le plugin seront utilisées sans requête à RTE.}}"></i></sup>
                   </label>
                   <div class="col-sm-6">
                     <input type="checkbox" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="demoMode">
@@ -169,11 +168,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
             <thead>
               <tr>
                 <th class="hidden-xs" style="min-width:50px;width:70px;">ID</th>
-                <th style="min-width:50px;width:50px;">{{LogicalId}}</th>
-                <th style="min-width:200px;width:350px;">{{Nom}}</th>
-                <th>{{Paramètres}}</th>
+                <!--<th style="min-width:150px;width:300px;">{{LogicalId}}</th>-->
+                <th style="min-width:150px;width:300px;">{{Nom}}</th>
+                <th class="hidden-xs" style="width:130px;">{{Type}}</th>
+                <th style="min-width:260px;width:310px;">{{Options}}</th>
                 <th>{{Etat}}</th>
-                <th></th>
                 <th style="min-width:80px;width:200px;">{{Actions}}</th>
               </tr>
             </thead>
