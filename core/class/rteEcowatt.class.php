@@ -269,6 +269,14 @@ class rteEcowatt extends eqLogic {
 			$cmd->save();
 		}
 
+    /* TODO
+		$cmd = $this->getCmd(null, 'dataHoursJson');
+		if(is_object($cmd)) {
+      $cmd->setIsHistorized(0); // Pas d'historique sur cette commande trop volumineuse
+			$cmd->save();
+    }
+     */
+
 		$refresh = $this->getCmd(null, 'refresh');
 		if (!is_object($refresh)) {
 			$refresh = new rteEcowattCmd();
@@ -281,7 +289,8 @@ class rteEcowatt extends eqLogic {
 		$refresh->setType('action');
 		$refresh->setSubType('other');
 		$refresh->setOrder(99);
-		$refresh->save();
+    $refresh->save();
+
     $message .= " 1 Liste des commandes de l'équipement: ";
 		foreach ($this->getCmd() as $cmd) {
       $cmdLogicalId = $cmd->getLogicalId();
@@ -315,7 +324,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
       if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
     }
     else {
-      log::add(__CLASS__, 'error', '15 minutes entre 2 demandes de mise à jour minimum. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
+      log::add(__CLASS__, 'warning', '15 minutes entre 2 demandes de mise à jour minimum. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
       if(file_exists($fileEcowatt)) {
         $response = file_get_contents($fileEcowatt);
         if($response != '') log::add(__CLASS__, 'debug', 'Mise à jour de l\'interface avec les données de la requête précédente.');
