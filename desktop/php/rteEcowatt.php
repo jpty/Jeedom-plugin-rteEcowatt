@@ -47,6 +47,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
         echo '<br>';
         echo '<span class="name">' . $eqLogic->getHumanName(true, true) . '</span>';
         echo '<span class="hiddenAsCard displayTableRight hidden">';
+        echo '<span>' . str_replace('RTE','',$eqLogic->getConfiguration('datasource')) . '</span>';
         echo ($eqLogic->getIsVisible() == 1) ? '<i class="fas fa-eye" title="{{Equipement visible}}"></i>' : '<i class="fas fa-eye-slash" title="{{Equipement non visible}}"></i>';
         echo '</span>';
         echo '</div>';
