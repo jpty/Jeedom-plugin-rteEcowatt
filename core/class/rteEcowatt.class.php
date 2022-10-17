@@ -35,16 +35,12 @@ class rteEcowatt extends eqLogic {
     }
   }
 	public static function pullDataEcowatt() {
-    $minute = config::byKey('execGetDataEcowattRTE', __CLASS__,40);
-    if(date('i') == $minute) {
-// message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
-      $recup = 1;
-      // MAJ tous les équipements
-      foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
-        if($rteEcowatt->getConfiguration('datasource') == 'ecowattRTE') {
-          $rteEcowatt->updateInfo($recup);
-          $recup = 0;
-        }
+    $recup = 1;
+        // MAJ tous les équipements // Fetch RTE 1 seule fois
+    foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
+      if($rteEcowatt->getConfiguration('datasource') == 'ecowattRTE') {
+        $rteEcowatt->updateInfo($recup);
+        $recup = 0;
       }
     }
   }
@@ -566,7 +562,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
     }
 
     // remplacement de strftime pour des foremats simples $format est le meme que strftime
-    public static function datePlugin($format,$timestamp=null) {
+    public static function myStrftime($format,$timestamp=null) {
       if($timestamp === null) $timestamp = time();
       $resu = $format;
       $daysFull = array( 1 => 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche');
@@ -575,42 +571,29 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
 			$daysShort = array( 1 => 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim');
 			$monthsShort = array( 1 => 'Janv.', 'Févr.', 'Mars', 'Avril', 'Mai', 'Juin',
 				'Juil.', 'Août', 'Sept.', 'Oct.', 'Nov.', 'Déc.',);
-      if(strstr($resu,'%A')) { // Jour de la semaine complet
-        $repl = ucfirst($daysFull[date('N',$timestamp)]);
-        $resu = str_replace('%A',$repl,$resu);
-      }
-      if(strstr($resu,'%a')) { // Jour de la semaine réduit
-        $repl = ucfirst($daysShort[date('N',$timestamp)]);
-        $resu = str_replace('%a',$repl,$resu);
-      }
-      if(strstr($resu,'%e')) { // jour du mois 1 à 31
-        $repl = date('j',$timestamp);
-        $resu = str_replace('%e',$repl,$resu);
-      }
-      if(strstr($resu,'%B')) { // Mois complet
-        $repl = lcfirst($monthsFull[date('n',$timestamp)]);
-        $resu = str_replace('%B',$repl,$resu);
-      }
-      if(strstr($resu,'%b')) { // Mois réduit
-        $repl = lcfirst($monthsShort[date('n',$timestamp)]);
-        $resu = str_replace('%b',$repl,$resu);
-      }
-      if(strstr($resu,'%H')) { // Heure
-        $repl = date('G',$timestamp);
-        $resu = str_replace('%H',$repl,$resu);
-      }
-      if(strstr($resu,'%M')) { // Minute
-        $repl = date('i',$timestamp);
-        $resu = str_replace('%M',$repl,$resu);
-      }
-      if(strstr($resu,'%S')) { // Seconde
-        $repl = date('s',$timestamp);
-        $resu = str_replace('%S',$repl,$resu);
-      }
-      if(strstr($resu,'%G')) { // Seconde
-        $repl = date('Y',$timestamp);
-        $resu = str_replace('%G',$repl,$resu);
-      }
+      // Construction tableaux des remplacements
+                // Jour de la semaine complet
+      $search = array('%A'); $replace = array(ucfirst($daysFull[date('N',$timestamp)]));
+                // Jour de la semaine réduit
+      $search[] = '%a'; $replace[] = ucfirst($daysShort[date('N',$timestamp)]);
+                // jour du mois 1 à 31
+      $search[] = '%e'; $replace[] = date('j',$timestamp);
+                // Mois complet
+      $search[] = '%B'; $replace[] = lcfirst($monthsFull[date('n',$timestamp)]);
+                // Mois réduit
+      $search[] = '%b'; $replace[] = lcfirst($monthsShort[date('n',$timestamp)]);
+                // Heure 0 à 23
+      $search[] = '%H'; $replace[] = date('G',$timestamp);
+                // Minute 00 à 59
+      $search[] = '%M'; $replace[] = date('i',$timestamp);
+                // Seconde 00 à 59
+      $search[] = '%S'; $replace[] = date('s',$timestamp);
+                // Année 4 chiffres
+      $search[] = '%Y'; $replace[] = date('Y',$timestamp);
+                // %% en %
+      $search[] = '%%'; $replace[] = '%';
+        // Remplacement
+      $resu = str_replace($search,$replace,$resu);
       return($resu); 
   }
 
@@ -646,8 +629,8 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         $cmdLogicalId = $cmd->getLogicalId();
         if(substr($cmdLogicalId,0,13) == 'dayTimestampD') {
           $idx = substr($cmdLogicalId,13);
-          $replace["#date$idx#"] = self::datePlugin('%A %e %B',$cmd->execCmd());
-          $replace["#date${idx}dm#"] = self::datePlugin('%e %B',$cmd->execCmd());
+          $replace["#date$idx#"] = self::myStrftime('%A %e %B',$cmd->execCmd());
+          $replace["#date${idx}dm#"] = self::myStrftime('%e %B',$cmd->execCmd());
         }
         else if($cmdLogicalId == 'valueNow') {
           $valueNow = $cmd->execCmd();
@@ -665,7 +648,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         else if($cmdLogicalId == 'datenowTS') {
           $val = $cmd->execCmd();
           if($val == 0) $replace['#datenow#'] = "Valeur actuelle inconnue.";
-          else $replace['#datenow#'] = self::datePlugin('%A %e %B %Hh-',$val) .date('G',$val+3600).'h';
+          else $replace['#datenow#'] = self::myStrftime('%A %e %B %Hh-',$val) .date('G',$val+3600).'h';
         }
         else if(substr($cmdLogicalId,0,9) == 'dataHourD') {
           $idx = substr($cmdLogicalId,9);
@@ -768,10 +751,10 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
       }
       else {
         if($valueNow == 0 || $valueNow == 1) { // Pas d'alerte en cours
-          $replace['#nextAlert#'] = "Prochaine alerte:  ".'<i class="fa fa-circle fa-lg" style="color: '.$color[$nextAlertValue] .'"></i> ' .lcfirst(self::datePlugin('%a. %e %b %Hh',$nextAlertTS));
+          $replace['#nextAlert#'] = "Prochaine alerte:  ".'<i class="fa fa-circle fa-lg" style="color: '.$color[$nextAlertValue] .'"></i> ' .lcfirst(self::myStrftime('%a. %e %b %Hh',$nextAlertTS));
         }
         else {
-          $replace['#nextAlert#'] = "Fin de l'alerte en cours " .lcfirst(self::datePlugin('%a. %e %b à %Hh',$nextAlertTS));
+          $replace['#nextAlert#'] = "Fin de l'alerte en cours " .lcfirst(self::myStrftime('%a. %e %b à %Hh',$nextAlertTS));
         }
       }
 
@@ -804,10 +787,10 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
           $replace['#refresh_id#'] = '';
       }
       
-      /*
 $fileReplace = __DIR__ ."/../../data/ecowattReplace.json";
 $hdle = fopen($fileReplace, "wb");
 if($hdle !== FALSE) { fwrite($hdle, json_encode($replace)); fclose($hdle); }
+      /*
        */
       if ($this->getConfiguration('datasource') == 'ecowattRTE') $template = 'rte_ecowatt';
       else $template = 'rte_tempo';
