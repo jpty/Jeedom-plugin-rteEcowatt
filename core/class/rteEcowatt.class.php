@@ -787,10 +787,10 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
           $replace['#refresh_id#'] = '';
       }
       
+      /*
 $fileReplace = __DIR__ ."/../../data/ecowattReplace.json";
 $hdle = fopen($fileReplace, "wb");
 if($hdle !== FALSE) { fwrite($hdle, json_encode($replace)); fclose($hdle); }
-      /*
        */
       if ($this->getConfiguration('datasource') == 'ecowattRTE') $template = 'rte_ecowatt';
       else $template = 'rte_tempo';
