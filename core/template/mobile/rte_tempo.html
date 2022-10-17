@@ -7,7 +7,10 @@
       <span class="warning" title="#alert_name#">
         <i class='#alert_icon#'></i>
       </span>
-      <span>#name_display# <span class="object_name">#object_name#</span></span><br/>
+      <span>#name_display#
+        <span class="object_name">#object_name#</span>
+      </span>
+      <br/>
     </span>
 	</center>
   <div style="padding: 5px;">
@@ -34,28 +37,31 @@
     </div>
   </div>
 	<script>
-		if("#today#" == "BLUE"){
-			$('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#005BBB');
-		}else if("#today#" == "WHITE"){
-			$('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#DFDFDF');
-		}else if("#today#" == "RED"){
-			$('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#F34B32');
-		} else if("#tomorrow#" == "UNDEFINED") {
-			$('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#FFA02F');
-		}
-		if("#tomorrow#" == "BLUE"){
-			$('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#005BBB');
-		} else if("#tomorrow#" == "WHITE") {
-			$('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#DFDFDF');
-		} else if("#tomorrow#" == "RED") {
-			$('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#F34B32');
-		} else if("#tomorrow#" == "UNDEFINED") {
-			$('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#FFA02F');
-		}
+    jeedom.cmd.update['#id#'] =function(_options) {
+      if("#today#" == "BLUE"){
+        $('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#005BBB');
+      }else if("#today#" == "WHITE"){
+        $('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#DFDFDF');
+      }else if("#today#" == "RED"){
+        $('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#F34B32');
+      } else if("#tomorrow#" == "UNDEFINED") {
+        $('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#FFA02F');
+      }
+      if("#tomorrow#" == "BLUE"){
+        $('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#005BBB');
+      } else if("#tomorrow#" == "WHITE") {
+        $('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#DFDFDF');
+      } else if("#tomorrow#" == "RED") {
+        $('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#F34B32');
+      } else if("#tomorrow#" == "UNDEFINED") {
+        $('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#FFA02F');
+      }
+    }
+    jeedom.cmd.update['#id#']({display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#'})
+
     if ('#refresh_id#' != '') {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
-        jeedom.cmd.execute({id: '#refresh_id#'})
-      })
+        jeedom.cmd.execute({id: '#refresh_id#'}) })
     } else {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
     }
