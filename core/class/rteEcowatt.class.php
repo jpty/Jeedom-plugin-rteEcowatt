@@ -24,36 +24,45 @@ class rteEcowatt extends eqLogic {
 
 	public static function cronHourly() {
 // message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
-		$hour = array( 'tempoRTE' => array(0, 11, 12, 14, 20));
+		$hour = array( 'tempoRTE' => array(0, 11, 12, 14));
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
       $datasource = $rteEcowatt->getConfiguration('datasource');
-      if (isset($hour[$datasource]) && !in_array(date('H'), $hour[$datasource])) {
+      if(isset($hour[$datasource]) && !in_array(date('H'), $hour[$datasource])) {
         continue;
       }
 // message::add(__CLASS__, __FUNCTION__ .' ' .$datasource .' ' .date('H:i:s'));
       $rteEcowatt->updateInfo(0);
     }
   }
-	public static function cron() { // TODO creation d'un cron pour recup données
-    $minute = config::byKey('execGetDataEcowattRTE', __CLASS__,40);
-    if(date('i') == $minute) {
-// message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
-      $recup = 1;
-      // MAJ tous les équipements
-      foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
-        if($rteEcowatt->getConfiguration('datasource') == 'ecowattRTE') {
-          $rteEcowatt->updateInfo($recup);
-          $recup = 0;
-        }
+	public static function pullDataEcowatt() {
+    $recup = 1;
+        // MAJ tous les équipements // Fetch RTE 1 seule fois
+    foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
+      if($rteEcowatt->getConfiguration('datasource') == 'ecowattRTE') {
+        $rteEcowatt->updateInfo($recup);
+        $recup = 0;
       }
     }
   }
 
-	public static function setMinuteGetDataRte() {
-    $minuteExec = config::byKey('execGetDataEcowattRTE', __CLASS__,70);
-    if($minuteExec == 70) { // cle non existante
-      $minute = rand(1,59);
-      config::save('execGetDataEcowattRTE', $minute, __CLASS__);
+  public static function setCronDataEcowatt($create) {
+    if($create == 1) {
+      $cron = cron::byClassAndFunction(__CLASS__, 'pullDataEcowatt');
+      if(!is_object($cron)) {
+        $cron = new cron();
+        $cron->setClass(__CLASS__);
+        $cron->setFunction('pullDataEcowatt');
+        $cron->setEnable(1);
+        $cron->setDeamon(0);
+        $cron->setSchedule(rand(1,59) .' * * * *');
+        $cron->save();
+      }
+    }
+    else {
+      $cron = cron::byClassAndFunction(__CLASS__, 'pullDataEcowatt');
+      if(is_object($cron)) {
+        $cron->remove();
+      }
     }
   }
 
@@ -114,8 +123,7 @@ class rteEcowatt extends eqLogic {
       log::add(__CLASS__,'error', "Failed curl_error: " .curl_error($curl));
     $curlHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     if($curlHttpCode != 200) {
-      if($curlHttpCode == 400)
-        $message = " $response";
+      if($curlHttpCode == 400) $message = " $response";
       else $message = '';
       log::add(__CLASS__,'error',__FUNCTION__ ." ----- CURL return code: $curlHttpCode URL: $api $message");
     }
@@ -185,13 +193,6 @@ class rteEcowatt extends eqLogic {
         $cmd_list["dayValueD$i"] = array('name' => "Valeur J$i", 'subtype' => 'numeric','order'=> $order++);
         $cmd_list["dataHourD$i"] = array('name' => "Données horaires J$i", 'subtype' => 'string','order'=> $order++);
       }
-        // TODO cmds pour calcul prochain état dégradé
-      /*
-      for($i=0;$i<49;$i++) { // TODO réduire le nombre de cmd 49 ?
-        $cmd_list["valueH$i"] = array('name' => "Valeur H+$i", 'subtype' => 'numeric','order'=> $order++);
-      }
-       */
-      
     }
     else if ($this->getConfiguration('datasource') == 'tempoRTE') {
 			$cmd_list = array(
@@ -264,6 +265,14 @@ class rteEcowatt extends eqLogic {
 			$cmd->save();
 		}
 
+    /* TODO
+		$cmd = $this->getCmd(null, 'dataHoursJson');
+		if(is_object($cmd)) {
+      $cmd->setIsHistorized(0); // Pas d'historique sur cette commande trop volumineuse
+			$cmd->save();
+    }
+     */
+
 		$refresh = $this->getCmd(null, 'refresh');
 		if (!is_object($refresh)) {
 			$refresh = new rteEcowattCmd();
@@ -276,7 +285,8 @@ class rteEcowatt extends eqLogic {
 		$refresh->setType('action');
 		$refresh->setSubType('other');
 		$refresh->setOrder(99);
-		$refresh->save();
+    $refresh->save();
+
     $message .= " 1 Liste des commandes de l'équipement: ";
 		foreach ($this->getCmd() as $cmd) {
       $cmdLogicalId = $cmd->getLogicalId();
@@ -287,8 +297,9 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
 		$this->updateInfo(0);
 	}
 
-  public static function fetchDataEcowattRTE() {
-    $demo = config::byKey('demoMode', __CLASS__, 0);
+  public function fetchDataEcowattRTE() {
+    // $demo = config::byKey('demoMode', __CLASS__, 0);
+    $demo = $this->getConfiguration('demoMode',0);
 // message::add(__CLASS__,"Appel ".__FUNCTION__ ." ecowattRTE ".date('H:i:s'));
     $params = self::initParamRTE('ecowattRTE');
     if($demo) { // mode demo. Données du bac à sable RTE
@@ -309,7 +320,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
       if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
     }
     else {
-      log::add(__CLASS__, 'error', '15 minutes entre 2 demandes de mise à jour minimum. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
+      log::add(__CLASS__, 'warning', '15 minutes entre 2 demandes de mise à jour minimum. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
       if(file_exists($fileEcowatt)) {
         $response = file_get_contents($fileEcowatt);
         if($response != '') log::add(__CLASS__, 'debug', 'Mise à jour de l\'interface avec les données de la requête précédente.');
@@ -325,24 +336,27 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
 // message::add(__CLASS__, __FUNCTION__ ." DataSource $datasource Fetch: $fetch");
 		switch ($datasource) {
       case 'ecowattRTE':
-        $demo = config::byKey('demoMode', __CLASS__, 0);
+        // $demo = config::byKey('demoMode', __CLASS__, 0);
+        $demo = $this->getConfiguration('demoMode',0);
         if($demo) {
           $fileEcowatt = __DIR__ ."/../../data/ecowattRTEsandbox.json";
           $nowTS = strtotime('2022-06-03 ' .date('H:i:s')); // date dans la plage du bac à sable
+          // $nowTS = strtotime('2022-06-06 01:00:00');
+// message::add(__CLASS__,"Now: ".date('d/m/Y H:i:s',$nowTS));
         }
         else {
           $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
           $nowTS = time();
         }
-        if(!$fetch && file_exists($fileEcowatt)) { // && time() > (filemtime($fileEcowatt)+7140)) {
+        if(file_exists($fileEcowatt) && (!$fetch || $demo)) {
           $response = file_get_contents($fileEcowatt);
-// message::add(__CLASS__, "Using file $fileEcowatt " .date('H:i:s',filemtime($fileEcowatt)));
+          log::add(__CLASS__, 'debug', "Using existing file $fileEcowatt " .date('H:i:s',filemtime($fileEcowatt)));
         }
         else {
-// message::add(__CLASS__, "Fetching data");
-          $response = self::fetchDataEcowattRTE();
+          log::add(__CLASS__, 'debug', "Fetching new data ".date('d/m H:i:s'));
+          $response = $this->fetchDataEcowattRTE();
         }
-        $foundTS = 0;
+        $foundNowTS = 0;
         if($response === false) {
           log::add(__CLASS__, 'debug', 'Pas de données de RTE');
           for($i=0;$i<4;$i++) {
@@ -370,9 +384,9 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
           }
           sort($data); // les données de la sandbox ne sont pas dans l'ordre chronologique
           $start = -1;
-          $valueNow = 0;
+          $valueAlertNow = 0;
           $nextAlertTS = 0; $nextAlertValue = 0; $firstAlert = 0;
-          $valHour = array();
+          $valHours = array();
           for($day=0;$day<4;$day++) {
             if(!isset($data[$day])) {
               $this->checkAndUpdateCmd("dayTimestampD$day", $nowTS+$day*86400);
@@ -390,46 +404,93 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
               for($i=0;$i<24;$i++) {
                 if($nowTS >= $tsDay && $nowTS < $tsDay + 3600) {
                   $start = 0;
-log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'][$i] ." " .date('Y-m-d H:i',$tsDay));
-                  $foundTS = 1;
+// log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'][$i] ." " .date('Y-m-d H:i',$tsDay));
+                  $foundNowTS = 1;
                   $nowTS = $tsDay;
-                  $valueNow = $data[$day]['value'][$i];
+                  $valueAlertNow = $data[$day]['value'][$i];
                 }
                 if($start >= 0) {
                   $hValue = $data[$day]['value'][$i];
                   if($hValue > 1) {
                     if($firstAlert == 1) {
                       $nextAlertTS = $tsDay;
-                      $nextAlertValue = $hValue;
+                      // $nextAlertValue = $hValue;
                     }
                     $firstAlert++;
                   }
-                  $valHour[] = array("TS" => $tsDay, "datetime"=>date('c',$tsDay),"hValue" => $hValue);
-                  $this->checkAndUpdateCmd("valueH$start", $hValue);
+                  $valHours[date('c',$tsDay)] = array("TS" => $tsDay,"hValue" => $hValue);
                 }
                 $tsDay += 3600;
                 if($start >= 0) $start++;
               }
             }
           }
-          $this->checkAndUpdateCmd("dataHoursJson", json_encode($valHour));
+          $this->checkAndUpdateCmd("dataHoursJson", json_encode($valHours));
           unset($data);
         }
+        $startAlert = 0; $endAlert = 0;
+        if($foundNowTS) {
+          $found = 0;
+          foreach($valHours as $valH) { // parcours pour recherche alertes
+            if($startAlert && $endAlert) break;
+            if($valH['TS'] == $nowTS) {
+              $found = 1;
+            }
+            if($found) {
+              if($valueAlertNow == 0 || $valueAlertNow == 1) { // pas d'alerte en cours
+                if(!$startAlert && ($valH['hValue'] == 2 || $valH['hValue'] == 3)) {
+                  $startAlert = $valH['TS'];
+                  $nextAlertValue = $valH['hValue'];
+                }
+                else if($startAlert && ($valH['hValue'] == 0 || $valH['hValue'] == 1)) {
+                  $endAlert = $valH['TS'];
+                }
+              }
+              else { // Alerte en cours
+                if(!$startAlert && ($valH['hValue'] == 2 || $valH['hValue'] == 3)) {
+                  $startAlert = $valH['TS'];
+                }
+                else if($startAlert && ($valH['hValue'] == 0 || $valH['hValue'] == 1)) {
+                  $endAlert = $valH['TS'];
+                }
+              }
+            }
+          }
+        }
+// message::add(__CLASS__, "startAlert : " .date('d/m H:i:s',$startAlert)." endAlert: ".date('d/m H:i:s',$endAlert) ." valueAlertNow: $valueAlertNow nextAlertValue: $nextAlertValue");
         $this->checkAndUpdateCmd("nextAlertValue", $nextAlertValue);
-        $this->checkAndUpdateCmd("nextAlertTS", $nextAlertTS);
-        $this->checkAndUpdateCmd("valueNow", $valueNow);
-        $this->checkAndUpdateCmd("datenowTS", (($foundTS)?$nowTS:0));
+        if($valueAlertNow == 0 || $valueAlertNow == 1)
+          $this->checkAndUpdateCmd("nextAlertTS", $startAlert);
+        else
+          $this->checkAndUpdateCmd("nextAlertTS", $endAlert);
+        $this->checkAndUpdateCmd("valueNow", $valueAlertNow);
+        $this->checkAndUpdateCmd("datenowTS", (($foundNowTS)?$nowTS:0));
         break;
       case 'tempoRTE':
         $params = self::initParamRTE($datasource);
-        // TODO la date de début
+        $t = time();
+        if(date('m',$t)<9) { // Avant 1er septembre, L'année en cours est-elle bissextile?
+          $ts = mktime(0,0,0,9,1,(date('Y',$t)-1)); // 1er septembre de l'année précédente
+          $bisext = date('L',$t);
+        }
+        else { // Après septembre, l'année prochaine est-elle bissextile?
+          $ts = mktime(0,0,0,9,1,date('Y')); // 1er septembre de cette année
+          $t2 = mktime(12,0,0,1,1,date('Y',$t)+1);
+          $bisext = date('L',$t2);
+        }
+        $start_date = date('Y-m-d\TH:i:sP',$ts); // "20xx-09-01T00:00:00+02:00";
         // TODO stocker les nombres de jours passés pour ne pas redemander tout depuis 1er septembre
-        $start_date = "2022-09-01T00:00:00+02:00";
         $ts = strtotime("tomorrow midnight")+86400;
-        $end_date = date('Y-m-d\TH:i:sP',$ts); // "2022-09-03T00:00:00+02:00";
+        $end_date = date('Y-m-d\TH:i:sP',$ts); // "20xx-09-03T00:00:00+02:00";
+        log::add(__CLASS__, 'debug', "Tempo date $start_date / $end_date");
         // $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/sandbox/tempo_like_calendars";
         $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=$start_date&end_date=$end_date";
         $response = self::getResourceRTE($params, $api);
+/*
+$file = __DIR__ ."/../../data/ecowattTempo.json";
+$hdle = fopen($file, "wb");
+if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
+*/
         config::save('lastcall-'.$datasource, time(), __CLASS__);
 // message::add(__CLASS__,$response);
         $dec = json_decode($response,true);
@@ -437,42 +498,35 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
         $todayOK = $tomorrowOK = 0;
         $today = time();
         $tomorrow = $today + 86400;
-        foreach($dec['tempo_like_calendars']['values'] as $value) {
-          $color = $value['value'];
-          if($color == 'RED') $nbRed++;
-          else if($color == 'WHITE') $nbWhite++;
-          else if($color == 'BLUE') $nbBlue++;
-          if($todayOK == 0 || $tomorrowOK == 0) {
-            $deb= strtotime($value['start_date']);
-            $fin= strtotime($value['end_date']);
-            if($todayOK == 0) {
-              if($today >= $deb && $today < $fin) {
-                // message::add(__CLASS__,"TODAY found");
-                $this->checkAndUpdateCmd('today', "$color");
-                $todayOK = 1;
+        if(isset($dec['tempo_like_calendars']['values'])) {
+          foreach($dec['tempo_like_calendars']['values'] as $value) {
+            $color = $value['value'];
+            if($color == 'RED') $nbRed++;
+            else if($color == 'WHITE') $nbWhite++;
+            else if($color == 'BLUE') $nbBlue++;
+            if($todayOK == 0 || $tomorrowOK == 0) {
+              $deb= strtotime($value['start_date']);
+              $fin= strtotime($value['end_date']);
+              if($todayOK == 0) {
+                if($today >= $deb && $today < $fin) {
+                  // message::add(__CLASS__,"TODAY found");
+                  $this->checkAndUpdateCmd('today', "$color");
+                  $todayOK = 1;
+                }
               }
-            }
-            if($tomorrowOK == 0) {
-              if($tomorrow >= $deb && $tomorrow < $fin) {
-                // message::add(__CLASS__,"TOMORROW found");
-                $this->checkAndUpdateCmd('tomorrow', "$color");
-                $tomorrowOK = 1;
+              if($tomorrowOK == 0) {
+                if($tomorrow >= $deb && $tomorrow < $fin) {
+                  // message::add(__CLASS__,"TOMORROW found");
+                  $this->checkAndUpdateCmd('tomorrow', "$color");
+                  $tomorrowOK = 1;
+                }
               }
             }
           }
         }
-        if($todayOK == 0)
-          $this->checkAndUpdateCmd('today', "UNDEFINED");
-        if($tomorrowOK == 0)
-          $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
+        if($todayOK == 0) $this->checkAndUpdateCmd('today', "UNDEFINED");
+        if($tomorrowOK == 0) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
 
-        $t = time();
-        if(date('m',$t)<9) { // Avant 1er septembre, L'année en cours est-elle bissextile?
-          $bisext = date('L',$t);
-        } else { // Après septembre, l'année prochaine est-elle bissextile?
-          $t2 = mktime(12,0,0,1,1,date('Y',$t)+1);
-          $bisext = date('L',$t2);
-        }
         // Recup du nombre de jours blanc ou rouge dans les params du plugin
         // afin de pouvoir les modifier si variation coté RTE/EDF 
         $nbTotWhite = config::byKey('totalTempoWhite', __CLASS__, 43);
@@ -507,7 +561,8 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
       $this->checkAndUpdateCmd($_logicalId, $result);
     }
 
-    public static function datePlugin($format,$timestamp=null) {
+    // remplacement de strftime pour des foremats simples $format est le meme que strftime
+    public static function myStrftime($format,$timestamp=null) {
       if($timestamp === null) $timestamp = time();
       $resu = $format;
       $daysFull = array( 1 => 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche');
@@ -516,42 +571,29 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
 			$daysShort = array( 1 => 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim');
 			$monthsShort = array( 1 => 'Janv.', 'Févr.', 'Mars', 'Avril', 'Mai', 'Juin',
 				'Juil.', 'Août', 'Sept.', 'Oct.', 'Nov.', 'Déc.',);
-      if(strstr($resu,'%A')) { // Jour de la semaine complet
-        $repl = ucfirst($daysFull[date('N',$timestamp)]);
-        $resu = str_replace('%A',$repl,$resu);
-      }
-      if(strstr($resu,'%a')) { // Jour de la semaine réduit
-        $repl = ucfirst($daysShort[date('N',$timestamp)]);
-        $resu = str_replace('%a',$repl,$resu);
-      }
-      if(strstr($resu,'%e')) { // jour du mois 1 à 31
-        $repl = date('j',$timestamp);
-        $resu = str_replace('%e',$repl,$resu);
-      }
-      if(strstr($resu,'%B')) { // Mois complet
-        $repl = lcfirst($monthsFull[date('n',$timestamp)]);
-        $resu = str_replace('%B',$repl,$resu);
-      }
-      if(strstr($resu,'%b')) { // Mois réduit
-        $repl = lcfirst($monthsShort[date('n',$timestamp)]);
-        $resu = str_replace('%b',$repl,$resu);
-      }
-      if(strstr($resu,'%H')) { // Heure
-        $repl = date('G',$timestamp);
-        $resu = str_replace('%H',$repl,$resu);
-      }
-      if(strstr($resu,'%M')) { // Minute
-        $repl = date('i',$timestamp);
-        $resu = str_replace('%M',$repl,$resu);
-      }
-      if(strstr($resu,'%S')) { // Seconde
-        $repl = date('s',$timestamp);
-        $resu = str_replace('%S',$repl,$resu);
-      }
-      if(strstr($resu,'%G')) { // Seconde
-        $repl = date('Y',$timestamp);
-        $resu = str_replace('%G',$repl,$resu);
-      }
+      // Construction tableaux des remplacements
+                // Jour de la semaine complet
+      $search = array('%A'); $replace = array(ucfirst($daysFull[date('N',$timestamp)]));
+                // Jour de la semaine réduit
+      $search[] = '%a'; $replace[] = ucfirst($daysShort[date('N',$timestamp)]);
+                // jour du mois 1 à 31
+      $search[] = '%e'; $replace[] = date('j',$timestamp);
+                // Mois complet
+      $search[] = '%B'; $replace[] = lcfirst($monthsFull[date('n',$timestamp)]);
+                // Mois réduit
+      $search[] = '%b'; $replace[] = lcfirst($monthsShort[date('n',$timestamp)]);
+                // Heure 0 à 23
+      $search[] = '%H'; $replace[] = date('G',$timestamp);
+                // Minute 00 à 59
+      $search[] = '%M'; $replace[] = date('i',$timestamp);
+                // Seconde 00 à 59
+      $search[] = '%S'; $replace[] = date('s',$timestamp);
+                // Année 4 chiffres
+      $search[] = '%Y'; $replace[] = date('Y',$timestamp);
+                // %% en %
+      $search[] = '%%'; $replace[] = '%';
+        // Remplacement
+      $resu = str_replace($search,$replace,$resu);
       return($resu); 
   }
 
@@ -565,56 +607,75 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
         return $replace;
       }
       $version = jeedom::versionAlias($_version);
-      // setlocale(LC_TIME,"fr_FR.utf8"); // TODO remplacement strftime obsolete 8.1
       $color[0] = '#95a5a6'; // gris
       $color[1] = '#02F0C6'; // vert
       $color[2] = '#f2790F'; // orange
       $color[3] = '#e63946'; // rouge
       for($i=0;$i<4;$i++) $replace["#color$i#"] = $color[$i];
-      $nextAlertTS = 0; $nextAlertValue = 0;
+      $nextAlertTS = 0; $nextAlertValue = 0; $valueNow = 0;
+        // Recup de quelques valeurs de commande
+      $cmd = $this->getCmd(null,'datenowTS');
+      $datenowTS = (is_object($cmd))? $cmd->execCmd() : time();
+      $cmd = $this->getCmd(null,'dayTimestampD0');
+      $dayTS[0] = (is_object($cmd))? $cmd->execCmd() : time();
+      $cmd = $this->getCmd(null,'dayTimestampD1');
+      $dayTS[1] = (is_object($cmd))? $cmd->execCmd() : $dayTS[0] + 86400;
+      $cmd = $this->getCmd(null,'dayTimestampD2');
+      $dayTS[2] = (is_object($cmd))? $cmd->execCmd() : $dayTS[1] + 86400;
+      $cmd = $this->getCmd(null,'dayTimestampD3');
+      $dayTS[3] = (is_object($cmd))? $cmd->execCmd() : $dayTS[2] + 86400;
+
       foreach ($this->getCmd('info') as $cmd) {
         $cmdLogicalId = $cmd->getLogicalId();
         if(substr($cmdLogicalId,0,13) == 'dayTimestampD') {
           $idx = substr($cmdLogicalId,13);
-          $replace["#date$idx#"] = self::datePlugin('%A %e %B',$cmd->execCmd());
-          // $replace["#date${idx}dm#"] = ucfirst(strftime('%e %b',$cmd->execCmd()));
-          $replace["#date${idx}dm#"] = self::datePlugin('%e %B',$cmd->execCmd());
+          $replace["#date$idx#"] = self::myStrftime('%A %e %B',$cmd->execCmd());
+          $replace["#date${idx}dm#"] = self::myStrftime('%e %B',$cmd->execCmd());
         }
         else if($cmdLogicalId == 'valueNow') {
-          $val = $cmd->execCmd();
-          $replace['#valueNow#'] = '<i class="fa fa-circle fa-lg" style="color: '.$color[$val] .'"></i>';
+          $valueNow = $cmd->execCmd();
+          /* la punaise de couleur
+            $replace['#valueNow#'] =
+              '<i class="fa fa-circle fa-lg" style="color: '.$color[$valueNow] .'"></i>';
+           */
+          // La carte de France
+          $svg = file_get_contents(__DIR__ ."/../template/images/franceRegions.svg");
+          $svg = str_replace('#fbfaf9',$color[$valueNow],$svg);
+          $replace['#valueNow#'] = $svg;
+          if(!$valueNow) $replace['#curAlertColor#'] = $color[0];
+          else $replace['#curAlertColor#'] = $color[$valueNow];
         }
         else if($cmdLogicalId == 'datenowTS') {
           $val = $cmd->execCmd();
-          if($val == 0) $replace['#datenow#'] = "Valeur actuelle inconnue. ".date('d/m/Y H:i');
-          // else $replace['#datenow#'] = ucfirst(strftime('%A %e %B %H',$val)).'-'.date('H',$val+3600).'h';
-          else $replace['#datenow#'] = self::datePlugin('%A %e %B %H',$val) .'-'.date('G',$val+3600).'h';
+          if($val == 0) $replace['#datenow#'] = "Valeur actuelle inconnue.";
+          else $replace['#datenow#'] = self::myStrftime('%A %e %B %Hh-',$val) .date('G',$val+3600).'h';
         }
         else if(substr($cmdLogicalId,0,9) == 'dataHourD') {
           $idx = substr($cmdLogicalId,9);
           $datas = explode(',',$cmd->execCmd());
           $dataHCpieAM = $dataHCpiePM = '';
-          $tab = '<table width=100%><tr>';
+          $tab = '<table width=100% style="margin-top: 3px"><tr>';
           $i = 0; $icurH = -1;
           $tabHCcolumn = ''; $tabHCbar = '';
           foreach($datas as $data) {
-            $title = "$i-" .($i+1) ."h";
+            $title = $i ."h-" .($i+1) ."h";
             $tab .= '<td title=' .$title .' width=4% style="font-size:8px!important;';
-              // TODO l'heure dans le bon jour et pas forcement le premier graph highChart
-            if($idx==0 && $i == date('G')) {
+            if($dayTS[$idx] + $i * 3600 == $datenowTS) {
               $tabHCcolumn .= '{ y:2, name: "'.$title .'", color: "' .$color[$data] .'"},';
               $tabHCbar .= '{ data: [1], name: "'.$title .'", pointWidth: 30, color: "' .$color[$data] .'"},';
+            if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
+              $tab .= ' text-align:center"><i class="fa fa-circle fa-lg" style="color: '.$color[$data] .'"></i> '; 
             }
             else {
               $tabHCcolumn .= '{ y:1, name: "'.$title .'", color: "' .$color[$data] .'"},';
-              $tab .= 'background-color:' .$color[$data] .';';
+            if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
+              $tab .= 'background-color:' .$color[$data] .';">&nbsp;';
+              
               $tabHCbar .= '{ data: [1], name: "'.$title .'", color: "' .$color[$data] .'"},';
             }
-            if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
-            $tab .= '">&nbsp;</td>';
-            $dataHighcharts = "{ name: '$i-" .($i+1) ."h', y: 15, color: '" .$color[$data] ."'";
-              // TODO l'heure dans le bon jour et pas forcement le premier graph highChart
-            if($idx==0 && $i == date('G')) {
+            $tab .= '</td>';
+            $dataHighcharts = "{ name: '${i}h-" .($i+1) ."h', y: 15, color: '" .$color[$data] ."'";
+            if($dayTS[$idx] + $i * 3600 == $datenowTS) {
               $dataHighcharts .= ", sliced:true, selected: true";
               $icurH = $i;
               $curHcolor = $color[$data];
@@ -624,7 +685,7 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
             else $dataHCpiePM .= $dataHighcharts;
             $i++;
           }
-          $tab .= '</tr><tr>';
+          $tab .= '</tr><tr>'; // 2eme ligne pour afficher les heures
           for($i=0;$i<6;$i++) {
             $tab .= '<td style="font-size:10px!important" colspan="4">' .($i*4) .'h</td>';
           }
@@ -640,13 +701,17 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
           $numCmdsHour = $this->getConfiguration('numCmdsHour',49);
           if($numCmdsHour > 49) $numCmdsHour = 49;
           $datas = json_decode($cmd->execCmd(),true);
+          $numCmdsHour = min(count($datas),$numCmdsHour);
           $tab = '';
-          for($i=0;$i<$numCmdsHour;$i++) {
-            $tab .= '<td title="' .date('d/m G',$datas[$i]['TS']) .'-' .date('G',$datas[$i]['TS']+3600) .'h" style="background-color:' .$color[$datas[$i]['hValue']] .'; font-size:8px!important;';
-            if(date('G',$datas[$i]['TS']) % 2 && $i != $numCmdsHour) $tab .= 'border-right: 1px solid #000;';
+          $i = 0;
+          foreach($datas as $data) {
+            if($i >= $numCmdsHour) break;
+            $tab .= '<td title="' .date('d/m G',$data['TS']) .'h-' .date('G',$data['TS']+3600) .'h" style="background-color:' .$color[$data['hValue']] .'; font-size:8px!important;';
+            if(date('G',$data['TS']) % 2 && $i != $numCmdsHour) $tab .= 'border-right: 1px solid #000;';
             $tab .= '">&nbsp;</td>';
+            $i++;
           }
-          $replace['#dataHoursJson#'] = (($tab!='')?"<table width=100%><tr>$tab</tr></table>":'');
+          $replace['#dataHoursJson#'] = (($tab!='')?"<table width=100%><tr>$tab</tr></table>":'Pas de données.');
         }
         else if($cmdLogicalId == 'nextAlertTS') {
           $nextAlertTS = $cmd->execCmd();
@@ -658,7 +723,7 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
           $idx = substr($cmdLogicalId,9);
           $colD = $cmd->execCmd();
           $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
-          $replace["#dataDay${idx}HC#"] = "{ name: 'Jour', y: 360, color: '" .$color[$colD] ."'}"; // TODO la couleur du centre
+          $replace["#dataDay${idx}HC#"] = "{ name: 'Jour', y: 360, color: '" .$color[$colD] ."'}";
         }
         else $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
 
@@ -678,14 +743,24 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
         }
 */
       }
-      if($nextAlertValue && $nextAlertTS) {
-        $replace['#nextAlert#'] = "Prochaine alerte:  ".'<i class="fa fa-circle fa-lg" style="color: '.$color[$nextAlertValue] .'"></i> ' .date('d/m H',$nextAlertTS) .'-' .date('H',$nextAlertTS+3600) .'h';
+      if(!$datenowTS) {
+        $replace['#nextAlert#'] = '';
       }
-      else
-        $replace['#nextAlert#'] = 'Pas d\'alerte Ecowatt programmée.';
+      else if(!$nextAlertTS) {
+        $replace['#nextAlert#'] = 'Pas d\'alerte Ecowatt prévue.';
+      }
+      else {
+        if($valueNow == 0 || $valueNow == 1) { // Pas d'alerte en cours
+          $replace['#nextAlert#'] = "Prochaine alerte:  ".'<i class="fa fa-circle fa-lg" style="color: '.$color[$nextAlertValue] .'"></i> ' .lcfirst(self::myStrftime('%a. %e %b %Hh',$nextAlertTS));
+        }
+        else {
+          $replace['#nextAlert#'] = "Fin de l'alerte en cours " .lcfirst(self::myStrftime('%a. %e %b à %Hh',$nextAlertTS));
+        }
+      }
 
 
-      $demo = config::byKey('demoMode', __CLASS__, 0);
+      $demo = $this->getConfiguration('demoMode',0);
+      // $demo = config::byKey('demoMode', __CLASS__, 0);
       if($demo) // mode demo. Données du bac à sable RTE
         $file = __DIR__ ."/../../data/ecowattRTEsandbox.json";
       else $file = __DIR__ ."/../../data/ecowattRTE.json";
@@ -693,11 +768,13 @@ log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'
       if(file_exists($file)) {
         $fileTS = filemtime($file);
         // $tokenExpires = config::byKey('tokenRTEexpires', __CLASS__, 0);
-        $replace['#dataActuEcowatt#'] = 'Données RTE ' .(($demo)?'SANDBOX':'') .' du '.date('d/m/Y H:i:s',$fileTS) 
+        if($demo)
+          $replace['#dataActuEcowatt#'] = 'Données RTE SANDBOX '.date('d/m/Y',$fileTS);
+        else
+          $replace['#dataActuEcowatt#'] = 'Données RTE du '.date('d/m/Y H:i:s',$fileTS);
           // .'. tokenExpires '.date('H:i:s',$tokenExpires) 
-          .'. Affichage: '.date('H:i:s');
-          // .' en '.round($t0+microtime(true),3).'s';
-
+        $replace['#dataActuEcowatt#'] .= '. Affichage: '.date('H:i:s');
+        if($demo) $replace['#dataActuEcowatt#'] .= ' en '.round($t0+microtime(true),3).'s';
       }
       else {
         $replace['#dataActuEcowatt#'] = 'Dernière requête RTE le '.date('d/m/Y H:i:s',$lastcallEcoTS);
