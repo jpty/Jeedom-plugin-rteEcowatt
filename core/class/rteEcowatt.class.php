@@ -792,7 +792,11 @@ $fileReplace = __DIR__ ."/../../data/ecowattReplace.json";
 $hdle = fopen($fileReplace, "wb");
 if($hdle !== FALSE) { fwrite($hdle, json_encode($replace)); fclose($hdle); }
        */
-      if ($this->getConfiguration('datasource') == 'ecowattRTE') $template = 'rte_ecowatt';
+      if ($this->getConfiguration('datasource') == 'ecowattRTE') {
+	      if (!isset($replace['#innerSizeAm#'])) $replace['#innerSizeAm#'] = '75%';
+	      if (!isset($replace['#innerSizePm#'])) $replace['#innerSizePm#'] = '75%';
+	      $template = 'rte_ecowatt';
+      }
       else $template = 'rte_tempo';
       return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, $template, __CLASS__)));
     }
