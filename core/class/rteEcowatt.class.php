@@ -19,12 +19,12 @@
 require_once __DIR__ . '/../../../../core/php/core.inc.php';
 
 class rteEcowatt extends eqLogic {
-	/*     * *************************Attributs****************************** */
-	public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
+  /*     * *************************Attributs****************************** */
+  public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
 
-	public static function cronHourly() {
+  public static function cronHourly() {
 // message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
-		$hour = array( 'tempoRTE' => array(0, 11, 12, 14));
+    $hour = array( 'tempoRTE' => array(0, 11, 12, 14));
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
       $datasource = $rteEcowatt->getConfiguration('datasource');
       if(isset($hour[$datasource]) && !in_array(date('H'), $hour[$datasource])) {
@@ -34,7 +34,7 @@ class rteEcowatt extends eqLogic {
       $rteEcowatt->updateInfo(0);
     }
   }
-	public static function pullDataEcowatt() {
+  public static function pullDataEcowatt() {
     $recup = 1;
         // MAJ tous les équipements // Fetch RTE 1 seule fois
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
@@ -79,7 +79,7 @@ class rteEcowatt extends eqLogic {
     $params['lastcall'] = config::byKey('lastcall-'.$datasource, __CLASS__, 0);
     return($params);
   }
-  public static function getTokenRTE(&$params) { 
+  public static function getTokenRTE(&$params) {
     $token_url ="https://digital.iservices.rte-france.com/token/oauth/";
     $header = array("Content-Type: application/x-www-form-urlencoded",
       "Authorization: Basic " .$params['IDclientSecretB64']);
@@ -142,13 +142,13 @@ class rteEcowatt extends eqLogic {
     return json_decode($dataUrl, true);
   }
 
-	public function preSave() {
-		$this->setCategory('energy', 1);
-	}
+  public function preInsert() {
+    $this->setCategory('energy', 1);
+  }
 
-	public function postSave() {
+  public function postSave() {
     $message = "Start postsave Liste des commandes de l'équipement: ";
-		foreach ($this->getCmd() as $cmd) {
+    foreach ($this->getCmd() as $cmd) {
       $cmdLogicalId = $cmd->getLogicalId();
       $message .= "ID: ".$cmd->getId() ." $cmdLogicalId,";
     }
@@ -157,33 +157,33 @@ class rteEcowatt extends eqLogic {
     $message .= " ID: ". $this->getId();
     $message .= " Name: ". $this->getName();
 
-		$cmd_list = array();
+    $cmd_list = array();
     if ($this->getConfiguration('datasource') == 'ecowattRTE') {
       $cmd_list = array(
         'datenowTS' => array(
-					'name' => __('Maintenant timestamp', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 2,
+          'name' => __('Maintenant timestamp', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 2,
         ),
         'valueNow' => array(
-					'name' => __('Valeur maintenant', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 3,
+          'name' => __('Valeur maintenant', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 3,
         ),
         'nextAlertValue' => array(
-					'name' => __('Valeur prochaine alerte', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 4,
+          'name' => __('Valeur prochaine alerte', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 4,
         ),
         'nextAlertTS' => array(
-					'name' => __('Timestamp de la prochaine alerte', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 5,
+          'name' => __('Timestamp de la prochaine alerte', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 5,
         ),
         'dataHoursJson' => array(
-					'name' => __('Données horaires Json', __FILE__),
-					'subtype' => 'string',
-					'order' => 6,
+          'name' => __('Données horaires Json', __FILE__),
+          'subtype' => 'string',
+          'order' => 6,
         ),
       );
       $order = 10;
@@ -195,107 +195,107 @@ class rteEcowatt extends eqLogic {
       }
     }
     else if ($this->getConfiguration('datasource') == 'tempoRTE') {
-			$cmd_list = array(
-				'today' => array(
-					'name' => __('Aujourd\'hui', __FILE__),
-					'subtype' => 'string',
-					'order' => 1,
-				),
-				'tomorrow' => array(
-					'name' => __('Demain', __FILE__),
-					'subtype' => 'string',
-					'order' => 2,
-				),
-				'blue-remainingDays' => array(
-					'name' => __('Jours Bleus restants', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 3,
-				),
-				'blue-totalDays' => array(
-					'name' => __('Total jours Bleus', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 4,
-				),
-				'white-remainingDays' => array(
-					'name' => __('Jours Blancs restants', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 5,
-				),
-				'white-totalDays' => array(
-					'name' => __('Total jours Blancs', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 6,
-				),
-				'red-remainingDays' => array(
-					'name' => __('Jours Rouges restants', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 7,
-				),
-				'red-totalDays' => array(
-					'name' => __('Total jours Rouges', __FILE__),
-					'subtype' => 'numeric',
-					'order' => 8,
-				),
-			);
-		}
+      $cmd_list = array(
+        'today' => array(
+          'name' => __('Aujourd\'hui', __FILE__),
+          'subtype' => 'string',
+          'order' => 1,
+        ),
+        'tomorrow' => array(
+          'name' => __('Demain', __FILE__),
+          'subtype' => 'string',
+          'order' => 2,
+        ),
+        'blue-remainingDays' => array(
+          'name' => __('Jours Bleus restants', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 3,
+        ),
+        'blue-totalDays' => array(
+          'name' => __('Total jours Bleus', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 4,
+        ),
+        'white-remainingDays' => array(
+          'name' => __('Jours Blancs restants', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 5,
+        ),
+        'white-totalDays' => array(
+          'name' => __('Total jours Blancs', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 6,
+        ),
+        'red-remainingDays' => array(
+          'name' => __('Jours Rouges restants', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 7,
+        ),
+        'red-totalDays' => array(
+          'name' => __('Total jours Rouges', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 8,
+        ),
+      );
+    }
     /* TODO crash si suppression ancienne commande quand chgt type
-		foreach ($this->getCmd() as $cmd) { // Chgt type => suppression commandes type precedent
+    foreach ($this->getCmd() as $cmd) { // Chgt type => suppression commandes type precedent
       $cmdLogicalId = $cmd->getLogicalId();
-			if (!isset($cmd_list[$cmdLogicalId]) && $cmdLogicalId != 'refresh') {
-				$cmd->remove();
+      if (!isset($cmd_list[$cmdLogicalId]) && $cmdLogicalId != 'refresh') {
+        $cmd->remove();
         $message .= " --$cmdLogicalId,";
-			}
+      }
     }
      */
-		foreach ($cmd_list as $key => $cmd_info) { // ajout nouvelles commandes
-			$cmd = $this->getCmd(null, $key);
-			if (!is_object($cmd)) {
-				$cmd = new rteEcowattCmd();
-				$cmd->setLogicalId($key);
-				$cmd->setIsVisible(1);
-				$cmd->setName($cmd_info['name']);
-				$cmd->setOrder($cmd_info['order']);
+    foreach ($cmd_list as $key => $cmd_info) { // ajout nouvelles commandes
+      $cmd = $this->getCmd(null, $key);
+      if (!is_object($cmd)) {
+        $cmd = new rteEcowattCmd();
+        $cmd->setLogicalId($key);
+        $cmd->setIsVisible(1);
+        $cmd->setName($cmd_info['name']);
+        $cmd->setOrder($cmd_info['order']);
         $message .= " ++$key,";
-			}
+      }
       else
         $message .= " ==$key,";
-			$cmd->setType('info');
-			$cmd->setSubType($cmd_info['subtype']);
-			$cmd->setEqLogic_id($this->getId());
-			$cmd->save();
-		}
+      $cmd->setType('info');
+      $cmd->setSubType($cmd_info['subtype']);
+      $cmd->setEqLogic_id($this->getId());
+      $cmd->save();
+    }
 
     /* TODO
-		$cmd = $this->getCmd(null, 'dataHoursJson');
-		if(is_object($cmd)) {
+    $cmd = $this->getCmd(null, 'dataHoursJson');
+    if(is_object($cmd)) {
       $cmd->setIsHistorized(0); // Pas d'historique sur cette commande trop volumineuse
-			$cmd->save();
+      $cmd->save();
     }
      */
 
-		$refresh = $this->getCmd(null, 'refresh');
-		if (!is_object($refresh)) {
-			$refresh = new rteEcowattCmd();
-			$refresh->setName(__('Rafraichir', __FILE__));
+    $refresh = $this->getCmd(null, 'refresh');
+    if (!is_object($refresh)) {
+      $refresh = new rteEcowattCmd();
+      $refresh->setName(__('Rafraichir', __FILE__));
         $message .= " ++refresh";
       // $refresh->setIsVisible(0);
-		}
-		$refresh->setEqLogic_id($this->getId());
-		$refresh->setLogicalId('refresh');
-		$refresh->setType('action');
-		$refresh->setSubType('other');
-		$refresh->setOrder(99);
+    }
+    $refresh->setEqLogic_id($this->getId());
+    $refresh->setLogicalId('refresh');
+    $refresh->setType('action');
+    $refresh->setSubType('other');
+    $refresh->setOrder(99);
     $refresh->save();
 
     $message .= " 1 Liste des commandes de l'équipement: ";
-		foreach ($this->getCmd() as $cmd) {
+    foreach ($this->getCmd() as $cmd) {
       $cmdLogicalId = $cmd->getLogicalId();
       $message .= "ID: ".$cmd->getId() ." $cmdLogicalId,";
     }
 log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
 
-		$this->updateInfo(0);
-	}
+    $this->updateInfo(0);
+  }
 
   public function fetchDataEcowattRTE() {
     // $demo = config::byKey('demoMode', __CLASS__, 0);
@@ -331,10 +331,10 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $message");
     return $response;
   }
 
-	public function updateInfo($fetch) {
-		$datasource = $this->getConfiguration('datasource');
+  public function updateInfo($fetch) {
+    $datasource = $this->getConfiguration('datasource');
 // message::add(__CLASS__, __FUNCTION__ ." DataSource $datasource Fetch: $fetch");
-		switch ($datasource) {
+    switch ($datasource) {
       case 'ecowattRTE':
         // $demo = config::byKey('demoMode', __CLASS__, 0);
         $demo = $this->getConfiguration('demoMode',0);
@@ -528,7 +528,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         if($tomorrowOK == 0) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
 
         // Recup du nombre de jours blanc ou rouge dans les params du plugin
-        // afin de pouvoir les modifier si variation coté RTE/EDF 
+        // afin de pouvoir les modifier si variation coté RTE/EDF
         $nbTotWhite = config::byKey('totalTempoWhite', __CLASS__, 43);
         $nbTotRed = config::byKey('totalTempoRed', __CLASS__, 22);
         $nbTotBlue = 365 + $bisext - $nbTotWhite - $nbTotRed;
@@ -568,9 +568,9 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
       $daysFull = array( 1 => 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche');
       $monthsFull = array( 1 => 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet',
         'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',);
-			$daysShort = array( 1 => 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim');
-			$monthsShort = array( 1 => 'Janv.', 'Févr.', 'Mars', 'Avril', 'Mai', 'Juin',
-				'Juil.', 'Août', 'Sept.', 'Oct.', 'Nov.', 'Déc.',);
+      $daysShort = array( 1 => 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim');
+      $monthsShort = array( 1 => 'Janv.', 'Févr.', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juil.', 'Août', 'Sept.', 'Oct.', 'Nov.', 'Déc.',);
       // Construction tableaux des remplacements
                 // Jour de la semaine complet
       $search = array('%A'); $replace = array(ucfirst($daysFull[date('N',$timestamp)]));
@@ -594,7 +594,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
       $search[] = '%%'; $replace[] = '%';
         // Remplacement
       $resu = str_replace($search,$replace,$resu);
-      return($resu); 
+      return($resu);
   }
 
     public function toHtml($_version = 'dashboard') {
@@ -664,13 +664,13 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
               $tabHCcolumn .= '{ y:2, name: "'.$title .'", color: "' .$color[$data] .'"},';
               $tabHCbar .= '{ data: [1], name: "'.$title .'", pointWidth: 30, color: "' .$color[$data] .'"},';
               if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
-              $tab .= ' text-align:center;vertical-align: top"><i class="fa fa-circle fa-lg" style="color: rgb(var(--bg-color))"></i>'; 
+              $tab .= ' text-align:center;vertical-align: top"><i class="fa fa-circle fa-lg" style="color: rgb(var(--bg-color))"></i>';
             }
             else {
               $tabHCcolumn .= '{ y:1, name: "'.$title .'", color: "' .$color[$data] .'"},';
               if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
               $tab .= '">&nbsp;';
-              
+
               $tabHCbar .= '{ data: [1], name: "'.$title .'", color: "' .$color[$data] .'"},';
             }
             $tab .= '</td>';
@@ -719,7 +719,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         else if($cmdLogicalId == 'nextAlertValue') {
           $nextAlertValue = $cmd->execCmd();
         }
-        else if(substr($cmdLogicalId,0,9) == 'dayValueD') { 
+        else if(substr($cmdLogicalId,0,9) == 'dayValueD') {
           $idx = substr($cmdLogicalId,9);
           $colD = $cmd->execCmd();
           $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
@@ -772,7 +772,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
           $replace['#dataActuEcowatt#'] = 'Données RTE SANDBOX '.date('d/m/Y',$fileTS);
         else
           $replace['#dataActuEcowatt#'] = 'Données RTE du '.date('d/m/Y H:i:s',$fileTS);
-          // .'. tokenExpires '.date('H:i:s',$tokenExpires) 
+          // .'. tokenExpires '.date('H:i:s',$tokenExpires)
         $replace['#dataActuEcowatt#'] .= '. Affichage: '.date('H:i:s');
         if($demo) $replace['#dataActuEcowatt#'] .= ' en '.round($t0+microtime(true),3).'s';
       }
@@ -786,7 +786,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
       } else {
           $replace['#refresh_id#'] = '';
       }
-      
+
       /*
 $fileReplace = __DIR__ ."/../../data/ecowattReplace.json";
 $hdle = fopen($fileReplace, "wb");
@@ -808,10 +808,10 @@ if($hdle !== FALSE) { fwrite($hdle, json_encode($replace)); fclose($hdle); }
 }
 
 class rteEcowattCmd extends cmd {
-	public function execute($_options = array()) {
-		if ($this->getLogicalId() == 'refresh') {
-			$eqLogic = $this->getEqLogic();
-			$eqLogic->updateInfo(1);
-		}
-	}
+  public function execute($_options = array()) {
+    if ($this->getLogicalId() == 'refresh') {
+      $eqLogic = $this->getEqLogic();
+      $eqLogic->updateInfo(1);
+    }
+  }
 }
