@@ -112,12 +112,12 @@
 
     Highcharts.chart('highchartDataHourD0AM-#id#', {
       chart: {
-          plotBackgroundColor: null,
-          plotBorderWidth: null,
-          plotShadow: false,
-          type: 'pie',
-          width: 130, height: 130,
-          spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie',
+        width: 130, height: 130,
+        spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
       },
       credits: { enabled: false },
       exporting : { enabled: false },
@@ -140,21 +140,22 @@
       },
       series: [
         { name: '#date0dm#',
-            colorByPoint: false,
-            innerSize: '#innerSizeAM#',
-            data: [ #dataHour0HCpieAM# ]
+          colorByPoint: false,
+          colorIndex: 999,
+          innerSize: '#innerSizeAM#',
+          data: [ #dataHour0HCpieAM# ]
         }
       ]
     });
 
     Highcharts.chart('highchartDataHourD0PM-#id#', {
       chart: {
-          plotBackgroundColor: null,
-          plotBorderWidth: null,
-          plotShadow: false,
-          type: 'pie',
-          width: 130, height: 130,
-          spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie',
+        width: 130, height: 130,
+        spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
       },
       credits: { enabled: false },
       exporting : { enabled: false },
@@ -179,6 +180,7 @@
       series: [
         { name: '#date0dm#',
           colorByPoint: false,
+          colorIndex: 999,
           innerSize: '#innerSizePM#',
           data: [ #dataHour0HCpiePM# ]
         },
