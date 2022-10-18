@@ -659,17 +659,17 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
           $tabHCcolumn = ''; $tabHCbar = '';
           foreach($datas as $data) {
             $title = $i ."h-" .($i+1) ."h";
-            $tab .= '<td title=' .$title .' width=4% style="font-size:8px!important;';
-            if($dayTS[$idx] + $i * 3600 == $datenowTS) {
+            $tab .= '<td title=' .$title .' width=4% style="font-size:8px!important;background-color:' .$color[$data] .';';
+            if($dayTS[$idx] + $i * 3600 == $datenowTS) { // heure actuelle
               $tabHCcolumn .= '{ y:2, name: "'.$title .'", color: "' .$color[$data] .'"},';
               $tabHCbar .= '{ data: [1], name: "'.$title .'", pointWidth: 30, color: "' .$color[$data] .'"},';
-            if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
-              $tab .= ' text-align:center"><i class="fa fa-circle fa-lg" style="color: '.$color[$data] .'"></i> '; 
+              if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
+              $tab .= ' text-align:center;vertical-align: top"><i class="fa fa-circle fa-lg" style="color: rgb(var(--bg-color))"></i>'; 
             }
             else {
               $tabHCcolumn .= '{ y:1, name: "'.$title .'", color: "' .$color[$data] .'"},';
-            if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
-              $tab .= 'background-color:' .$color[$data] .';">&nbsp;';
+              if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
+              $tab .= '">&nbsp;';
               
               $tabHCbar .= '{ data: [1], name: "'.$title .'", color: "' .$color[$data] .'"},';
             }
@@ -687,7 +687,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
           }
           $tab .= '</tr><tr>'; // 2eme ligne pour afficher les heures
           for($i=0;$i<6;$i++) {
-            $tab .= '<td style="font-size:10px!important" colspan="4">' .($i*4) .'h</td>';
+            $tab .= '<td style="font-size:10px!important;background-color: rgb(var(--bg-color));color: var(--txt-color)" colspan="4">' .($i*4) .'h</td>';
           }
           $tab .= "</tr></table>";
           $replace["#dataHourD$idx#"] = "$tab";
@@ -792,9 +792,18 @@ $fileReplace = __DIR__ ."/../../data/ecowattReplace.json";
 $hdle = fopen($fileReplace, "wb");
 if($hdle !== FALSE) { fwrite($hdle, json_encode($replace)); fclose($hdle); }
        */
-      if ($this->getConfiguration('datasource') == 'ecowattRTE') $template = 'rte_ecowatt';
+      if ($this->getConfiguration('datasource') == 'ecowattRTE') {
+        if (!isset($replace['#innerSizeAM#'])) $replace['#innerSizeAM#'] = '75%';
+        if (!isset($replace['#innerSizePM#'])) $replace['#innerSizePM#'] = '75%';
+        $template = 'rte_ecowatt';
+      }
       else $template = 'rte_tempo';
-      return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, $template, __CLASS__)));
+      if (file_exists( __DIR__ ."/../template/$_version/custom.${template}.html")) {
+        return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, "custom." .$template, __CLASS__)));
+      }
+      else {
+        return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, $template, __CLASS__)));
+      }
     }
 }
 
