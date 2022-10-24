@@ -40,8 +40,10 @@ class rteEcowatt extends eqLogic {
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
       if($rteEcowatt->getConfiguration('datasource') == 'ecowattRTE') {
         $demo = $rteEcowatt->getConfiguration('demoMode',0);
-        $rteEcowatt->updateInfo($recup);
-        if(!$demo) $recup = 0;
+        if(!$demo) {
+          $rteEcowatt->updateInfo($recup);
+          $recup = 0;
+        }
       }
     }
   }
