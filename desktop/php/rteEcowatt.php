@@ -138,16 +138,23 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </div>
               </div>
               <div class="form-group">
-                <label class="col-sm-4 control-label" ></label>
+                <label class="col-sm-4 control-label" >{{Utiliser la template du plugin}}</label>
                 <div class="col-sm-7">
-                  <label class="checkbox-inline">
-                  <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplate" checked>{{Utiliser la template du plugin}}</label>
+                  <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplate" checked>
                 </div>
               </div>
 
               <div class="datasource ecowattRTE">
                 <div class="form-group">
-                  <label class="col-sm-4 control-label">Mode demo
+                  <label class="col-sm-4 control-label">{{Nombre de commandes visibles}}
+<sup><i class="fas fa-question-circle tooltips" title="{{Sur le graphique Données par heure}}"></i></sup>
+                  </label>
+                  <div class="col-sm-2">
+                    <input type="input" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="numCmdsHour" placeholder="{{Défaut: 24}}">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label">{{Mode demo}}
 <sup><i class="fas fa-question-circle tooltips" title="{{Pour cet équipement, les données du bac à sable RTE fournies avec le plugin seront utilisées sans requête à RTE.}}"></i></sup>
                   </label>
                   <div class="col-sm-6">
