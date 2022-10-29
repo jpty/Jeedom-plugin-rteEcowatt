@@ -377,6 +377,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         else {
           $dec = json_decode($response,true);
           $data = array();
+          $modNowTS = mktime(0,0,0,date('m',$nowTS),date('d',$nowTS),date('Y',$nowTS));
           foreach($dec['signals'] as $signal) {
             $ts =strtotime($signal['jour']);
             $val = array();
@@ -385,8 +386,10 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
             foreach($signal['values'] as $value) {
               $val[$value['pas']] = $value['hvalue'];
             }
-            $data[] = array('jour' => $ts, 'dvalue' => $signal['dvalue'],
+            if($ts >= $modNowTS) {
+              $data[] = array('jour' => $ts, 'dvalue' => $signal['dvalue'],
                             'message' => $signal['message'], 'value' => $val);
+            }
             unset($val);
           }
           sort($data); // les données de la sandbox ne sont pas dans l'ordre chronologique
