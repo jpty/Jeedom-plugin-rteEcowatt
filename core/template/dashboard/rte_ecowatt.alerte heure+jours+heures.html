@@ -17,6 +17,7 @@
         #valueNow# #datenow#<br>#nextAlert#
       </div>
       <!-- Titres des jours uniquement
+      -->
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
         <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD0#" class="fa fa-circle fa-lg" style="color:#dayColor0#"></i> #date0#
         </div>
@@ -27,17 +28,15 @@
         <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD3#" class="fa fa-circle fa-lg" style="color:#dayColor3#"></i> #date3#
         </div>
       </div>
-      -->
 
         <!--           JOUR 0        -->
         <!-- Titre J0
-        -->
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
         <i title = "#messageD0#" class="fa fa-circle fa-lg" style="color:#dayColor0#"></i>
         #date0#
       </div>
-      <!-- Camemberts
-      -->
+        -->
+      <!-- Camemberts J0
       <div class="cmd cmd-widget" style="text-align: left;margin: 5px;">
         <div id="highchartDataHourD0AM-#id#" style="width: 130px; height: 140px;margin-left: 5px;">
         </div>
@@ -46,6 +45,7 @@
         <div id="highchartDataHourD0PM-#id#" style="width: 130px; height: 140px;margin-left: 5px;">
         </div>
       </div>
+      -->
       <!-- Table html J0
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;">
         #dataHourD0#
@@ -53,44 +53,46 @@
       -->
         <!--             JOUR 1        -->
         <!-- Titre J1
-        -->
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
         <i title = "#messageD1#" class="fa fa-circle fa-lg" style="color:#dayColor1#"></i> #date1#
       </div>
-      <!-- Table html J1
-      -->
+        -->
+      <!-- Table html J2
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD1#
       </div>
+      -->
 
         <!--             JOUR 2        -->
         <!-- Titre J2
-        -->
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
         <i title = "#messageD2#" class="fa fa-circle fa-lg" style="color:#dayColor2#"></i> #date2#
       </div>
-        <!-- Table html
         -->
+        <!-- Table html J2
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important; text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD2#
       </div>
+        -->
 
         <!--             JOUR 3        -->
         <!-- Titre J3
-        -->
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
         <i title = "#messageD3#" class="fa fa-circle fa-lg" style="color:#dayColor3#"></i> #date3#
       </div>
-        <!-- Table html J3
         -->
+        <!-- Table html J3
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px">
         #dataHourD3#
       </div>
+        -->
       <!--  Heure par heure à partir de l'heure actuelle
-      -->
       <br>
+      -->
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin: 5px">
         Niveaux d'alerte sur #numCmdsHour# heures.
+      </div>
+      <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px;margin-bottom:0px">
         #dataHoursJson#
       </div>
     </center>
@@ -109,12 +111,12 @@
 
     Highcharts.chart('highchartDataHourD0AM-#id#', {
       chart: {
-        plotBackgroundColor: null,
-        plotBorderWidth: null,
-        plotShadow: false,
-        type: 'pie',
-        width: 130, height: 130,
-        spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie',
+          width: 130, height: 130,
+          spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
       },
       credits: { enabled: false },
       exporting : { enabled: false },
@@ -137,22 +139,22 @@
       },
       series: [
         { name: '#date0dm#',
-          colorByPoint: false,
-          colorIndex: 999,
-          innerSize: '#innerSizeAM#',
-          data: [ #dataHour0HCpieAM# ]
+            colorByPoint: false,
+            colorIndex: 999,
+            innerSize: '#innerSizeAM#',
+            data: [ #dataHour0HCpieAM# ]
         }
       ]
     });
 
     Highcharts.chart('highchartDataHourD0PM-#id#', {
       chart: {
-        plotBackgroundColor: null,
-        plotBorderWidth: null,
-        plotShadow: false,
-        type: 'pie',
-        width: 130, height: 130,
-        spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false,
+          type: 'pie',
+          width: 130, height: 130,
+          spacingTop: -5, spacingLeft: 4, spacingRight: 4, spacingBottom: 4
       },
       credits: { enabled: false },
       exporting : { enabled: false },
