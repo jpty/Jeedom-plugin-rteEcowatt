@@ -416,6 +416,12 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $cmd = $this->getCmd(null,'tomorrow');
     if(is_object($cmd)) $tomorrow = $cmd->execCmd();
     else $tomorrow = 'UNDEFINED';
+    $cmd = $this->getCmd(null,'todayTS');
+    if(is_object($cmd)) $todayTS = $cmd->execCmd();
+    else $todayTS = 0;
+    $cmd = $this->getCmd(null,'tomorrowTS');
+    if(is_object($cmd)) $tomorrowTS = $cmd->execCmd();
+    else $tomorrowTS = 0;
     if(date('G',$t) == 0 && $tomorrow != 'UNDEFINED') { // minuit Transfert tomorrow vers today et tomorrow = UNDEFINED si tomorrow est défini
       $this->checkAndUpdateCmd('today', $tomorrow);
       $this->checkAndUpdateCmd('todayTS', $t);
@@ -426,7 +432,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $this->checkAndUpdateCmd('tomorrowTS', $ts);
       $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
     }
-    else if($tomorrow == 'UNDEFINED' || $tomorrow == '') {
+    else if($tomorrow == 'UNDEFINED' || $tomorrow == '' || $tomorrowTS == 0 || $todayTS == 0) {
       if(date('m',$t)<9) { // Avant 1er septembre
         $ts = mktime(0,0,0,9,1,(date('Y',$t)-1)); // Debut saison 1er septembre année précédente
         $leapYear = date('L',$t); // L'année en cours est-elle bissextile?
@@ -537,7 +543,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       for($i=0;$i<4;$i++) {
         $this->checkAndUpdateCmd("dayTimestampD$i", $nowTS+$i*86400);
         $this->checkAndUpdateCmd("dayValueD$i", 0);
-        $this->checkAndUpdateCmd("messageD$i", "Erreur récupération données RTE");
+        $this->checkAndUpdateCmd("messageD$i", "Données RTE non disponibles.");
         $this->checkAndUpdateCmd("dataHourD$i", substr(str_repeat('0,',24),0,-1));
       }
       $this->checkAndUpdateCmd("dataHoursJson", substr(str_repeat('0,',72),0,-1));
@@ -569,7 +575,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         if(!isset($data[$day])) {
           $this->checkAndUpdateCmd("dayTimestampD$day", $nowTS+$day*86400);
           $this->checkAndUpdateCmd("dayValueD$day", 0);
-          $this->checkAndUpdateCmd("messageD$day", "Erreur récupération données RTE");
+          $this->checkAndUpdateCmd("messageD$day", "Données RTE non disponibles.");
           $this->checkAndUpdateCmd("dataHourD$day", substr(str_repeat('0,',24),0,-1));
           if($demo == 0 && $day != 3) log::add(__CLASS__, 'debug', "Data for day $day not set");
         }
@@ -754,6 +760,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         }
         else if($cmdLogicalId == 'valueNow') {
           $valueNow = $cmd->execCmd();
+          $replace['#curHourLevel#'] = $valueNow;
           /* la punaise de couleur
             $replace['#valueNow#'] =
               '<i class="fa fa-circle fa-lg" style="color: '.$color[$valueNow] .'"></i>';
