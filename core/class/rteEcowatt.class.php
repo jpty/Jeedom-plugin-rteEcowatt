@@ -426,7 +426,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $this->checkAndUpdateCmd('tomorrowTS', $ts);
       $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
     }
-    else if($tomorrow == 'UNDEFINED') {
+    else if($tomorrow == 'UNDEFINED' || $tomorrow == '') {
       if(date('m',$t)<9) { // Avant 1er septembre
         $ts = mktime(0,0,0,9,1,(date('Y',$t)-1)); // Debut saison 1er septembre année précédente
         $leapYear = date('L',$t); // L'année en cours est-elle bissextile?
@@ -722,7 +722,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     }
     $version = jeedom::versionAlias($_version);
     if ($this->getConfiguration('datasource') == 'ecowattRTE') {
-      $templateF = $this->getConfiguration('templateEcowatt','');
+      $templateF = $this->getConfiguration('templateEcowatt','plugin');
       if($templateF == 'none') return parent::toHtml($_version);
       else if($templateF == 'plugin') $templateFile = 'rte_ecowatt';
       else if($templateF == 'custom') $templateFile = 'custom.rte_ecowatt';
@@ -977,7 +977,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
           }
         }
         else if($cmdLogicalId == 'tomorrowTS') {
-          $replace['#tomorrowDate#'] = self::myStrftime('%A %e %B %H %M',$cmd->execCmd());
+          $replace['#tomorrowDate#'] = self::myStrftime('%A %e %B',$cmd->execCmd());
         }
         else $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
       }
