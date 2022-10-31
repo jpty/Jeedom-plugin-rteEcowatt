@@ -11,27 +11,28 @@
   </center>
   <div class="#isVerticalAlign#">
     <center>
-      <!--         HEURE ACTUELLE Prochaine alerte -->
+      <!--         HEURE ACTUELLE Prochaine alerte
+      -->
       <div style="border-bottom:2px solid #curAlertColor#;margin-bottom:0px">
         #valueNow# #datenow#<br>#nextAlert#
       </div>
       <!-- Titres des jours uniquement
       -->
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
-        <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i> #date0#
+        <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD0#" class="fa fa-circle fa-lg" style="color:#dayColor0#"></i> #date0#
         </div>
-        <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD1#" class="fa fa-circle fa-lg dayValueD1"></i> #date1#
+        <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD1#" class="fa fa-circle fa-lg" style="color:#dayColor1#"></i> #date1#
         </div>
-        <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD2#" class="fa fa-circle fa-lg dayValueD2"></i> #date2#
+        <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD2#" class="fa fa-circle fa-lg" style="color:#dayColor2#"></i> #date2#
         </div>
-        <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD3#" class="fa fa-circle fa-lg dayValueD3"></i> #date3#
+        <div class="cmd cmd-widget" style="margin:5px"><i title = "#messageD3#" class="fa fa-circle fa-lg" style="color:#dayColor3#"></i> #date3#
         </div>
       </div>
 
         <!--           JOUR 0        -->
         <!-- Titre J0
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
-        <i title = "#messageD0#" class="fa fa-circle fa-lg dayValueD0"></i>
+        <i title = "#messageD0#" class="fa fa-circle fa-lg" style="color:#dayColor0#"></i>
         #date0#
       </div>
         -->
@@ -53,7 +54,7 @@
         <!--             JOUR 1        -->
         <!-- Titre J1
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
-        <i title = "#messageD1#" class="fa fa-circle fa-lg dayValueD1"></i> #date1#
+        <i title = "#messageD1#" class="fa fa-circle fa-lg" style="color:#dayColor1#"></i> #date1#
       </div>
         -->
       <!-- Table html J2
@@ -65,7 +66,7 @@
         <!--             JOUR 2        -->
         <!-- Titre J2
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
-        <i title = "#messageD2#" class="fa fa-circle fa-lg dayValueD2"></i> #date2#
+        <i title = "#messageD2#" class="fa fa-circle fa-lg" style="color:#dayColor2#"></i> #date2#
       </div>
         -->
         <!-- Table html J2
@@ -77,7 +78,7 @@
         <!--             JOUR 3        -->
         <!-- Titre J3
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:5px;margin-bottom:0px">
-        <i title = "#messageD3#" class="fa fa-circle fa-lg dayValueD3"></i> #date3#
+        <i title = "#messageD3#" class="fa fa-circle fa-lg" style="color:#dayColor3#"></i> #date3#
       </div>
         -->
         <!-- Table html J3
@@ -89,7 +90,7 @@
       <br>
       -->
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin: 5px">
-        Alertes par heure à partir de l'heure actuelle.
+        Niveaux d'alerte sur #numCmdsHour# heures.
       </div>
       <div class="cmd cmd-widget" style="width: calc(100% - 10px) !important;text-align: left;margin-left: 5px;margin-right: 5px;margin-top:0px;margin-bottom:0px">
         #dataHoursJson#
@@ -100,26 +101,6 @@
     </div>
 	</div>
 	<script>
-		if("#dayValueD0#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD0').css('color','#color1#');
-		else if("#dayValueD0#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD0').css('color','#color2#');
-		else if("#dayValueD0#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD0').css('color','#color3#');
-		else $('.eqLogic[data-eqLogic_id=#id#] .dayValueD0').css('color','#color0#');
-    
-		if("#dayValueD1#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD1').css('color','#color1#');
-		else if("#dayValueD1#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD1').css('color','#color2#');
-		else if("#dayValueD1#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD1').css('color','#color3#');
-		else $('.eqLogic[data-eqLogic_id=#id#] .dayValueD1').css('color','#color0#');
-
-		if("#dayValueD2#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD2').css('color','#color1#');
-		else if("#dayValueD2#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD2').css('color','#color2#');
-		else if("#dayValueD2#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD2').css('color','#color3#');
-		else $('.eqLogic[data-eqLogic_id=#id#] .dayValueD2').css('color','#color0#');
-
-		if("#dayValueD3#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD3').css('color','#color1#');
-		else if("#dayValueD3#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD3').css('color','#color2#');
-		else if("#dayValueD3#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .dayValueD3').css('color','#color3#');
-		else $('.eqLogic[data-eqLogic_id=#id#] .dayValueD3').css('color','#color0#');
-
     if ('#refresh_id#' != '') {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
         jeedom.cmd.execute({id: '#refresh_id#'})
@@ -159,7 +140,8 @@
       series: [
         { name: '#date0dm#',
             colorByPoint: false,
-            innerSize: '75%',
+            colorIndex: 999,
+            innerSize: '#innerSizeAM#',
             data: [ #dataHour0HCpieAM# ]
         }
       ]
@@ -178,7 +160,7 @@
       exporting : { enabled: false },
       legend: { enabled: false },
       title: {
-        text: '12h - 24h',
+        text: 'Midi - minuit',
         margin: 0,
         style: { "color": "var(--txt-color)", "fontSize": "12px" },
         y: 16
@@ -197,7 +179,8 @@
       series: [
         { name: '#date0dm#',
           colorByPoint: false,
-          innerSize: '75%',
+          colorIndex: 999,
+          innerSize: '#innerSizePM#',
           data: [ #dataHour0HCpiePM# ]
         },
       ]
