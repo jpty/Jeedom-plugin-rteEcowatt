@@ -134,6 +134,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                   <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="datasource">
                     <option value="ecowattRTE">{{Ecowatt (RTE)}}</option>
                     <option value="tempoRTE">{{Tempo (RTE)}}</option>
+                    <option value="ejpEDF">{{Ejp (EDF)}}</option>
 <!--
                     <option value="consumptionRTE">{{Consommation (RTE)}}</option>
 -->
@@ -149,7 +150,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </div>
               </div>
 
-<!--
               <div class="datasource consumptionRTE">
                 <div class="form-group">
                   <label class="col-sm-4 control-label">{{Mode demo}}
@@ -160,7 +160,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
                   </div>
                 </div>
               </div>
--->
 
               <div class="datasource ecowattRTE">
                 <div class="form-group">
