@@ -25,7 +25,7 @@ class rteEcowatt extends eqLogic {
   public static function cronHourly() {
 // message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
     $hour = array( 'tempoRTE' => array(0, 10, 11, 12, 14),
-                   'ejpEDF' => array(1, 6, 12, 15, 17, 19));
+                   'ejpEDF' => array(1, 6, 12, 16, 17, 19, 22));
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
       $datasource = $rteEcowatt->getConfiguration('datasource');
       if(isset($hour[$datasource]) && !in_array(date('H'), $hour[$datasource])) {
@@ -443,7 +443,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       if($todayEjp == 0) $this->checkAndUpdateCmd('today', "NOT_EJP");
       else if($todayEjp == 1) $this->checkAndUpdateCmd('today', "EJP");
       if($tomorrowEjp == 0) {
-        if(date('G') < 15) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
+        if(date('G') < 16) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
         else $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
       }
       else if($tomorrowEjp == 1) $this->checkAndUpdateCmd('tomorrow', "EJP");
@@ -1100,7 +1100,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       if($this->getConfiguration('usePluginTemplate','1') == '0')
         return parent::toHtml($_version);
       $fileReplace = __DIR__ ."/../../data/consumptionReplace.json";
-      $template = 'rte_tempo2';
+      $template = 'rte_consumption';
     }
     /*
 $hdle = fopen($fileReplace, "wb");
