@@ -24,7 +24,8 @@ class rteEcowatt extends eqLogic {
 
   public static function cronHourly() {
 // message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
-    $hour = array( 'tempoRTE' => array(0, 10, 11, 12, 14));
+    $hour = array( 'tempoRTE' => array(0, 10, 11, 12, 14),
+                   'ejpEDF' => array(1, 6, 12, 16, 17, 19, 22));
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
       $datasource = $rteEcowatt->getConfiguration('datasource');
       if(isset($hour[$datasource]) && !in_array(date('H'), $hour[$datasource])) {
@@ -135,23 +136,17 @@ class rteEcowatt extends eqLogic {
   }
 
   public function fetchDataConsumptionRTE() {
-    // $demo = config::byKey('demoMode', __CLASS__, 0);
+    $demo = $this->getConfiguration('demoModeConso',0);
 // message::add(__CLASS__,"Appel ".__FUNCTION__ ." consumptionRTE ".date('H:i:s'));
     $params = self::initParamRTE('consumptionRTE');
-    /*
     if($demo) { // mode demo. Données du bac à sable RTE
-      $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/short_term";
+      $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/sandbox/short_term";
       $fileConsumption = __DIR__ ."/../../data/consumptionRTEsandbox.json";
     }
     else {
+      $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/short_term"; // ?type=<valeur(s)>&start_date=<valeur>&end_date=<valeur>";
+      $fileConsumption = __DIR__ ."/../../data/consumptionRTE.json";
     }
-     */
-    $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/short_term"; // ?type=<valeur(s)>&start_date=<valeur>&end_date=<valeur>";
-    $fileConsumption = __DIR__ ."/../../data/consumptionRTE.json";
-    $response = self::getResourceRTE($params, $api);
-    $hdle = fopen($fileConsumption, "wb");
-    if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
-    /*
     log::add(__CLASS__, 'debug', 'Lastcall: '.$params['lastcall'] .'s');
     // limitation des requetes 15 minutes pour l'API consumption
     if($demo || (!$demo && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
@@ -159,7 +154,7 @@ class rteEcowatt extends eqLogic {
         // TODO test du contenu de la réponse
       if(json_decode($response,true)) {
         if(!$demo) config::save('lastcall-consumptionRTE', time(), __CLASS__);
-        $hdle = fopen($fileEcowatt, "wb");
+        $hdle = fopen($fileConsumption, "wb");
         if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
       }
       else {
@@ -168,15 +163,14 @@ class rteEcowatt extends eqLogic {
     }
     else {
       log::add(__CLASS__, 'warning', '15 minutes entre 2 demandes de mise à jour minimum. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
-      if(file_exists($fileEcowatt)) {
-        $response = file_get_contents($fileEcowatt);
+      if(file_exists($fileConsumption)) {
+        $response = file_get_contents($fileConsumption);
         if($response != '') log::add(__CLASS__, 'debug', 'Mise à jour de l\'interface avec les données de la requête précédente.');
         else return false;
       }
       else return false;
     }
     return $response;
-*/
   }
 
   public function fetchDataEcowattRTE() {
@@ -244,7 +238,26 @@ class rteEcowatt extends eqLogic {
     $msg .= " Name: ". $this->getName();
 
     $cmd_list = array();
-    if ($this->getConfiguration('datasource') == 'ecowattRTE') {
+    if ($this->getConfiguration('datasource') == 'ejpEDF') {
+      $cmd_list = array(
+        'today' => array(
+          'name' => __('Aujourd\'hui', __FILE__),
+          'subtype' => 'string',
+          'order' => 1,
+        ),
+        'tomorrow' => array(
+          'name' => __('Demain', __FILE__),
+          'subtype' => 'string',
+          'order' => 2,
+        ),
+        'ejpRemainingDays' => array(
+          'name' => __('EJP restants', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 3,
+        )
+      );
+    }
+    else if ($this->getConfiguration('datasource') == 'ecowattRTE') {
       $cmd_list = array(
         'datenowTS' => array(
           'name' => __('Maintenant timestamp', __FILE__),
@@ -270,7 +283,7 @@ class rteEcowatt extends eqLogic {
           'name' => __('Données horaires Json', __FILE__),
           'subtype' => 'string',
           'order' => 6,
-        ),
+        )
       );
       $order = 10;
       for($i=0;$i<4;$i++) {
@@ -294,12 +307,12 @@ class rteEcowatt extends eqLogic {
         ),
         'todayTS' => array(
           'name' => __('Aujourd\'hui timestamp', __FILE__),
-          'subtype' => 'string',
+          'subtype' => 'numeric',
           'order' => 1,
         ),
         'tomorrowTS' => array(
           'name' => __('Demain timestamp', __FILE__),
-          'subtype' => 'string',
+          'subtype' => 'numeric',
           'order' => 2,
         ),
         'blue-remainingDays' => array(
@@ -399,19 +412,50 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $datasource = $this->getConfiguration('datasource');
 // message::add(__CLASS__, __FUNCTION__ ." DataSource $datasource Fetch: $fetch");
     switch ($datasource) {
+      case 'tempoRTE': $this->updateInfoTempo($fetch); break;
       case 'consumptionRTE': $this->updateInfoConsumption($fetch); break;
       case 'ecowattRTE': $this->updateInfoEcowatt($fetch); break;
-      case 'tempoRTE': $this->updateInfoTempo($fetch); break;
+      case 'ejpEDF': $this->updateInfoEdfEjp($fetch); break;
     }
     $this->refreshWidget();
   }
 
-  public function updateInfoConsumption($fetch) {
-    $response = $this->fetchDataConsumptionRTE();
+  public function updateInfoEdfEjp($fetch) {
+        $ejpdays = self::valueFromUrl('https://particulier.edf.fr/services/rest/referentiel/historicEJPStore');
+/*
+    $file = __DIR__ ."/../../data/EJP.json";
+    $hdle = fopen($file, "wb");
+    if($hdle !== FALSE) { fwrite($hdle, json_encode($ejpdays)); fclose($hdle); }
+*/
+
+    $this->checkAndUpdateCmd('ejpRemainingDays', $ejpdays['nbEjpRestants']);
+    $startEjpPeriod = strtotime($ejpdays['dateDebutPeriode']);
+    $endEjpPeriod = strtotime($ejpdays['dateFinPeriode']);
+    $todayTS = mktime(0,0,0);
+    $tomorrowTS = mktime(0,0,0,date('m'),date('d')+1);
+    $todayEjp = 0; $tomorrowEjp = 0;
+    if($todayTS > $startEjpPeriod && $todayTS < $endEjpPeriod) {
+      foreach($ejpdays['listeEjp'] as $ejp) {
+        $ejpTS = ($ejp['dateApplication']/1000);
+        if($ejpTS == $todayTS) $todayEjp = 1;
+        if($ejpTS == $tomorrowTS) $tomorrowEjp = 1;
+      }
+      if($todayEjp == 0) $this->checkAndUpdateCmd('today', "NOT_EJP");
+      else if($todayEjp == 1) $this->checkAndUpdateCmd('today', "EJP");
+      if($tomorrowEjp == 0) {
+        if(date('G') < 16) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
+        else $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
+      }
+      else if($tomorrowEjp == 1) $this->checkAndUpdateCmd('tomorrow', "EJP");
+    }
+    else {
+      $this->checkAndUpdateCmd('today', 'OUT_OF_PERIOD');
+      $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
+    }
   }
 
   public function updateInfoTempo($fetch) {
-    $params = self::initParamRTE($datasource);
+    $params = self::initParamRTE('tempoRTE');
     $t = time();
     $cmd = $this->getCmd(null,'tomorrow');
     if(is_object($cmd)) $tomorrow = $cmd->execCmd();
@@ -459,7 +503,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   $file = __DIR__ ."/../../data/ecowattTempo.json";
   $hdle = fopen($file, "wb");
   if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
-      config::save('lastcall-'.$datasource, time(), __CLASS__);
+      config::save('lastcall-tempoRTE', time(), __CLASS__);
   // message::add(__CLASS__,$response);
       $dec = json_decode($response,true);
       $nbBlue = $nbWhite = $nbRed = 0;
@@ -514,20 +558,67 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     else log::add(__CLASS__,'debug',date('d/m H:i:s') ." Tempo RTE tomorrow already: $tomorrow");
   }
 
+  public function updateInfoConsumption($fetch) {
+    $demo = $this->getConfiguration('demoModeConso',0);
+    if($demo) {
+      $fileConsumption = __DIR__ ."/../../data/consumptionRTEsandbox.json";
+      $mod = str_pad((date('j') % 3)+3,2,'0',STR_PAD_LEFT);
+        // date dans plage du bac à sable. Jour entre 3 et 5
+      $nowTS = strtotime("2022-06-$mod " .date('H:i:s'));
+      // $nowTS = strtotime("2022-06-05 05:00:00"); // .date('H:i:s'));
+    }
+    else {
+      $fileConsumption = __DIR__ ."/../../data/consumptionRTE.json";
+      $nowTS = time();
+      // $nowTS = strtotime("2022-11-01 00:00:12"); // .date('H:i:s'));
+    }
+    if(file_exists($fileConsumption) && (!$fetch || $demo)) {
+      $response = file_get_contents($fileConsumption);
+      log::add(__CLASS__, 'debug', "Using existing file $fileConsumption " .date('H:i:s',filemtime($fileConsumption)));
+    }
+    else {
+      log::add(__CLASS__, 'debug', "Fetching new Consumption data ".date('j/m H:i:s'));
+      $response = $this->fetchDataConsumptionRTE();
+    }
+    if($response === false) {
+      log::add(__CLASS__, 'debug', 'Pas de données de RTE');
+      /*
+      for($i=0;$i<4;$i++) {
+        $this->checkAndUpdateCmd("dayTimestampD$i", $nowTS+$i*86400);
+        $this->checkAndUpdateCmd("dayValueD$i", 0);
+        $this->checkAndUpdateCmd("messageD$i", "Données RTE non disponibles.");
+        $this->checkAndUpdateCmd("dataHourD$i", substr(str_repeat('0,',24),0,-1));
+      }
+      $this->checkAndUpdateCmd("dataHoursJson", substr(str_repeat('0,',72),0,-1));
+       */
+    }
+    else {
+      $dec = json_decode($response,true);
+      $data = array();
+      // if($demo == 0) $dec['signals'][1]['values'][0]['hvalue'] = 3;
+      $modNowTS = mktime(0,0,0,date('m',$nowTS),date('d',$nowTS),date('Y',$nowTS));
+      foreach($dec['short_term'] as $shortTerm) {
+        $type = $shortTerm['type'];
+        $st = strtotime($shortTerm['start_date']); $st = date('d/m/Y H:i:s',$st);
+        $end = strtotime($shortTerm['end_date']); $end = date('d/m/Y H:i:s',$end);
+        message::add(__CLASS__,"Type: $type Start:$st End:$end" ." Nb values" .count($shortTerm['values']));
+      }
+    }
+  }
+
   public function updateInfoEcowatt($fetch) {
-    // $demo = config::byKey('demoMode', __CLASS__, 0);
     $demo = $this->getConfiguration('demoMode',0);
     if($demo) {
       $fileEcowatt = __DIR__ ."/../../data/ecowattRTEsandbox.json";
       $mod = str_pad((date('j') % 3)+3,2,'0',STR_PAD_LEFT);
         // date dans plage du bac à sable. Jour entre 3 et 5
       $nowTS = strtotime("2022-06-$mod " .date('H:i:s'));
-      // $nowTS = strtotime("2022-06-04 " .date('H:i:s'));
+      // $nowTS = strtotime("2022-06-05 05:00:00"); // .date('H:i:s'));
     }
     else {
       $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
       $nowTS = time();
-      // $nowTS = strtotime("2022-10-30 00:00:12"); // .date('H:i:s'));
+      // $nowTS = strtotime("2022-11-01 00:00:12"); // .date('H:i:s'));
     }
     if(file_exists($fileEcowatt) && (!$fetch || $demo)) {
       $response = file_get_contents($fileEcowatt);
@@ -650,22 +741,6 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $this->checkAndUpdateCmd("datenowTS", (($foundNowTS)?$nowTS:0));
   }
 
-  public function fillValue($_logicalId, $_value, $_data, $_default = 'N/A') {
-    $result = $_default;
-    foreach (explode('::', $_value) as $key) {
-      if (isset($_data[$key])) {
-        $_data = $_data[$key];
-      } else {
-        $_data = null;
-        break;
-      }
-    }
-    if (!is_array($_data) && $_data !== null) {
-      $result = $_data;
-    }
-    $this->checkAndUpdateCmd($_logicalId, $result);
-  }
-
     // remplacement de strftime pour des formats simples $format est le meme que strftime
   public static function myStrftime($format,$timestamp=null) {
     if($timestamp === null) $timestamp = time();
@@ -727,7 +802,33 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       return $replace;
     }
     $version = jeedom::versionAlias($_version);
-    if ($this->getConfiguration('datasource') == 'ecowattRTE') {
+    if ($this->getConfiguration('datasource') == 'ejpEDF') {
+      $color['NOT_EJP'] = '#509E2F';
+      $color['OUT_OF_PERIOD'] = '#005BBB';
+      $color['EJP'] = '#F34B32';
+      $color['UNDEFINED'] = '#FFA02F';
+      $color['ERROR'] = '#95A5A6';
+      while ($col = current($color)) {
+        $key = key($color);
+        $replace["#color-$key#"] = $col;
+        next($color);
+      }
+      foreach ($this->getCmd('info') as $cmd) {
+        $val = $cmd->execCmd(null);
+        $cmdLogicalId = $cmd->getLogicalId();
+        if($cmdLogicalId == 'today') {
+          $replace['#colorToday#'] = $color[$val];
+        }
+        else if($cmdLogicalId == 'tomorrow') {
+          $replace['#colorTomorrow#'] = $color[$val];
+        }
+        $replace['#' . $cmd->getLogicalId() . '#'] = $val;
+      }
+      $fileReplace = __DIR__ ."/../../data/ejpEdfReplace.json";
+      $template = 'edf_ejp';
+      $templateFile = '';
+    }
+    else if ($this->getConfiguration('datasource') == 'ecowattRTE') {
       $templateF = $this->getConfiguration('templateEcowatt','plugin');
       if($templateF == 'none') return parent::toHtml($_version);
       else if($templateF == 'plugin') $templateFile = 'rte_ecowatt';
@@ -837,7 +938,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
             foreach($datas as $data) {
               if($i >= $numCmdsHour) break;
               $tab .= '<td width='.$w.'% title="' .self::myStrftime('%A %e %B %kh-',$data['TS']) .date('G',$data['TS']+3600) .'h" style="background-color:' .$color[$data['hValue']] .'; font-size:8px!important;';
-              if(date('G',$data['TS']) % 2 && $i != $numCmdsHour) $tab .= 'border-right: 1px solid #000;';
+              if(date('G',$data['TS']) % 2 && $i != $numCmdsHour-1) $tab .= 'border-right: 1px solid #000;';
               if($i == 0)
                 $tab .= ' text-align:center;vertical-align: top"><i class="fa fa-circle fa-lg" style="color: rgb(var(--bg-color));font-size: 7px"></i></td>';
               else $tab .= '">&nbsp;</td>';
@@ -988,8 +1089,8 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         }
         else $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
       }
-      $lastcallEcoTS = config::byKey('lastcall-tempoRTE', __CLASS__, 0);
-      $replace['#dataActuTempo#'] = 'Dernière requête RTE le '.date('j/m/Y H:i:s',$lastcallEcoTS);
+      $lastcallTempoTS = config::byKey('lastcall-tempoRTE', __CLASS__, 0);
+      $replace['#dataActuTempo#'] = 'Dernière requête RTE le '.date('j/m/Y H:i:s',$lastcallTempoTS);
       $replace['#dataActuTempo#'] .= '. Affichage: '.date('H:i:s');
       $replace['#dataActuTempo#'] .= ' en '.round($t0+microtime(true),3).'s';
       $fileReplace = __DIR__ ."/../../data/tempoReplace.json";
@@ -999,7 +1100,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       if($this->getConfiguration('usePluginTemplate','1') == '0')
         return parent::toHtml($_version);
       $fileReplace = __DIR__ ."/../../data/consumptionReplace.json";
-      $template = 'rte_tempo';
+      $template = 'rte_consumption';
     }
     /*
 $hdle = fopen($fileReplace, "wb");
