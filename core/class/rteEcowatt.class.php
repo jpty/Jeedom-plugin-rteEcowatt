@@ -217,7 +217,7 @@ class rteEcowatt extends eqLogic {
     $request_http->setUserAgent('Wget/1.20.3 (linux-gnu)'); // User-Agent idem HA
     $dataUrl = $request_http->exec();
     if (!is_json($dataUrl)) {
-        return;
+        return null;
     }
     return json_decode($dataUrl, true);
   }
@@ -421,36 +421,47 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   }
 
   public function updateInfoEdfEjp($fetch) {
-        $ejpdays = self::valueFromUrl('https://particulier.edf.fr/services/rest/referentiel/historicEJPStore');
-/*
-    $file = __DIR__ ."/../../data/EJP.json";
-    $hdle = fopen($file, "wb");
-    if($hdle !== FALSE) { fwrite($hdle, json_encode($ejpdays)); fclose($hdle); }
-*/
+    $ejpdays = self::valueFromUrl('https://particulier.edf.fr/services/rest/referentiel/historicEJPStore');
 
-    $this->checkAndUpdateCmd('ejpRemainingDays', $ejpdays['nbEjpRestants']);
-    $startEjpPeriod = strtotime($ejpdays['dateDebutPeriode']);
-    $endEjpPeriod = strtotime($ejpdays['dateFinPeriode']);
-    $todayTS = mktime(0,0,0);
-    $tomorrowTS = mktime(0,0,0,date('m'),date('d')+1);
-    $todayEjp = 0; $tomorrowEjp = 0;
-    if($todayTS > $startEjpPeriod && $todayTS < $endEjpPeriod) {
-      foreach($ejpdays['listeEjp'] as $ejp) {
-        $ejpTS = ($ejp['dateApplication']/1000);
-        if($ejpTS == $todayTS) $todayEjp = 1;
-        if($ejpTS == $tomorrowTS) $tomorrowEjp = 1;
-      }
-      if($todayEjp == 0) $this->checkAndUpdateCmd('today', "NOT_EJP");
-      else if($todayEjp == 1) $this->checkAndUpdateCmd('today', "EJP");
-      if($tomorrowEjp == 0) {
-        if(date('G') < 16) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
-        else $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
-      }
-      else if($tomorrowEjp == 1) $this->checkAndUpdateCmd('tomorrow', "EJP");
+    if($ejpdays === null) {
+      log::add(__CLASS__,'warning', "Unable to retrieve EJP information from EDF");
+      $this->checkAndUpdateCmd('today', 'ERROR');
+      $this->checkAndUpdateCmd('tomorrow', 'ERROR');
+      $this->checkAndUpdateCmd('ejpRemainingDays', 0);
+
     }
     else {
-      $this->checkAndUpdateCmd('today', 'OUT_OF_PERIOD');
-      $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
+/*
+      $file = __DIR__ ."/../../data/ejpEdf-" .date('Hi') .".json";
+      $hdle = fopen($file, "wb");
+      if($hdle !== FALSE) { fwrite($hdle, json_encode($ejpdays)); fclose($hdle); }
+*/
+      config::save('lastcall-ejpEdf', time(), __CLASS__);
+      $startEjpPeriod = strtotime($ejpdays['dateDebutPeriode']);
+      $endEjpPeriod = strtotime($ejpdays['dateFinPeriode']);
+      $todayTS = mktime(0,0,0);
+      $tomorrowTS = mktime(0,0,0,date('m'),date('d')+1);
+      $todayEjp = 0; $tomorrowEjp = 0;
+      if($todayTS > $startEjpPeriod && $todayTS < $endEjpPeriod) {
+        foreach($ejpdays['listeEjp'] as $ejp) {
+          $ejpTS = ($ejp['dateApplication']/1000);
+          if($ejpTS == $todayTS) $todayEjp = 1;
+          if($ejpTS == $tomorrowTS) $tomorrowEjp = 1;
+        }
+        if($todayEjp == 0) $this->checkAndUpdateCmd('today', "NOT_EJP");
+        else if($todayEjp == 1) $this->checkAndUpdateCmd('today', "EJP");
+        if($tomorrowEjp == 0) {
+          if(date('G') < 16) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
+          else $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
+        }
+        else if($tomorrowEjp == 1) $this->checkAndUpdateCmd('tomorrow', "EJP");
+        $this->checkAndUpdateCmd('ejpRemainingDays', $ejpdays['nbEjpRestants']);
+      }
+      else {
+        $this->checkAndUpdateCmd('today', 'OUT_OF_PERIOD');
+        $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
+        $this->checkAndUpdateCmd('ejpRemainingDays', 0);
+      }
     }
   }
 
@@ -601,7 +612,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         $type = $shortTerm['type'];
         $st = strtotime($shortTerm['start_date']); $st = date('d/m/Y H:i:s',$st);
         $end = strtotime($shortTerm['end_date']); $end = date('d/m/Y H:i:s',$end);
-        message::add(__CLASS__,"Type: $type Start:$st End:$end" ." Nb values" .count($shortTerm['values']));
+        // message::add(__CLASS__,"Type: $type Start:$st End:$end" ." Nb values" .count($shortTerm['values']));
       }
     }
   }
@@ -642,7 +653,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     else {
       $dec = json_decode($response,true);
       $data = array();
-      // if($demo == 0) $dec['signals'][1]['values'][0]['hvalue'] = 3;
+// if($demo == 0) $dec['signals'][0]['values'][13]['hvalue'] = 3;
       $modNowTS = mktime(0,0,0,date('m',$nowTS),date('d',$nowTS),date('Y',$nowTS));
       foreach($dec['signals'] as $signal) {
         $ts =strtotime($signal['jour']);
@@ -795,6 +806,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   }
 
   public function toHtml($_version = 'dashboard') {
+    $loglevel = log::convertLogLevel(log::getLogLevel(__CLASS__));
     $templateFile = '';
     $t0 = -microtime(true);
     $replace = $this->preToHtml($_version, array('#background-color#' => '#bdc3c7'));
@@ -813,17 +825,34 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         $replace["#color-$key#"] = $col;
         next($color);
       }
+      $replace['#legendEjp#'] = '<span><i class="fa fa-circle fa-lg" style="color:' .$color['EJP'] .'"></i>EJP </span>';
+      $valLeg = array();
+      $valLeg['EJP'] = $valLeg['NOT_EJP'] = $valLeg['OUT_OF_PERIOD'] = $valLeg['UNDEFINED'] = $valLeg['ERROR'] = 0;
       foreach ($this->getCmd('info') as $cmd) {
         $val = $cmd->execCmd(null);
         $cmdLogicalId = $cmd->getLogicalId();
         if($cmdLogicalId == 'today') {
           $replace['#colorToday#'] = $color[$val];
+        $valLeg[$val] += 1;
         }
         else if($cmdLogicalId == 'tomorrow') {
           $replace['#colorTomorrow#'] = $color[$val];
+        $valLeg[$val] += 1;
         }
         $replace['#' . $cmd->getLogicalId() . '#'] = $val;
       }
+      $lastcallEjpTS = config::byKey('lastcall-ejpEdf', __CLASS__, 0);
+      $replace['#dataActuEjp#'] = 'Données EDF du : '.date('d/m/Y H:i:s',$lastcallEjpTS);
+      if($lastcallEjpTS == 0) $replace['#dataActuEjp#'] = 'Données EDF. Date inconnue';
+      else $replace['#dataActuEjp#'] = 'Données EDF du : '.date('d/m/Y H:i:s',$lastcallEjpTS);
+      if($loglevel == 'debug') {
+        $replace['#dataActuEjp#'] .= '. Affichage: '.date('H:i:s');
+        $replace['#dataActuEjp'] .= ' en '.round($t0+microtime(true),3).'s';
+      }
+      if($valLeg['NOT_EJP']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['NOT_EJP'] .'"></i>Non EJP </span>';
+      if($valLeg['OUT_OF_PERIOD']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['OUT_OF_PERIOD'] .'"></i>Période EJP terminée </span>';
+      if($valLeg['UNDEFINED']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['UNDEFINED'] .'"></i>Non défini </span>';
+      if($valLeg['ERREUR']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['ERREUR'] .'"></i>Erreur récupération données </span>';
       $fileReplace = __DIR__ ."/../../data/ejpEdfReplace.json";
       $template = 'edf_ejp';
       $templateFile = '';
@@ -1033,8 +1062,10 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         else
           $replace['#dataActuEcowatt#'] = 'Données RTE du '.date('j/m/Y H:i:s',$fileTS);
           // .'. tokenExpires '.date('H:i:s',$tokenExpires)
-        $replace['#dataActuEcowatt#'] .= '. Affichage: '.date('H:i:s');
-        if($demo) $replace['#dataActuEcowatt#'] .= ' en '.round($t0+microtime(true),3).'s';
+        if($loglevel == 'debug') {
+          $replace['#dataActuEcowatt#'] .= '. Affichage: '.date('H:i:s');
+          $replace['#dataActuEcowatt#'] .= ' en '.round($t0+microtime(true),3).'s';
+        }
       }
       else {
         $replace['#dataActuEcowatt#'] = 'Dernière requête RTE le '.date('j/m/Y H:i:s',$lastcallEcoTS);
@@ -1091,8 +1122,10 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       }
       $lastcallTempoTS = config::byKey('lastcall-tempoRTE', __CLASS__, 0);
       $replace['#dataActuTempo#'] = 'Dernière requête RTE le '.date('j/m/Y H:i:s',$lastcallTempoTS);
-      $replace['#dataActuTempo#'] .= '. Affichage: '.date('H:i:s');
-      $replace['#dataActuTempo#'] .= ' en '.round($t0+microtime(true),3).'s';
+      if($loglevel == 'debug') {
+        $replace['#dataActuTempo#'] .= '. Affichage: '.date('H:i:s');
+        $replace['#dataActuTempo#'] .= ' en '.round($t0+microtime(true),3).'s';
+      }
       $fileReplace = __DIR__ ."/../../data/tempoReplace.json";
       $template = 'rte_tempo';
     }
@@ -1107,7 +1140,7 @@ $hdle = fopen($fileReplace, "wb");
 if($hdle !== FALSE) { fwrite($hdle, json_encode($replace)); fclose($hdle); }
      */
 
-    if($templateFile == '' || $version == 'mobile') {
+    if($templateFile == '') {
       if (file_exists( __DIR__ ."/../template/$_version/custom.${template}.html")) {
         return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, "custom." .$template, __CLASS__)));
       }
@@ -1116,7 +1149,6 @@ if($hdle !== FALSE) { fwrite($hdle, json_encode($replace)); fclose($hdle); }
       }
     }
     else {
-      $loglevel = log::convertLogLevel(log::getLogLevel(__CLASS__));
       if (file_exists( __DIR__ ."/../template/$_version/${templateFile}.html")) {
         if($loglevel == 'debug') $replace['#dataActuEcowatt#'] .= " Template :  " .$templateFile;
         return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, $templateFile, __CLASS__)));
