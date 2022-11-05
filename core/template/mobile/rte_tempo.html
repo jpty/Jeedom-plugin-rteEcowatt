@@ -2,7 +2,7 @@
   <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
     <i class="fas fa-sync"></i>
   </span>
-	<center>
+  <center>
     <span class="widget-name">
       <span class="warning" title="#alert_name#">
         <i class='#alert_icon#'></i>
@@ -12,58 +12,36 @@
       </span>
       <br/>
     </span>
-	</center>
+  </center>
   <div style="padding: 5px;">
     <center>
-      <span style="font-weight: bold; Cursor:default">Aujourd'hui
-        <i class="fa fa-circle fa-lg today" style="color : #95a5a6; Cursor:default"></i>
+      <span>#todayDate#
+        <i class="fa fa-circle fa-lg" style="color : #colorToday#"></i>
       </span>
       <br/>
-      <span style="font-weight: bold; Cursor:default">Demain
-        <i class="fa fa-circle fa-lg tomorrow" style="color : #95a5a6; Cursor:default"></i>
+      <span>#tomorrowDate#
+        <i class="fa fa-circle fa-lg" style="color : #colorTomorrow#"></i>
       </span>
       <br/>
     </center>
     <div style="margin-left:20px;">
-      <span style="font-weight: bold; Cursor:default">Jours restants:</span>
+      <span>Jours restants:</span>
       <div style="margin-left:20px;">
-          <i class="fa fa-circle fa-lg" style="color : #005BBB; Cursor:default"></i>
+          <i class="fa fa-circle fa-lg" style="color : #colorBLUE#"></i>
           <span> : #blue-remainingDays# / #blue-totalDays#</span><br/>
-          <i class="fa fa-circle fa-lg" style="color : #DFDFDF; Cursor:default"></i>
+          <i class="fa fa-circle fa-lg" style="color : #colorWHITE#"></i>
           <span> : #white-remainingDays# / #white-totalDays#</span><br/>
-          <i class="fa fa-circle fa-lg" style="color : #F34B32; Cursor:default"></i>
+          <i class="fa fa-circle fa-lg" style="color : #colorRED#"></i>
           <span> : #red-remainingDays# / #red-totalDays#</span>
       </div>
     </div>
   </div>
-	<script>
-    jeedom.cmd.update['#id#'] =function(_options) {
-      if("#today#" == "BLUE"){
-        $('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#005BBB');
-      }else if("#today#" == "WHITE"){
-        $('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#DFDFDF');
-      }else if("#today#" == "RED"){
-        $('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#F34B32');
-      } else if("#tomorrow#" == "UNDEFINED") {
-        $('.eqLogic[data-eqLogic_id=#id#] .today').css('color','#FFA02F');
-      }
-      if("#tomorrow#" == "BLUE"){
-        $('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#005BBB');
-      } else if("#tomorrow#" == "WHITE") {
-        $('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#DFDFDF');
-      } else if("#tomorrow#" == "RED") {
-        $('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#F34B32');
-      } else if("#tomorrow#" == "UNDEFINED") {
-        $('.eqLogic[data-eqLogic_id=#id#] .tomorrow').css('color','#FFA02F');
-      }
-    }
-    jeedom.cmd.update['#id#']({display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#'})
-
+  <script>
     if ('#refresh_id#' != '') {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
         jeedom.cmd.execute({id: '#refresh_id#'}) })
     } else {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
     }
-	</script>
+  </script>
 </div>
