@@ -163,7 +163,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 
               <div class="datasource ecowattRTE">
                 <div class="form-group">
-                  <label class="col-sm-4 control-label">{{Template sur le dashboard}}
+                  <label class="col-sm-4 control-label">{{Template}}
                   </label>
                   <div class="col-sm-6">
                     <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="templateEcowatt">
