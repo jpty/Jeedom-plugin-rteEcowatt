@@ -25,6 +25,9 @@ function rteEcowatt_install() {
 // Fonction exécutée automatiquement après la mise à jour du plugin
 function rteEcowatt_update() {
   rteEcowatt::setCronDataEcowatt(1);
+  foreach (eqLogic::byType('rteEcowatt') as $eqLogic) {
+    $eqLogic->save();
+  }
 }
 
 // Fonction exécutée automatiquement après la suppression du plugin

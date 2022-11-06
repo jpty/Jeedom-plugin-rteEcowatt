@@ -134,23 +134,70 @@ $eqLogics = eqLogic::byType($plugin->getId());
                   <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="datasource">
                     <option value="ecowattRTE">{{Ecowatt (RTE)}}</option>
                     <option value="tempoRTE">{{Tempo (RTE)}}</option>
+                    <option value="ejpEDF">{{Ejp (EDF)}}</option>
+<!--
+                    <option value="consumptionRTE">{{Consommation (RTE)}}</option>
+-->
                   </select>
                 </div>
               </div>
-              <div class="form-group">
-                <label class="col-sm-4 control-label" >{{Utiliser la template du plugin}}</label>
-                <div class="col-sm-7">
-                  <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplate" checked>
+              <div class="datasource tempoRTE">
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
+                  <div class="col-sm-7">
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplate" checked>
+                  </div>
+                </div>
+              </div>
+
+              <div class="datasource consumptionRTE">
+                <div class="form-group">
+                  <label class="col-sm-4 control-label">{{Mode demo}}
+<sup><i class="fas fa-question-circle tooltips" title="{{Pour cet équipement, les données du bac à sable RTE fournies avec le plugin seront utilisées sans requête à RTE.}}"></i></sup>
+                  </label>
+                  <div class="col-sm-6">
+                    <input type="checkbox" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="demoModeConso">
+                  </div>
                 </div>
               </div>
 
               <div class="datasource ecowattRTE">
                 <div class="form-group">
-                  <label class="col-sm-4 control-label">{{Nombre de commandes visibles}}
-<sup><i class="fas fa-question-circle tooltips" title="{{Sur le graphique Données par heure}}"></i></sup>
+                  <label class="col-sm-4 control-label">{{Template}}
                   </label>
-                  <div class="col-sm-2">
-                    <input type="input" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="numCmdsHour" placeholder="{{Défaut: 24}}">
+                  <div class="col-sm-6">
+                    <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="templateEcowatt">
+                      <option value="plugin">{{Template du plugin}}</option>
+                      <option value="none">{{Pas de template}}</option>
+    <?php
+                      if(file_exists(__DIR__ .'/../../core/template/dashboard/custom.rte_ecowatt.html'))
+                        echo '<option value="custom">{{Template custom}}</option>';
+                      $files = array();
+                      if ($dh = opendir(__DIR__ .'/../../core/template/dashboard')) {
+                        while (($file = readdir($dh)) !== false) {
+                          if($file != 'custom.rte_ecowatt.html' && substr($file,0,19) == 'custom.rte_ecowatt.' && substr($file,-5) == '.html')
+                            $files[] = array('name' => substr($file,19,-5), 'fileName' => $file);
+                          if($file != 'rte_ecowatt.html' && substr($file,0,12) == 'rte_ecowatt.' && substr($file,-5) == '.html')
+                            $files[] = array('name' => substr($file,12,-5), 'fileName' => $file);
+                        }
+                        closedir($dh);
+                      }
+                      if(count($files)) {
+                        sort($files);
+                        foreach($files as $file) {
+                          echo '<option value="' .$file['fileName'] .'">' .$file['name'] .'</option>';
+                        }
+                      }
+    ?>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label">{{Nombre d'heures}}
+<sup><i class="fas fa-question-circle tooltips" title="{{de niveaux d'alerte dans le graphique commencant à l'heure actuelle.}}"></i></sup>
+</label>
+                  <div class="col-sm-4">
+                    <input size="25" type="input" class="eqLogicAttr" data-l1key="configuration" data-l2key="numCmdsHour" placeholder="{{Nombre d'heures. Défaut: 24}}">
                   </div>
                 </div>
                 <div class="form-group">

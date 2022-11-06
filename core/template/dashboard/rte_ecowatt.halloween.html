@@ -1,0 +1,137 @@
+<div class="eqLogic eqLogic-widget allowResize allowReorderCmd #custom_layout# #eqLogic_class# #class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
+  <center class="widget-name">
+    <span class="warning" title="#alert_name#">
+      <i class='#alert_icon#'></i>
+    </span>
+    <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+      <i class="fas fa-sync"></i>
+    </span>
+    <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+    <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+  </center>
+  <div class="#isVerticalAlign#">
+    <center>
+      <div class="widget#id#">
+        <img src="plugins/rteEcowatt/core/template/images/courbe-signal-green.png" class="imgD0#id#" style="/* vertical-align: middle;*/ width: 200px; height: 137px;">
+        <div class="div-today#id#">#datenow#</div>
+        <div class="div-message#id#">#messageD0#</div>
+        <div class="div-barre" style=""><div style="width:195px">#dataHoursJson#</div>
+        </div>
+        <div class="div-date#id#">
+          <div class="circle circleD0" title="#date0# : #messageD0#"></div>
+          <div class="circle circleD1" title="#date1# : #messageD1#"></div>
+          <div class="circle circleD2" title="#date2# : #messageD2#"></div>
+          <div class="circle circleD3" title="#date3# : #messageD3#"></div>
+        </div>
+      </div>
+    </center>
+  </div>
+	<script>
+      
+      if("#curHourLevel#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .imgD0#id#').attr('src','plugins/rteEcowatt/core/template/images/courbe-signal-green.png');
+      else if("#curHourLevel#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .imgD0#id#').attr('src','plugins/rteEcowatt/core/template/images/courbe-signal-orange.png');
+      else if("#curHourLevel#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .imgD0#id#').attr('src','plugins/rteEcowatt/core/template/images/courbe-signal-red.png');
+      else $('.eqLogic[data-eqLogic_id=#id#] .imgD0#id#').attr('src','plugins/rteEcowatt/core/template/images/courbe-signal-green.png').addClass("grayscale#id#");
+      
+      if("#dayValueD0#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .circleD0').css('background-color','#color1#');
+      else if("#dayValueD0#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .circleD0').css('background-color','#color2#');
+      else if("#dayValueD0#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .circleD0').css('background-color','#color3#');
+      else $('.eqLogic[data-eqLogic_id=#id#] .circleD0').css('background-color','#color0#');
+      
+      if("#dayValueD1#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .circleD1').css('background-color','#color1#');
+      else if("#dayValueD1#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .circleD1').css('background-color','#color2#');
+      else if("#dayValueD1#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .circleD1').css('background-color','#color3#');
+      else $('.eqLogic[data-eqLogic_id=#id#] .circleD1').css('background-color','#color0#');
+      
+      if("#dayValueD2#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .circleD2').css('background-color','#color1#');
+      else if("#dayValueD2#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .circleD2').css('background-color','#color2#');
+      else if("#dayValueD2#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .circleD2').css('background-color','#color3#');
+      else $('.eqLogic[data-eqLogic_id=#id#] .circleD2').css('background-color','#color0#');
+      
+      if("#dayValueD3#" == "1") $('.eqLogic[data-eqLogic_id=#id#] .circleD3').css('background-color','#color1#');
+      else if("#dayValueD3#" == "2") $('.eqLogic[data-eqLogic_id=#id#] .circleD3').css('background-color','#color2#');
+      else if("#dayValueD3#" == "3") $('.eqLogic[data-eqLogic_id=#id#] .circleD3').css('background-color','#color3#');
+      else $('.eqLogic[data-eqLogic_id=#id#] .circleD3').css('background-color','#color0#');
+      
+      $('.eqLogic[data-eqLogic_id=#id#] .div-today#id#').attr('title', '#dataActuEcowatt#')
+      
+      if ('#refresh_id#' != '') {
+        $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+          jeedom.cmd.execute({id: '#refresh_id#'})
+        })
+      } else {
+        $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
+      }
+  </script>
+  <style>
+    .widget#id# {
+      position: relative;
+      width: 200px;
+    }
+    .div-today#id# {
+      left: 0;
+      right: 0;
+      top: 0px;
+      position: absolute;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: white;
+    }
+    .div-date#id# {
+      left: 0;
+      right: 0;
+      top: 110px;
+      position: absolute;
+    }
+    .circle {
+      width: 20px;
+      height: 20px;
+      position: relative;
+      border-radius: 20px;
+      display: inline-block;
+      border: 2px solid;
+      border-color: white;
+      margin-left: 8px;
+      margin-right: 8px;
+    }
+    .div-barre {
+      left: 0;
+      right: 0;
+      top: 75px;
+      position: absolute;
+    }
+    .uppercase#id# {
+      text-transform: uppercase;
+      font-weight: 700;
+      color: white;
+    }
+    
+    [data-eqlogic_id="#id#"] table tr:first-child td:first-child {
+      border-radius: var(--border-radius) 0 0 var(--border-radius) !important;
+    }
+    [data-eqlogic_id="#id#"] table tr:first-child td:last-child {
+      border-radius: 0 var(--border-radius) var(--border-radius) 0 !important;
+    }
+    [data-eqlogic_id="#id#"] table tr:last-child td {
+      background-color: transparent !important;
+      color: white !important;
+    }
+    [data-eqlogic_id="#id#"] table tr:nth-child(even) {
+      background-color: transparent !important;
+      opacity: 0;
+    }
+    .div-message#id# {
+      position: absolute;
+      left: 0;
+      right: 0;
+          top: 36px;
+      font-size: 10px;
+      width: 100%;
+      color: white;
+    }
+    .grayscale#id# {
+      filter: grayscale(1);
+      -webkit-filter: grayscale(1);
+    }
+  </style>
+</div>

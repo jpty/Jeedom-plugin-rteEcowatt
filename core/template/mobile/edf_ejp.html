@@ -2,7 +2,7 @@
   <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
     <i class="fas fa-sync"></i>
   </span>
-  <center>
+	<center>
     <span class="widget-name">
       <span class="warning" title="#alert_name#">
         <i class='#alert_icon#'></i>
@@ -15,33 +15,32 @@
   </center>
   <div style="padding: 5px;">
     <center>
-      <span>#todayDate#
+      <span>Aujourd'hui
         <i class="fa fa-circle fa-lg" style="color : #colorToday#"></i>
       </span>
-      <br/>
-      <span>#tomorrowDate#
+		<br/>
+      <span>Demain
         <i class="fa fa-circle fa-lg" style="color : #colorTomorrow#"></i>
       </span>
-      <br/>
-    </center>
-    <div style="margin-left:20px;">
+		<br/>
+	  </center>
+		<div style="margin-left:10px;">
       <span>Jours restants:</span>
       <div style="margin-left:20px;">
-          <i class="fa fa-circle fa-lg" style="color : #colorBLUE#"></i>
-          <span> : #blue-remainingDays# / #blue-totalDays#</span><br/>
-          <i class="fa fa-circle fa-lg" style="color : #colorWHITE#"></i>
-          <span> : #white-remainingDays# / #white-totalDays#</span><br/>
-          <i class="fa fa-circle fa-lg" style="color : #colorRED#"></i>
-          <span> : #red-remainingDays# / #red-totalDays#</span>
+        <i class="fa fa-circle fa-lg" style="color : #color-EJP#"></i> #ejpRemainingDays# / 22
       </div>
-    </div>
+		</div>
+    <div style="margin-left:10px;"><br>Légende:</div>
+    <div style="font-size:12px;margin-left:5px">
+      #legendEjp#
+		</div>
   </div>
-  <script>
+	<script>
     if ('#refresh_id#' != '') {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
         jeedom.cmd.execute({id: '#refresh_id#'}) })
     } else {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
-    }
-  </script>
+		}
+	</script>
 </div>
