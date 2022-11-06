@@ -487,7 +487,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $this->checkAndUpdateCmd('tomorrowTS', $ts);
       $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
     }
-    else if($tomorrow == 'UNDEFINED' || $tomorrow == '' || $tomorrowTS == 0 || $todayTS == 0) {
+    else if($tomorrow == 'UNDEFINED' || date('G') == 11 || $tomorrow == '' || $tomorrowTS == 0 || $todayTS == 0) {
       if(date('m',$t)<9) { // Avant 1er septembre
         $ts = mktime(0,0,0,9,1,(date('Y',$t)-1)); // Debut saison 1er septembre année précédente
         $leapYear = date('L',$t); // L'année en cours est-elle bissextile?
