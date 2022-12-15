@@ -1041,10 +1041,10 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       }
       else {
         if($valueNow == 0 || $valueNow == 1) { // Pas d'alerte en cours
-          $replace['#nextAlert#'] = "Prochaine alerte:  ".'<i class="fa fa-circle fa-lg" style="color: '.$color[$nextAlertValue] .'"></i> ' .lcfirst(self::myStrftime('%a. %e %b %kh',$nextAlertTS));
+          $replace['#nextAlert#'] = 'Prochaine alerte:  <i class="fa fa-circle fa-lg" style="color: '.$color[$nextAlertValue] .'"></i> ' .lcfirst(self::myStrftime('%a. %e %b %kh',$nextAlertTS)) .' <a href="https://coupures-temporaires.enedis.fr/verification_coupure_adresse.html" target="blank" title="+ Infos Enedis"> <i class="fas fa-info-circle fa-lg" style="color: '.$color[$nextAlertValue] .'"></i></a>';
         }
         else {
-          $replace['#nextAlert#'] = "Fin de l'alerte en cours " .lcfirst(self::myStrftime('%a. %e %b à %kh',$nextAlertTS));
+          $replace['#nextAlert#'] = 'Fin de l\'alerte en cours ' .lcfirst(self::myStrftime('%a. %e %b à %kh',$nextAlertTS)) .' <a href="https://coupures-temporaires.enedis.fr/verification_coupure_adresse.html" target="blank" title="+ Infos Enedis"> <i class="fas fa-info-circle fa-lg" style="color: '.$color[$valueNow] .'"></i></a>';
         }
       }
 
