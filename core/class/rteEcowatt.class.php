@@ -215,7 +215,7 @@ class rteEcowatt extends eqLogic {
   public static function valueFromUrl($_url) {
     $request_http = new com_http($_url);
     $request_http->setUserAgent('Wget/1.20.3 (linux-gnu)'); // User-Agent idem HA
-    $dataUrl = $request_http->exec();
+    $dataUrl = $request_http->exec(3,1);
     if (!is_json($dataUrl)) {
         return null;
     }
