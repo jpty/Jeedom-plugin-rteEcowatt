@@ -134,14 +134,21 @@ $eqLogics = eqLogic::byType($plugin->getId());
                   <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="datasource">
                     <option value="ecowattRTE">{{Ecowatt (RTE)}}</option>
                     <option value="tempoRTE">{{Tempo (RTE)}}</option>
-                    <option value="ejpEDF">{{Ejp (EDF)}}</option>
-<!--
                     <option value="consumptionRTE">{{Consommation (RTE)}}</option>
+<!--
 -->
+                    <option value="tempoEDF">{{Tempo (EDF)}}</option>
+                    <option value="ejpEDF">{{Ejp (EDF)}}</option>
                   </select>
                 </div>
               </div>
               <div class="datasource tempoRTE">
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Note sur ce type d'équipement}}</label>
+                  <div class="col-sm-7">
+L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumption/Tempo-Like-Supply-Contract/v1.1">Tempo Like Supply Contract</a> doit être associée à votre application créée sur le <a target="blank" href="https://data.rte-france.com/group/guest/apps">site RTE</a>.
+                  </div>
+                </div>
                 <div class="form-group">
                   <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
                   <div class="col-sm-7">
@@ -150,18 +157,65 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </div>
               </div>
 
+              <div class="datasource tempoEDF">
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" ></label>
+                  <div class="col-sm-7">Pas d'API RTE nécessaire pour ce type d'équipement.
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
+                  <div class="col-sm-7">
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplateTempoEdf" checked>
+                  </div>
+                </div>
+              </div>
+
+              <div class="datasource ejpEDF">
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" ></label>
+                  <div class="col-sm-7">Pas d'API RTE nécessaire pour ce type d'équipement.
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
+                  <div class="col-sm-7">
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplateEjpEdf" checked>
+                  </div>
+                </div>
+              </div>
+
               <div class="datasource consumptionRTE">
                 <div class="form-group">
-                  <label class="col-sm-4 control-label">{{Mode demo}}
-<sup><i class="fas fa-question-circle tooltips" title="{{Pour cet équipement, les données du bac à sable RTE fournies avec le plugin seront utilisées sans requête à RTE.}}"></i></sup>
-                  </label>
-                  <div class="col-sm-6">
-                    <input type="checkbox" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="demoModeConso">
+                  <label class="col-sm-4 control-label" >{{Note sur ce type d'équipement}}</label>
+                  <div class="col-sm-7">
+L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumption/Consumption/v1.2">Consumption</a> doit être associée à votre application créée sur le <a target="blank" href="https://data.rte-france.com/group/guest/apps">site RTE</a>.
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
+                  <div class="col-sm-7">
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplateConsumption" checked>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label">{{Nombre de jours passés}}
+<sup><i class="fas fa-question-circle tooltips" title="{{Nombre de jours avant aujourd'hui affichés dans le graphique.}}"></i></sup>
+</label>
+                  <div class="col-sm-4">
+                    <input size="25" type="input" class="eqLogicAttr" data-l1key="configuration" data-l2key="numConsumptionDays" placeholder="{{Défaut: 6}}">
                   </div>
                 </div>
               </div>
 
               <div class="datasource ecowattRTE">
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Note sur ce type d'équipement}}</label>
+                  <div class="col-sm-7">
+L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumption/Ecowatt/v4.0">Ecowatt</a> doit être associée à votre application créée sur le <a target="blank" href="https://data.rte-france.com/group/guest/apps">site RTE</a>.
+                  </div>
+                </div>
+
                 <div class="form-group">
                   <label class="col-sm-4 control-label">{{Template}}
                   </label>
