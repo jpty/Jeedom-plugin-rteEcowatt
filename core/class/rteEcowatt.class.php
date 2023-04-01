@@ -224,7 +224,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
          */
       }
       else {
-        message::add(__CLASS__,"Erreur json_decode: " .json_last_error_msg());
+        log::add(__CLASS__, 'warning', "Erreur json_decode: " .json_last_error_msg());
       }
     }
     else {
@@ -593,7 +593,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $todayTS = mktime(0,0,0);
       $tomorrowTS = mktime(0,0,0,date('m'),date('d')+1);
       $todayEjp = 0; $tomorrowEjp = 0;
-      if($todayTS > $startEjpPeriod && $todayTS < $endEjpPeriod) {
+      if($todayTS > $startEjpPeriod && $todayTS <= $endEjpPeriod) {
         foreach($ejpdays['listeEjp'] as $ejp) {
           $ejpTS = ($ejp['dateApplication']/1000);
           if($ejpTS == $todayTS) $todayEjp = 1;
@@ -602,8 +602,16 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         if($todayEjp == 0) $this->checkAndUpdateCmd('today', "NOT_EJP");
         else if($todayEjp == 1) $this->checkAndUpdateCmd('today', "EJP");
         if($tomorrowEjp == 0) {
-          if(date('G') < 16) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
-          else $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
+          if($todayTS == $endEjpPeriod) {
+            $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
+          }
+          else if($tomorrowTS == $startEjpPeriod) {
+            $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
+          }
+          else {
+            if(date('G') < 16) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
+            else $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
+          }
         }
         else if($tomorrowEjp == 1) $this->checkAndUpdateCmd('tomorrow', "EJP");
         $this->checkAndUpdateCmd('ejpRemainingDays', $ejpdays['nbEjpRestants']);
@@ -1289,6 +1297,18 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         $replace["#color-$key#"] = $col;
         next($color);
       }
+        // Recup de quelques valeurs de commande
+      $cmd = $this->getCmd(null,'today');
+      $today = (is_object($cmd))? $cmd->execCmd() : 'OUT_OF_PERIOD';
+      $cmd = $this->getCmd(null,'tomorrow');
+      $tomorrow = (is_object($cmd))? $cmd->execCmd() : 'OUT_OF_PERIOD';
+      if($today == 'OUT_OF_PERIOD' && $tomorrow == 'OUT_OF_PERIOD') {
+        $replace['#inEjpPeriod#'] = 'none'; $replace['#outOfEjpPeriod#'] = 'block';
+      }
+      else {
+        $replace['#inEjpPeriod#'] = 'block'; $replace['#outOfEjpPeriod#'] = 'none';
+      }
+      $replace['#datenow#'] = self::myStrftime('%A %e %B');
       $replace['#legendEjp#'] = '<span><i class="fa fa-circle fa-lg" style="color:' .$color['EJP'] .'"></i>EJP </span>';
       $valLeg = array();
       $valLeg['EJP'] = $valLeg['NOT_EJP'] = $valLeg['OUT_OF_PERIOD'] = $valLeg['UNDEFINED'] = $valLeg['ERROR'] = 0;
