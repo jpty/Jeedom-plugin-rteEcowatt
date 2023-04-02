@@ -3,33 +3,47 @@
     <span class="warning" title="#alert_name#">
       <i class='#alert_icon#'></i>
     </span>
+    <span class="cmd pull-right cursor">
+      <a target="_blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/ejp.html" title="Plus d'info EDF"><i class='fas fa-info-circle' style="margin-top: 3px;"></i></a>
+    </span>&nbsp;
     <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
       <i class="fas fa-sync"></i>
     </span>
     <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
     <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
   </center>
-  <div class="#isVerticalAlign#">
-		<center>
-			<p><span>Aujourd'hui</span>
-        <i class="fa fa-circle fa-lg" style="color : #colorToday#"></i>
-        <br/>
-        <span>Demain</span>
-        <i class="fa fa-circle fa-lg" style="color : #colorTomorrow#"></i>
-        <span style="font-size:12px"><br>De 7h à 1h le lendemain</span>
-      </p>
-			<span>Jours EJP restants :</span><br/>
-			<i class="fa fa-circle fa-lg" style="color : #color-EJP#"></i>
-      <span style="Cursor:default">#ejpRemainingDays# / 22</span>
-		</center>
-    <div style="border-bottom:2px solid #colorToday#;margin-bottom:5px;margin-top:5px"></div>
-    <div style="font-size:12px;margin-left:5px">
-      #legendEjp#
-		</div>
-    <!--
-    -->
-    <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
-      #dataActuEjp#
+  <div class="cmds #isVerticalAlign#">
+    <div style="display:#inEjpPeriod#">
+      <center>
+        <p><span>Aujourd'hui</span>
+          <i class="fa fa-circle fa-lg" style="color : #colorEjpToday#"></i>
+          <br/>
+          <span>Demain</span>
+          <i class="fa fa-circle fa-lg" style="color : #colorEjpTomorrow#"></i>
+          <span style="font-size:12px"><br>De 7h à 1h le lendemain</span>
+        </p>
+        <span>Jours EJP restants :</span><br/>
+        <i class="fa fa-circle fa-lg" style="color : #color-EJP#"></i>
+        <span style="Cursor:default">#ejpRemainingDays# / 22</span>
+      </center>
+      <div style="border-bottom:2px solid #colorEjpToday#;margin-bottom:5px;margin-top:5px"></div>
+      <div style="font-size:12px;margin-left:5px">
+        #legendEjp#
+      </div>
+      <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
+        #dataActuEjp#
+      </div>
+    </div>
+    <div style="display:#outOfEjpPeriod#;background-color: #colorEjpToday#;color: white">
+      <center>
+        <span style="font-weight: 700;font-size: 18px">
+      #datenow#<br/>
+        </span>
+        <span style="font-weight: 400;font-size: 14px">
+      La période EJP est terminée.<br/>
+      Rendez-vous le 1er novembre.
+        </span>
+      </center>
     </div>
 	</div>
 	<script>

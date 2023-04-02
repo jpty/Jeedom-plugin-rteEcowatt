@@ -37,6 +37,11 @@ function addCmdToTable(_cmd) {
   if (!isset(_cmd.configuration)) {
       _cmd.configuration = {}
   }
+  /*
+  if (init(_cmd.logicalId) == 'refresh') {
+    return;
+  }
+  */
   var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">'
   tr += '<td class="hidden-xs">'
   tr += '<span class="cmdAttr" data-l1key="id"></span>'
