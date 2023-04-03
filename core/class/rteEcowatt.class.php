@@ -1619,11 +1619,11 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     else if ($datasource == 'tempoRTE') {
       if($this->getConfiguration('usePluginTemplate','1') == '0')
         return parent::toHtml($_version);
-      $color['BLUE'] = '#00518B'; $title['BLUE'] = 'Jour bleu';
-      $color['WHITE'] = '#DFDFDF'; $title['WHITE'] = 'Jour blanc';
-      $color['RED'] = '#C81640'; $title['RED'] = 'Jour rouge';
-      $color['UNDEFINED'] = '#FFA02F'; $title['UNDEFINED'] = 'Couleur non définie';
-      $color['ERROR'] = '#95A5A6'; $title['ERROR'] = 'Erreur';
+      $color['BLUE'] = '#00518B'; $title['BLUE'] = 'Jour bleu'; $txtColor['BLUE'] = 'white';
+      $color['WHITE'] = '#DFDFDF'; $title['WHITE'] = 'Jour blanc'; $txtColor['WHITE'] = 'black';
+      $color['RED'] = '#C81640'; $title['RED'] = 'Jour rouge'; $txtColor['RED'] = 'white';
+      $color['UNDEFINED'] = '#FFA02F'; $title['UNDEFINED'] = 'Couleur non définie'; $txtColor['UNDEFINED'] = 'white';
+      $color['ERROR'] = '#95A5A6'; $title['ERROR'] = 'Erreur'; $txtColor['ERROR'] = 'white';
       while ($col = current($color)) {
         $key = key($color);
         $replace["#color$key#"] = $col;
@@ -1635,10 +1635,12 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         if($cmdLogicalId == 'today') {
           $replace['#colorToday#'] = $color[$val];
           $replace['#titleToday#'] = $title[$val];
+          $replace['#txtColorToday#'] = $txtColor[$val];
         }
         else if($cmdLogicalId == 'tomorrow') {
           $replace['#colorTomorrow#'] = $color[$val];
           $replace['#titleTomorrow#'] = $title[$val];
+          $replace['#txtColorTomorrow#'] = $txtColor[$val];
         }
         else if($cmdLogicalId == 'todayTS') {
           $replace['#todayDate#'] = self::myStrftime('%A %e %B',$val);

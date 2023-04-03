@@ -1,0 +1,53 @@
+<div class="eqLogic eqLogic-widget allowResize #custom_layout# #eqLogic_class# #class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
+  <center class="widget-name">
+    <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+      <i class="fas fa-sync"></i>
+    </span>
+    <span class="cmd pull-right cursor">
+      <a target="_blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/tempo.html" title="Plus d'info EDF"><i class='fas fa-info-circle' style="margin-top: 3px;"></i></a>
+    </span>
+    <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+    <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+  </center>
+  <div class="cmds #isVerticalAlign#">
+    <center>
+      <span>Aujourd'hui
+        <i title="#titleToday#" class="fa fa-circle fa-lg today" style="color: #colorToday#"></i>
+      </span>
+      <div style="font-size: 10px; text-align:left;margin-left: 5px">
+        HP de 6h à 22h. HC de 22h à 6h le lendemain.
+      </div>
+      <span>
+      <span>Demain
+        <i title="#titleTomorrow#" class="fa fa-circle fa-lg tomorrow" style="color: #colorTomorrow#"></i>
+      </span>
+      <br>
+      <br/>
+      <span>Jours Tempo restants<sup><i class="fas fa-question-circle tooltips" title="Pour la période du 1er septembre au 31 août"></i></sup>
+      </span>
+      <br/>
+    </center>
+    <div style="margin-left:45px">
+      <span>#blue-remainingDays#</span>
+      <i title="Jour bleu" class="fa fa-circle fa-lg" style="color : #colorBLUE#"></i>
+      <span> &nbsp; #white-remainingDays#</span>
+      <i title="Jour blanc" class="fa fa-circle fa-lg" style="color : #colorWHITE#"></i>
+      <span> &nbsp; #red-remainingDays#</span>
+      <i title="Jour rouge" class="fa fa-circle fa-lg" style="color : #colorRED#"></i>
+    </div>
+    <!--
+    -->
+    <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
+      #dataActuTempo#
+    </div>
+  </div>
+  <script>
+    if ('#refresh_id#' != '') {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+        jeedom.cmd.execute({id: '#refresh_id#'})
+      })
+    } else {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
+    }
+  </script>
+</div>
