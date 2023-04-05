@@ -3,17 +3,16 @@
     <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
       <i class="fas fa-sync"></i>
     </span>
-    <span class="cmd pull-right cursor">
+    <span class="cmd infoRte pull-right cursor">
       <a target="_blank" href="https://www.rte-france.com/eco2mix" title="Plus d'info RTE éCO2mix"><i class='fas fa-info-circle' style="margin-top: 3px;"></i></a>
     </span>
     <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
     <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
   </center>
   <div class="cmds #isVerticalAlign#">
-      <!-- Graphiques
-      -->
-    <div class="cmd cmd-widget" style="text-align: left;margin: 5px;width: 100%; height: 100%">
-      <div id="container#id#" style="width: calc(100% - 10px); height: calc(100% - 10px)">
+      <!-- Graphique Highchart -->
+    <div class="cmd cmd-widget" style="width: 100%; height: 100%">
+      <div id="container#id#" style="width: calc(100% - 10px); height: calc(100% - 20px)">
       </div>
     </div>
     <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px;margin-bottom:5px">
@@ -36,22 +35,23 @@
       },
       chart: {
         zoomType: 'xy',
+        style: { fontFamily: 'Roboto' },
         backgroundColor: 'transparent',
               plotBackgroundColor: null,
               plotBackgroundImage: null,
-              spacingTop: 0, spacingLeft: 0, spacingRight: 0, spacingBottom: 0
+              spacingTop: 10, spacingLeft: 0, spacingRight: 0, spacingBottom: 0
       },
       title: {
         text: 'Consommation le #dateNow#: #consumption# #tendance#',
         floating: false,
-        style: { fontWeight: 600, color: 'var(--txt-color) !important;' }
+        style: { fontWeight: 600, color: '#888888' }
       },
       subtitle: {
         // text: '#TxtReal# #TxtFcast0# #TxtFcast1# #TxtFcast2#',
         text: '#TxtReal# #TxtFcast2#',
         floating: true,
-        style: { color: 'var(--txt-color) !important;' },
-        y: 35
+        style: { color: '#888888' },
+        y: 30
       },
       credits: { enabled: false },
       yAxis: {
@@ -146,4 +146,9 @@
     });
 
 	</script>
+  <style>
+    div.eqLogic-widget.editingMode .cmd.infoRte {
+      display: none;
+    }
+  </style>
 </div>

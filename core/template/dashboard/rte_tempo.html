@@ -3,7 +3,7 @@
     <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
       <i class="fas fa-sync"></i>
     </span>
-    <span class="cmd pull-right cursor">
+    <span class="cmd infoRte pull-right cursor">
       <a target="_blank" href="https://www.services-rte.com/fr/visualisez-les-donnees-publiees-par-rte/calendrier-des-offres-de-fourniture-de-type-tempo.html" title="Plus d'info sur le site RTE"><i class='fas fa-info-circle' style="margin-top: 3px;"></i></a>
     </span>
     <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
@@ -22,8 +22,8 @@
       <!-- Textes Aujourd'hui / Demain dans bulle avec la date en tooltip
       -->
       <br/>
-      <span title="#todayDate#. #titleToday#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorToday#;color:#txtColorToday#">Aujourd'hui</span>
-      <span title="#tomorrowDate#. #titleTomorrow#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorTomorrow#;color:#txtColorTomorrow#">Demain</span>
+      <span title="#todayDate#. #titleToday#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorToday#;color:#txtColorToday#;border: 1px solid #borderColorToday#">Aujourd'hui</span>&nbsp;
+      <span title="#tomorrowDate#. #titleTomorrow#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorTomorrow#;color:#txtColorTomorrow#;border: 1px solid #borderColorTomorrow#">Demain</span>
       <!-- Textes Aujourd'hui / Demain avec une punaise de couleur et la date en tooltip
       <span title="#todayDate#. #titleToday#">Aujourd'hui
         <i class="fa fa-circle fa-lg today" style="color: #colorToday#"></i>
@@ -60,9 +60,11 @@
       <span> : #red-remainingDays# / #red-totalDays#</span>
     </div>
     -->
-    <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
-      #dataActuTempo#
-    </div>
+    <center>
+      <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
+        #dataActuTempo#
+      </div>
+    </center>
   </div>
   <script>
     if ('#refresh_id#' != '') {
@@ -73,4 +75,9 @@
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
     }
   </script>
+  <style>
+    div.eqLogic-widget.editingMode .cmd.infoRte {
+      display: none;
+    }
+  </style>
 </div>
