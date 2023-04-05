@@ -3,7 +3,7 @@
     <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
       <i class="fas fa-sync"></i>
     </span>
-    <span class="cmd pull-right cursor">
+    <span class="cmd infoRte pull-right cursor">
       <a target="_blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/ejp.html" title="Plus d'info EDF"><i class='fas fa-info-circle' style="margin-top: 3px;"></i></a>
     </span>
     <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
@@ -52,4 +52,9 @@
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
     }
 	</script>
+  <style>
+    div.eqLogic-widget.editingMode .cmd.infoRte {
+      display: none;
+    }
+  </style>
 </div>
