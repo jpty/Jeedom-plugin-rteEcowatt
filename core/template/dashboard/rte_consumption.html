@@ -1,0 +1,154 @@
+<div class="eqLogic eqLogic-widget allowResize #custom_layout# #eqLogic_class# #class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
+  <center class="widget-name">
+    <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+      <i class="fas fa-sync"></i>
+    </span>
+    <span class="cmd infoRte pull-right cursor">
+      <a target="_blank" href="https://www.rte-france.com/eco2mix" title="Plus d'info RTE éCO2mix"><i class='fas fa-info-circle' style="margin-top: 3px;"></i></a>
+    </span>
+    <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+    <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+  </center>
+  <div class="cmds #isVerticalAlign#">
+      <!-- Graphique Highchart -->
+    <div class="cmd cmd-widget" style="width: 100%; height: 100%">
+      <div id="container#id#" style="width: calc(100% - 10px); height: calc(100% - 20px)">
+      </div>
+    </div>
+    <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px;margin-bottom:5px">
+      #dataActuConsumption#
+    </div>
+	</div>
+	<script>
+    if ('#refresh_id#' != '') {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+        jeedom.cmd.execute({id: '#refresh_id#'})
+      })
+    } else {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
+    }
+
+    Highcharts.chart('container#id#', {
+      time: { useUTC: false },
+      exporting: {
+        // libURL: '/3rdparty/highstock/lib/',
+      },
+      chart: {
+        zoomType: 'xy',
+        style: { fontFamily: 'Roboto' },
+        backgroundColor: 'transparent',
+              plotBackgroundColor: null,
+              plotBackgroundImage: null,
+              spacingTop: 10, spacingLeft: 0, spacingRight: 0, spacingBottom: 0
+      },
+      title: {
+        text: 'Consommation le #dateNow#: #consumption# #tendance#',
+        floating: false,
+        style: { fontWeight: 600, color: '#888888' }
+      },
+      subtitle: {
+        // text: '#TxtReal# #TxtFcast0# #TxtFcast1# #TxtFcast2#',
+        text: '#TxtReal# #TxtFcast2#',
+        floating: true,
+        style: { color: '#888888' },
+        y: 30
+      },
+      credits: { enabled: false },
+      yAxis: {
+        min: #minVal#,
+        max: #maxVal#,
+        softMin: #minVal#,
+        softMax: #maxVal#,
+        title: {
+          text: 'MW'
+        },
+      },
+      xAxis: {
+        type: 'datetime',
+        tickInterval: 24 * 3600 * 1000,
+        labels: {
+          align: 'left',
+          step: 1,
+          // formatter: function() { return Highcharts.dateFormat('%a %e %b', this.value); }
+        },
+      },
+      legend: {
+        itemDistance: 20
+      },
+      tooltip: {
+        useHTML: true,
+            /*
+        dateTimeLabelFormats: {
+              hour: "%A %e %b, %H:%M",
+            },
+        formatter: function () {
+          return this.points.reduce(function (s, point) {
+                return s + '<br/><span style="color: '+point.series.color+'">' + point.series.name + ': </span>' +
+                  point.y/1000 + ' GW';
+          }, '<b>' + Highcharts.dateFormat('%A %e %b, %H:%M', this.x) + '</b>');
+        }, */
+        shared: true
+      },
+      plotOptions: {
+        series: {
+          marker: {
+            enabled: false
+          },
+          label: {
+            connectorAllowed: false
+          },
+        }
+      },
+      series: [
+        { name: 'Consommation réalisée',
+          type: 'areaspline',
+          fillColor: {
+            linearGradient: [0, 0, 0, 300],
+            stops: [
+              [0, Highcharts.getOptions().colors[0]],
+              [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+            ]
+          },
+          data: [#dataREALISED#]
+        },
+        { name: 'Prévision du jour',
+          type: 'spline',
+          color: 'blue',
+          visible: false,
+          data: [#dataID#]
+        },
+        { name: 'Prévision veille',
+          type: 'spline',
+          color: 'green',
+          visible: false,
+          data: [#dataD-1#]
+        },
+        { name: 'Prévisions à 2 jours',
+          type: 'spline',
+          color: 'red',
+          data: [#dataD-2#]
+        },
+      ],
+      responsive: {
+        rules: [{
+          condition: {
+            maxWidth: 500
+          },
+          chartOptions: {
+            legend: {
+              layout: 'horizontal',
+              align: 'center',
+              verticalAlign: 'bottom'
+            }
+          }
+        }]
+      }
+    });
+
+	</script>
+  <style>
+    div.eqLogic-widget.editingMode .cmd.infoRte {
+      display: none;
+    }
+  </style>
+</div>
