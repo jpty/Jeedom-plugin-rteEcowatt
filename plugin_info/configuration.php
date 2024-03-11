@@ -47,7 +47,7 @@ if(!isConnect('admin')) {
       </div>
     </div>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Tempo: Fin de validité des prix}}
+      <label class="col-md-4 control-label">{{Tempo: Fin de validité des prix.}}
 <sup><i class="fas fa-question-circle tooltips" title="{{Format: AAAA-MM-JJ}}"></i></sup>
       </label>
       <div class="col-md-2">
@@ -55,7 +55,7 @@ if(!isConnect('admin')) {
       </div>
     </div>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Tempo: Prix €/kWh Bleu HC}}</label>
+      <label class="col-md-4 control-label">{{Prix Tempo à récupérer}} <a target="blank" href="https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf">ICI</a>{{ €/kWh Bleu HC}}</label>
       <div class="col-md-1">
         <input class="configKey form-control" data-l1key="HCJB"/>
       </div>
