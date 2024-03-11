@@ -78,18 +78,6 @@ class rteEcowatt extends eqLogic {
     }
   }
 
-  /*
-  public static function cron5() {
-// message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
-    foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
-      $datasource = $rteEcowatt->getConfiguration('datasource');
-      if($datasource == 'tempoRTE') {
-        $rteEcowatt->refreshWidget();
-      }
-    }
-  }
-   */
-
   public static function cron30() {
 // message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
@@ -182,7 +170,6 @@ class rteEcowatt extends eqLogic {
     $curl = curl_init();
     curl_setopt_array($curl, $curloptions);
     $response = curl_exec($curl);
-    curl_getinfo($curl); // TODO supprimer cette ligne
     $curlHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $curl_error = curl_error($curl);
     curl_close($curl);
