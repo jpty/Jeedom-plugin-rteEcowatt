@@ -11,8 +11,8 @@
   </center>
   <div class="cmds #isVerticalAlign#">
       <!-- Graphique Highchart -->
-    <div class="cmd cmd-widget" style="width: 100%; height: 100%">
-      <div id="container#id#" style="width: calc(100% - 10px); height: calc(100% - 20px)">
+    <div class="cmd cmd-widget" style="width: calc(100% - 10px); height: calc(100% - 25px)">
+      <div id="container#id#">
       </div>
     </div>
     <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px;margin-bottom:5px">
@@ -57,8 +57,8 @@
       yAxis: {
         min: #minVal#,
         max: #maxVal#,
-        softMin: #minVal#,
-        softMax: #maxVal#,
+        softMin: #softMinVal#,
+        softMax: #softMaxVal#,
         title: {
           text: 'MW'
         },
@@ -69,7 +69,14 @@
         labels: {
           align: 'left',
           step: 1,
-          // formatter: function() { return Highcharts.dateFormat('%a %e %b', this.value); }
+              // format: {value:'%a %d/%m'},
+              /*
+              style : {
+                    color: 'var(--logo-primary-color) !important;'
+                  }
+   */
+          // formatter: function() { return Highcharts.dateFormat('%a/%e/%b', this.value); }
+          // formatter: function() { return Highcharts.dateFormat('%a %d/%m', this.value); }
         },
       },
       legend: {
@@ -81,12 +88,15 @@
         dateTimeLabelFormats: {
               hour: "%A %e %b, %H:%M",
             },
+   */
+            /*
         formatter: function () {
           return this.points.reduce(function (s, point) {
                 return s + '<br/><span style="color: '+point.series.color+'">' + point.series.name + ': </span>' +
                   point.y/1000 + ' GW';
-          }, '<b>' + Highcharts.dateFormat('%A %e %b, %H:%M', this.x) + '</b>');
-        }, */
+          }, '<b>' + Highcharts.dateFormat('%A %e %b, %H:%M', this.x) + ' UTC</b>');
+        },
+   */
         shared: true
       },
       plotOptions: {
@@ -103,10 +113,10 @@
         { name: 'Consommation réalisée',
           type: 'areaspline',
           fillColor: {
-            linearGradient: [0, 0, 0, 300],
+            linearGradient: [0, 0, 0, 400],
             stops: [
-              [0, Highcharts.getOptions().colors[0]],
-              [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+              [0, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')],
+              [1, Highcharts.getOptions().colors[0]],
             ]
           },
           data: [#dataREALISED#]
@@ -127,6 +137,13 @@
           type: 'spline',
           color: 'red',
           data: [#dataD-2#]
+        },
+        { name: 'Tempo',
+          type: 'column',
+          tooltip: { pointFormat: 'Tempo {point.name}' },
+          colorByPoint: true,
+          pointWidth: 40,
+          data: [#dataTempo#]
         },
       ],
       responsive: {
