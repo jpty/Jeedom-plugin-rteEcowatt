@@ -1362,6 +1362,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     }
     $version = jeedom::versionAlias($_version);
     $datasource = $this->getConfiguration('datasource');
+    $replace['#dataActuEcowatt#'] = '';
     if ($datasource == 'ejpEDF') {
       if($this->getConfiguration('usePluginTemplateEjpEdf','1') == '0')
         return parent::toHtml($_version);
@@ -1386,7 +1387,6 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       else {
         $replace['#inEjpPeriod#'] = 'block'; $replace['#outOfEjpPeriod#'] = 'none';
       }
-      $replace['#dataActuEcowatt#'] = '';
       $replace['#datenow#'] = self::myStrftime('%A %e %B');
       $replace['#legendEjp#'] = '<span><i class="fa fa-circle fa-lg" style="color:' .$color['EJP'] .'"></i>EJP </span>';
       $valLeg = array();
