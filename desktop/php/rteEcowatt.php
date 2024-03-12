@@ -149,14 +149,12 @@ $eqLogics = eqLogic::byType($plugin->getId());
 L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumption/Tempo-Like-Supply-Contract/v1.1">Tempo Like Supply Contract</a> doit être associée à votre application créée sur le <a target="blank" href="https://data.rte-france.com/group/guest/apps">site RTE</a>.
                   </div>
                 </div>
-<!--
                 <div class="form-group">
-                  <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
+                  <label class="col-sm-4 control-label" >{{Affichage des prix Tempo}}</label>
                   <div class="col-sm-7">
-                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplate" checked>
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="displayPrices" checked>
                   </div>
                 </div>
--->
                 <div class="form-group">
                   <label class="col-sm-4 control-label">{{Template}}
                   </label>
