@@ -1025,7 +1025,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       }
       $jsonCmdValue .= '"today":{"value":"'.$decData['today']['value'] .'","datetime":"' .$decData['today']['datetime'] .'"},';
       $jsonCmdValue .= '"tomorrow":{"value":"'.$decData['tomorrow']['value'] .'","datetime":"' .$decData['tomorrow']['datetime'] .'"},';
-      $jsonCmdValue .= '"prices":' .self::getTempoPrices() .'}';
+      $jsonCmdValue .= '"prices":' .self::getTempoPrices(1) .'}';
       $this->checkAndUpdateCmd('jsonCmdForWidget', str_replace('"','&quot;',$jsonCmdValue));
     }
   }
@@ -1332,24 +1332,30 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     return($resu);
   }
 
-  public static function getTempoPrices() {
-    $expDate = trim(config::byKey('tempoExpirationDate', __CLASS__, ''));
-    if($expDate == '') {
-      log::add(__CLASS__,'info','Tempo prices not defined');
-      return('{"tempoExpirationDate":"?","HCJB":"?","HPJB":"?","HCJW":"?","HPJW":"?","HCJR":"?","HPJR":"?"}');
+  public static function getTempoPrices($_disp = 1) {
+    if($_disp == 0) {
+      return('{"tempoExpirationDate":"0","HCJB":0,"HPJB":0,"HCJW":0,"HPJW":0,"HCJR":0,"HPJR":0}');
     }
-    $expDateTS = strtotime($expDate ."00:00:00");
-    if($expDateTS < time()) {
-      log::add(__CLASS__,'info','Tempo prices out of date');
-      return('{"tempoExpirationDate":"' .$expDate .'","HCJB":"--","HPJB":"--","HCJW":"--","HPJW":"--","HCJR":"--","HPJR":"--"}');
+    else {
+      $expDate = trim(config::byKey('tempoExpirationDate', __CLASS__, ''));
+      if($expDate == '') {
+        log::add(__CLASS__,'info','Tempo prices not defined');
+        return('{"tempoExpirationDate":"?","HCJB":"?","HPJB":"?","HCJW":"?","HPJW":"?","HCJR":"?","HPJR":"?"}');
+      }
+      $expDateTS = strtotime($expDate ."00:00:00");
+      if($expDateTS < time()) {
+        log::add(__CLASS__,'info','Tempo prices out of date');
+        return('{"tempoExpirationDate":"' .$expDate .'","HCJB":"--","HPJB":"--","HCJW":"--","HPJW":"--","HCJR":"--","HPJR":"--"}');
+      }
+      $HCJB = trim(config::byKey('HCJB', __CLASS__, 0));
+      $HPJB = trim(config::byKey('HPJB', __CLASS__, 0));
+      $HCJW = trim(config::byKey('HCJW', __CLASS__, 0));
+      $HPJW = trim(config::byKey('HPJW', __CLASS__, 0));
+      $HCJR = trim(config::byKey('HCJR', __CLASS__, 0));
+      $HPJR = trim(config::byKey('HPJR', __CLASS__, 0));
+
+      return('{"tempoExpirationDate":"' .$expDate .'","HCJB":' .$HCJB .',"HPJB":' .$HPJB .',"HCJW":' .$HCJW .',"HPJW":' .$HPJW .',"HCJR":' .$HCJR .',"HPJR":' .$HPJR .'}');
     }
-    $HCJB = trim(config::byKey('HCJB', __CLASS__, 0));
-    $HPJB = trim(config::byKey('HPJB', __CLASS__, 0));
-    $HCJW = trim(config::byKey('HCJW', __CLASS__, 0));
-    $HPJW = trim(config::byKey('HPJW', __CLASS__, 0));
-    $HCJR = trim(config::byKey('HCJR', __CLASS__, 0));
-    $HPJR = trim(config::byKey('HPJR', __CLASS__, 0));
-    return('{"tempoExpirationDate":"' .$expDate .'","HCJB":' .$HCJB .',"HPJB":' .$HPJB .',"HCJW":' .$HCJW .',"HPJW":' .$HPJW .',"HCJR":' .$HCJR .',"HPJR":' .$HPJR .'}');
   }
 
   public function toHtml($_version = 'dashboard') {
@@ -1706,23 +1712,30 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       else if($templateF == 'custom') $templateFile = 'custom.rte_tempo';
       else $templateFile = substr($templateF,0,-5);
 
-      $price= json_decode(self::getTempoPrices(),true);
+      $price= json_decode(self::getTempoPrices($this->getConfiguration('displayPrices',0)),true);
+      if($price['tempoExpirationDate'] == '0') {
+        $priceHC['BLUE'] = ''; $priceHP['BLUE'] = '';
+        $priceHC['WHITE'] = ''; $priceHP['WHITE'] = '';
+        $priceHC['RED'] = ''; $priceHP['RED'] = '';
+      }
+      else {
+        $priceHC['BLUE'] = $price['HCJB'] .'€'; $priceHP['BLUE'] = $price['HPJB'] .'€';
+        $priceHC['WHITE'] = $price['HCJW'] .'€'; $priceHP['WHITE'] = $price['HPJW'] .'€';
+        $priceHC['RED'] = $price['HCJR'] .'€'; $priceHP['RED'] = $price['HPJR'] .'€';
+      }
       $color['BLUE'] = '#00518B'; $title['BLUE'] = 'Jour bleu'; $txtColor['BLUE'] = 'white';
       $borderColor['BLUE'] = $color['BLUE']; $colorHC['BLUE'] = '#46A1ED';
       $txtHC['BLUE'] = 'TEMPO BLEU HC'; $txtHP['BLUE'] = 'TEMPO BLEU HP';
-      $priceHC['BLUE'] = $price['HCJB'] .'€'; $priceHP['BLUE'] = $price['HPJB'] .'€';
       $backgroundUndef['BLUE'] = '';
 
       $color['WHITE'] = '#FFFFFF'; $title['WHITE'] = 'Jour blanc'; $txtColor['WHITE'] = 'black';
       $borderColor['WHITE'] = 'black'; $colorHC['WHITE'] = '#DFDFDF';
       $txtHC['WHITE'] = 'TEMPO BLANC HC'; $txtHP['WHITE'] = 'TEMPO BLANC HP';
-      $priceHC['WHITE'] = $price['HCJW'] .'€'; $priceHP['WHITE'] = $price['HPJW'] .'€';
       $backgroundUndef['WHITE'] = '';
       
       $color['RED'] = '#C81640'; $title['RED'] = 'Jour rouge'; $txtColor['RED'] = 'white';
       $borderColor['RED'] = $color['RED']; $colorHC['RED'] = '#F34B32';
       $txtHC['RED'] = 'TEMPO ROUGE HC'; $txtHP['RED'] = 'TEMPO ROUGE HP';
-      $priceHC['RED'] = $price['HCJR'] .'€'; $priceHP['RED'] = $price['HPJR'] .'€';
       $backgroundUndef['RED'] = '';
       
       $color['UNDEFINED'] = '#7A7A7A'; $title['UNDEFINED'] = 'Couleur non définie'; $txtColor['UNDEFINED'] = 'white';
@@ -1826,7 +1839,9 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         else if($cmdLogicalId == 'now') {
           $hphc = substr($val,0,2);
           $jour = substr($val,2);
-          $replace['#nowPrice#'] = $price[$val] ."€/kWh";
+          if($price['tempoExpirationDate'] == '0')
+            $replace['#nowPrice#'] = "";
+          else $replace['#nowPrice#'] = $price[$val] ."€/kWh";
           if($hphc == 'HP') 
             $replace['#nowHelp#'] = "Heures Pleines de 6h à 22h";
           else if($hphc == 'HC') 
