@@ -1338,22 +1338,21 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     }
     else {
       $expDate = trim(config::byKey('tempoExpirationDate', __CLASS__, ''));
-      if($expDate == '') {
-        log::add(__CLASS__,'info','Tempo prices not defined');
-        return('{"tempoExpirationDate":"?","HCJB":"?","HPJB":"?","HCJW":"?","HPJW":"?","HCJR":"?","HPJR":"?"}');
-      }
-      $expDateTS = strtotime($expDate ."00:00:00");
-      if($expDateTS < time()) {
-        log::add(__CLASS__,'info','Tempo prices out of date');
-        return('{"tempoExpirationDate":"' .$expDate .'","HCJB":"--","HPJB":"--","HCJW":"--","HPJW":"--","HCJR":"--","HPJR":"--"}');
-      }
       $HCJB = trim(config::byKey('HCJB', __CLASS__, 0));
       $HPJB = trim(config::byKey('HPJB', __CLASS__, 0));
       $HCJW = trim(config::byKey('HCJW', __CLASS__, 0));
       $HPJW = trim(config::byKey('HPJW', __CLASS__, 0));
       $HCJR = trim(config::byKey('HCJR', __CLASS__, 0));
       $HPJR = trim(config::byKey('HPJR', __CLASS__, 0));
-
+      if($expDate == '') {
+        log::add(__CLASS__,'warning','Expiration date of Tempo prices not defined');
+        return('{"tempoExpirationDate":"1","HCJB":' .$HCJB .',"HPJB":' .$HPJB .',"HCJW":' .$HCJW .',"HPJW":' .$HPJW .',"HCJR":' .$HCJR .',"HPJR":' .$HPJR .'}');
+      }
+      $expDateTS = strtotime($expDate ."00:00:00");
+      if($expDateTS < time()) {
+        log::add(__CLASS__,'warning','Tempo prices are out of date');
+        return('{"tempoExpirationDate":"2","HCJB":' .$HCJB .',"HPJB":' .$HPJB .',"HCJW":' .$HCJW .',"HPJW":' .$HPJW .',"HCJR":' .$HCJR .',"HPJR":' .$HPJR .'}');
+      }
       return('{"tempoExpirationDate":"' .$expDate .'","HCJB":' .$HCJB .',"HPJB":' .$HPJB .',"HCJW":' .$HCJW .',"HPJW":' .$HPJW .',"HCJR":' .$HCJR .',"HPJR":' .$HPJR .'}');
     }
   }
@@ -1712,7 +1711,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       else if($templateF == 'custom') $templateFile = 'custom.rte_tempo';
       else $templateFile = substr($templateF,0,-5);
 
-      $price= json_decode(self::getTempoPrices($this->getConfiguration('displayPrices',0)),true);
+      $price= json_decode(self::getTempoPrices($this->getConfiguration('displayPrices',1)),true);
       if($price['tempoExpirationDate'] == '0') {
         $priceHC['BLUE'] = ''; $priceHP['BLUE'] = '';
         $priceHC['WHITE'] = ''; $priceHP['WHITE'] = '';
@@ -1839,8 +1838,9 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         else if($cmdLogicalId == 'now') {
           $hphc = substr($val,0,2);
           $jour = substr($val,2);
-          if($price['tempoExpirationDate'] == '0')
-            $replace['#nowPrice#'] = "";
+          if($price['tempoExpirationDate'] == '0') $replace['#nowPrice#'] = "";
+          else if($price['tempoExpirationDate'] == '1') $replace['#nowPrice#'] = "Date de fin de validité des prix Tempo non définie";
+          else if($price['tempoExpirationDate'] == '2') $replace['#nowPrice#'] = "Date de fin de validité des prix Tempo dépassée.";
           else $replace['#nowPrice#'] = $price[$val] ."€/kWh";
           if($hphc == 'HP') 
             $replace['#nowHelp#'] = "Heures Pleines de 6h à 22h";
