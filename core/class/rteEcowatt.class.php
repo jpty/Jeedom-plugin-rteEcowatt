@@ -589,7 +589,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   public function updateInfo($fetch) {
     $datasource = $this->getConfiguration('datasource');
     $eqName = $this->getName();
-    log::add(__CLASS__, 'warning', "---------------------- updateInfo $datasource Equipment [$eqName] Fetch: $fetch");
+    log::add(__CLASS__, 'info', "---------------------- updateInfo $datasource Equipment [$eqName] Fetch: $fetch");
     switch ($datasource) {
       case 'tempoRTE': $this->updateInfoTempoRTE($fetch); break;
       case 'consumptionRTE': $this->updateInfoConsumption($fetch); break;
