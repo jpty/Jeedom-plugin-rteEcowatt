@@ -841,7 +841,7 @@ message::add(__CLASS__, "YesterdayDataTS: ".date('c',$yesterdayDataTS) ." Latest
       $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars"; // request for tomorrow only
     }
     else {
-      if($yesterdayDataTS == 0 && strtotime($start_date) < $tsYesterday)
+      if($yesterdayDataTS == 0 && strtotime($start_date) > $tsYesterday)
         $start_date = date('c',$tsYesterday);
       log::add(__CLASS__, 'debug', "RTE REQUESTS DATES: $start_date $end_date, LatestOK: " .date('c',$tsLatestOK));
       $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=$start_date&end_date=$end_date&fallback_status=false";
