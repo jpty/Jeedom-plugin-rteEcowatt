@@ -817,8 +817,16 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       return $decData;
     }
 
+    // TODO MAJ de yesterday si pas à jour
+    if(isset($decData['yesterday']['datetime'])) {
+      $yesterdayDataTS = strtotime($decData['yesterday']['datetime']);
+      if($yesterdayDataTS != $tsYesterday) $yesterdayDataTS = 0;
+    }
+    else $yesterdayDataTS = 0;
+message::add(__CLASS__, "YesterdayDataTS: ".date('c',$yesterdayDataTS) ." LatestOK: " .date('c',$tsLatestOK) ." Today:" .$decData["today"]["value"]);
+
         // request to RTE
-    if($decData && $tsLatestOK == $tsTomorrow) {
+    if($decData && $tsLatestOK == $tsTomorrow && $yesterdayDataTS) {
       if($fetch) {
         $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars"; // request for tomorrow only
         log::add(__CLASS__, 'debug', "Fetching data but Tomorrow is already OK since: ".date('c',$tsTomorrow) ." LatestOK: " .date('c',$tsLatestOK) ." Today:" .$decData["today"]["value"]);
@@ -828,32 +836,16 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         return($decData);
       }
     }
-    else if($decData && $tsLatestOK == $tsToday) {
+    else if($decData && $tsLatestOK == $tsToday && $yesterdayDataTS) {
       log::add(__CLASS__, 'debug', "Updating tomorrow. LatestOK: " .date('c',$tsLatestOK));
       $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars"; // request for tomorrow only
     }
     else {
+      if($yesterdayDataTS == 0 && strtotime($start_date) < $tsYesterday)
+        $start_date = date('c',$tsYesterday);
       log::add(__CLASS__, 'debug', "RTE REQUESTS DATES: $start_date $end_date, LatestOK: " .date('c',$tsLatestOK));
       $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=$start_date&end_date=$end_date&fallback_status=false";
     }
-    /*
-    $cmd = $this->getCmd(null,'today');
-    if(is_object($cmd)) $today = $cmd->execCmd();
-    else $today = 'UNDEFINED';
-    $cmd = $this->getCmd(null,'tomorrow');
-    if(is_object($cmd)) $tomorrow = $cmd->execCmd();
-    else $tomorrow = 'UNDEFINED';
-    $cmd = $this->getCmd(null,'todayTS');
-    if(is_object($cmd)) $todayTS = $cmd->execCmd();
-    else $todayTS = 0;
-    $cmd = $this->getCmd(null,'tomorrowTS');
-    if(is_object($cmd)) $tomorrowTS = $cmd->execCmd();
-    else $tomorrowTS = 0;
-    if($fetch || // update demandé par utilisateur
-        date('G') == 11  || // update de 11h avant = pré-annonce
-        $tomorrow == 'UNDEFINED' || $tomorrow == '' || $tomorrowTS == 0 ||
-        $today == 'UNDEFINED' || $today == '' || $todayTS == 0) {
-     */
     $params = self::initParamRTE('tempoRTE');
     $response = self::getResourceRTE($params, $api);
 
