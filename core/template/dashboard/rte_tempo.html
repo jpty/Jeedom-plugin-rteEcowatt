@@ -9,122 +9,87 @@
     <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
     <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
   </center>
-  <div class="cmds #isVerticalAlign#">
-    <center>
-      <!-- Texte sur bandeau de la couleur du jour
-      -->
-      <div title="En ce moment #now#. #nowHelp#" class="content-sm" style="background-color: #nowBackgroundColor#;color: #nowColor#;border-radius:10px;width:98%">
-        <span style="font-weight:700;font-size: 24px">#now#</span>
-        <span style="font-weight:400;font-size: 14px"><br/>#nowPrice#</span>
-      </div>
-      <!-- Texte en couleur du jour
-      <div title="En ce moment #now#. #nowHelp#" class="content-sm" style="font-weight: 700;font-size: 24px;color: #nowForegroundColor#;margin:5px">#now#<br/>
-      </div>
-      -->
-      <!-- Textes Aujourd'hui / Demain dans bulle avec la date en tooltip
-      <span title="#todayDate#. #titleToday#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorToday#;color:#txtColorToday#;border: 1px solid #borderColorToday#">Aujourd'hui</span>&nbsp;
-      <span title="#tomorrowDate#. #titleTomorrow#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorTomorrow#;color:#txtColorTomorrow#;border: 1px solid #borderColorTomorrow#">Demain</span>
-      -->
-      <!-- Textes Aujourd'hui et date dans bulle
-      -->
-      <div>
-        <table width="98%">
-          <tr><td colspan="24" title="Aujourd'hui. #titleToday#" style="text-align:center;background-color: rgb(var(--eq-bg-color))">#todayDate#</td></tr>
-          <tr>
-            <td colspan="6" width="25%" title="#txtYesterdayHC#" style="text-align:center;#colorYesterdayHC#;#txtColorYesterdayHC#;border: 2px solid #borderColorYesterday#;border-right-color:#borderColorToday#">&nbsp;#priceYesterdayHC#</td>
-            <td colspan="16" width="63%" title="#txtTodayHP#" style="text-align:center;#colorTodayHP#;#txtColorTodayHP#;border: 2px solid #borderColorToday#;">&nbsp;#priceTodayHP#</td>
-            <td colspan="2" width="12%" title="#txtTodayHC#" style="text-align:center;background-color:#colorTodayHC#;color:#txtColorTodayHC#;border: 2px solid #borderColorToday#;">&nbsp;</td>
-          </tr>
-          <tr>
-            <td width="5%" class="tableCmdcss todayHours#id#" title="0h-1h">#hr0#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="1h-2h">#hr1#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="2h-3h">#hr2#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="3h-4h">#hr3#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="4h-5h">#hr4#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="5h-6h">#hr5#</td>
+  <div class="cmds #isVerticalAlign#" style="align-content:center;margin-left:5px;margin-right:5px;width:calc(#width# - 10px)">
+    <table width="99%">
+      <tr><td colspan="24">
+        <!-- Texte sur bandeau de la couleur du jour
+        -->
+        <div title="En ce moment #now#. #nowHelp#" class="content-sm" style="background-color: #nowBackgroundColor#;color: #nowColor#;border-radius:10px;text-align:center">
+          <span style="font-weight:700;font-size: 24px">#now#</span>
+          <span style="font-weight:400;font-size: 14px"><br/>#nowPrice#</span>
+        </div>
+      </td></tr>
+      <tr><td colspan="24" title="Aujourd'hui. #titleToday#" style="text-align:center;background-color: rgb(var(--eq-bg-color))">#todayDate#</td></tr>
+      <tr>
+        <td colspan="6" width="25%" title="#txtYesterdayHC#" style="text-align:center;#colorYesterdayHC#;#txtColorYesterdayHC#;border: 1px solid #borderColorYesterday#;border-right-color:#borderColorToday#">&nbsp;#priceYesterdayHC#</td>
+        <td colspan="16" width="63%" title="#txtTodayHP#" style="text-align:center;#colorTodayHP#;#txtColorTodayHP#;border: 1px solid #borderColorToday#;">&nbsp;#priceTodayHP#</td>
+        <td colspan="2" width="12%" title="#txtTodayHC#" style="text-align:center;background-color:#colorTodayHC#;color:#txtColorTodayHC#;border: 1px solid #borderColorToday#;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td width="5%" class="tableCmdcss todayHours#id#" title="0h-1h">#hr0#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="1h-2h">#hr1#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="2h-3h">#hr2#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="3h-4h">#hr3#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="4h-5h">#hr4#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="5h-6h">#hr5#</td>
 
-            <td width="5%" class="tableCmdcss todayHours#id#" title="6h-7h">#hr6#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="7h-8h">#hr7#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="8h-9h">#hr8#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="9h-10h">#hr9#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="10h-11h">#hr10#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="11h-12h">#hr11#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="12h-13h">#hr12#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="13h-14h">#hr13#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="14h-15h">#hr14#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="15h-16h">#hr15#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="16h-17h">#hr16#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="17h-18h">#hr17#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="18h-19h">#hr18#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="19h-20h">#hr19#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="20h-21h">#hr20#</td>
-            <td width="4%" class="tableCmdcss todayHours#id#" title="21h-22h">#hr21#</td>
+        <td width="5%" class="tableCmdcss todayHours#id#" title="6h-7h">#hr6#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="7h-8h">#hr7#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="8h-9h">#hr8#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="9h-10h">#hr9#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="10h-11h">#hr10#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="11h-12h">#hr11#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="12h-13h">#hr12#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="13h-14h">#hr13#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="14h-15h">#hr14#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="15h-16h">#hr15#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="16h-17h">#hr16#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="17h-18h">#hr17#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="18h-19h">#hr18#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="19h-20h">#hr19#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="20h-21h">#hr20#</td>
+        <td width="4%" class="tableCmdcss todayHours#id#" title="21h-22h">#hr21#</td>
 
-            <td width="6%" class="tableCmdcss todayHours#id#" title="22h-23h">#hr22#</td>
-            <td width="6%" class="tableCmdcss todayHours#id#" title="23h-24h">#hr23#</td>
-          </tr>
-        </table>
-      </div>
-      <div>
-        <table width="98%">
-          <tr><td colspan="24" title="Demain. #titleTomorrow#" style="text-align:center;background-color: rgb(var(--eq-bg-color))">#tomorrowDate#</td></tr>
-          <tr>
-            <td colspan="6" width="25%" title="#txtTodayHC#" style="text-align:center;background-color:#colorTodayHC#;color:#txtColorTodayHC#;border: 2px solid #borderColorToday#;border-right-color:#borderColorTomorrow#">&nbsp;#priceTodayHC#</td>
-            <td colspan="16" width="65%" title="#txtTomorrowHP#" style="text-align:center;background-color:#colorTomorrow#;color:#txtColorTomorrow#;border: 2px solid #borderColorTomorrow#;#backgroundUndef#;">&nbsp;#priceTomorrowHP#</td>
-            <td colspan="2" width="12%" title="#txtTomorrowHC#" style="text-align:center;background-color:#colorTomorrowHC#;color:#txtColorTomorrow#;border: 2px solid #borderColorTomorrow#;#backgroundUndef#;">&nbsp;</td>
-          </tr>
-          <tr>
-            <td colspan="6" width="25%" style="text-align:left;font-size:10px!important;background-color: rgb(var(--eq-bg-color))">&nbsp;</td>
-            <td colspan="16" width="65%" style="text-align:left;font-size:10px!important;background-color: rgb(var(--eq-bg-color))">6h</td>
-            <td colspan="2" width="12%" style="text-align:left;font-size:10px!important;background-color: rgb(var(--eq-bg-color))">22h</td>
-          </tr>
-        </table>
-      </div>
-      <!-- Textes date Aujourd'hui / Demain dans bulle
-      <div title="Aujourd'hui. #titleToday#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorToday#;color:#txtColorToday#;border: 1px solid #borderColorToday#;margin:5px">#todayDate#</div>
-      <div title="Demain. #titleTomorrow#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorTomorrow#;color:#txtColorTomorrow#;border: 1px solid #borderColorTomorrow#;margin:5px">#tomorrowDate#</div>
-      -->
-      <!-- Textes Aujourd'hui / Demain avec une punaise de couleur et la date en tooltip
-      <span title="#todayDate#. #titleToday#">Aujourd'hui
-        <i class="fa fa-circle fa-lg today" style="color: #colorToday#"></i>
-      </span>
-      <span title="#tomorrowDate#. #titleTomorrow#">Demain
-        <i class="fa fa-circle fa-lg tomorrow" style="color: #colorTomorrow#"></i>
-      </span>
-      -->
-      <!-- Séparateur
-      -->
-      <div style="border-bottom:2px solid #colorToday#;margin-top:15px;margin-bottom:12px;font-size: 10px; text-align:left;margin-left: 0px">
-      </div>
-      <!-- Paragraphe jours restants
-      -->
-      <span>Jours restants<sup><i class="fas fa-question-circle tooltips" title="Pour la période du 1er septembre #startSeason# au 31 août #endSeason#.<br/>Il y a #blue-totalDays# jours bleus, #white-totalDays# jours blancs et #red-totalDays# jours rouges "></i></sup>
-      </span>
-      <br/>
-      <div>
-        <span>#blue-remainingDays#</span>
-        <i title="Jour bleu" class="fa fa-circle fa-lg" style="color: #colorBLUE#"></i>&nbsp; &nbsp;
-        <span>#white-remainingDays#</span>
-        <i title="Jour blanc" class="fa fa-circle fa-lg" style="color: #colorWHITE#"></i>&nbsp; &nbsp;
-        <span>#red-remainingDays#</span>
-        <i title="Jour rouge" class="fa fa-circle fa-lg" style="color: #colorRED#"></i>
-      </div>
-    </center>
-    <!--
-    <div style="margin-left:45px">
-      <i class="fa fa-circle fa-lg" style="color : #colorBLUE#"></i>
-      <span> : #blue-remainingDays# / #blue-totalDays#</span><br/>
-      <i class="fa fa-circle fa-lg" style="color : #colorWHITE#"></i>
-      <span> : #white-remainingDays# / #white-totalDays#</span><br/>
-      <i class="fa fa-circle fa-lg" style="color : #colorRED#"></i>
-      <span> : #red-remainingDays# / #red-totalDays#</span>
-    </div>
-    -->
-    <center>
-      <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
-        #dataActuTempo#
-      </div>
-    </center>
+        <td width="6%" class="tableCmdcss todayHours#id#" title="22h-23h">#hr22#</td>
+        <td width="6%" class="tableCmdcss todayHours#id#" title="23h-24h">#hr23#</td>
+      </tr>
+      <tr><td colspan="24" title="Demain. #titleTomorrow#" style="text-align:center;background-color: rgb(var(--eq-bg-color))">#tomorrowDate#</td></tr>
+      <tr>
+        <td colspan="6" width="25%" title="#txtTodayHC#" style="text-align:center;background-color:#colorTodayHC#;color:#txtColorTodayHC#;border: 1px solid #borderColorToday#;border-right-color:#borderColorTomorrow#">&nbsp;#priceTodayHC#</td>
+        <td colspan="16" width="65%" title="#txtTomorrowHP#" style="text-align:center;background-color:#colorTomorrow#;color:#txtColorTomorrow#;border: 1px solid #borderColorTomorrow#;#backgroundUndef#;">&nbsp;#priceTomorrowHP#</td>
+        <td colspan="2" width="12%" title="#txtTomorrowHC#" style="text-align:center;background-color:#colorTomorrowHC#;color:#txtColorTomorrow#;border: 1px solid #borderColorTomorrow#;#backgroundUndef#;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td colspan="6" width="25%" style="text-align:left;font-size:10px!important;background-color: rgb(var(--eq-bg-color))">&nbsp;</td>
+        <td colspan="16" width="65%" style="text-align:left;font-size:10px!important;background-color: rgb(var(--eq-bg-color))">6h</td>
+        <td colspan="2" width="12%" style="text-align:left;font-size:10px!important;background-color: rgb(var(--eq-bg-color))">22h</td>
+      </tr>
+      <tr>
+        <td colspan="24" style="text-align:center;background-color: rgb(var(--eq-bg-color))">
+          <!-- Séparateur
+          -->
+          <div style="border-bottom:1px solid #colorToday#;margin-top:4px;margin-bottom:10px;font-size: 10px; text-align:left;margin-left: 0px">
+          </div>
+          <!-- Paragraphe jours restants
+          -->
+          <div>Jours restants<sup><i class="fas fa-question-circle tooltips" title="Pour la période du 1er septembre #startSeason# au 31 août #endSeason#.<br/>Il y a #blue-totalDays# jours bleus, #white-totalDays# jours blancs et #red-totalDays# jours rouges "></i></sup>
+          </div>
+          <div>
+            <span>#blue-remainingDays#</span>
+            <i title="Jour bleu" class="fa fa-circle fa-lg" style="color: #colorBLUE#"></i>&nbsp; &nbsp;
+            <span>#white-remainingDays#</span>
+            <i title="Jour blanc" class="fa fa-circle fa-lg" style="color: #colorWHITE#"></i>&nbsp; &nbsp;
+            <span>#red-remainingDays#</span>
+            <i title="Jour rouge" class="fa fa-circle fa-lg" style="color: #colorRED#"></i>
+          </div>
+          <!-- Infos actualisation
+          -->
+          <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
+            #dataActuTempo#
+          </div>
+        </td>
+      </tr>
+    </table>
   </div>
   <script>
     if ('#refresh_id#' != '') {
