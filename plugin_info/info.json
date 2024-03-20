@@ -5,7 +5,7 @@
   "utilization": "Avec Ecowatt, suivant le niveau de consommation électrique des français, Rte attribue un niveau de vigilance pour les coupures d'électricité. Le plugin affiche le niveau de consommation par jour et par heure ainsi que le niveau d'alerte actuel. Faites des scénarios afin de réduire votre consommation électrique lors d'alerte orange ou rouge.<br>Les couleurs du programme Tempo de RTE pour aujourd'hui et demain sont affichées ainsi que le nombre de jours restants dans chaque couleur.<br>Les jours EJP sont extraits du site Web d'Edf.fr",
 	"licence" : "AGPL",
 	"author" : "jpty",
-	"require" : "4.1",
+	"require" : "4.2",
   "link": {
 		"forum": "https://community.jeedom.com/tag/plugin-rteEcowatt"
 	},
