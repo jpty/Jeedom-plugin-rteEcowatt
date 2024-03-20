@@ -32,7 +32,7 @@ class rteEcowatt extends eqLogic {
         $rteEcowatt->refreshWidget();
       }
     }
-    message::add(__CLASS__,__FUNCTION__ . " change $_value");
+    // message::add(__CLASS__,__FUNCTION__ . " change $_value");
   }
 
   public static function cronDaily() {
@@ -44,40 +44,8 @@ class rteEcowatt extends eqLogic {
       if($datasource == 'tempoRTE') {
         if($chgeDay == 1) {
           $decData = self::getTempoData(1,0);
-          /*
-          $today = $decData['today']['value'];
-          $todayTS = strtotime($decData['today']['datetime']);
-          $tomorrow = $decData['tomorrow']['value'];
-          $tomorrowTS = strtotime($decData['tomorrow']['datetime']);
-          log::add(__CLASS__, 'debug', "cronDaily Today : $todayTS Tomorrow $tomorrowTS");
-           */
         }
         $chgeDay = 0;
-        /*
-        $cmd = $rteEcowatt->getCmd(null,'today');
-        if(is_object($cmd)) { 
-          $yesterday = $cmd->execCmd();
-          $rteEcowatt->checkAndUpdateCmd('yesterday', $yesterday);
-        }
-        $cmd = $rteEcowatt->getCmd(null,'todayTS');
-        if(is_object($cmd)) { 
-          $yesterdayTS = $cmd->execCmd();
-          $rteEcowatt->checkAndUpdateCmd('yesterdayDatetime', date('c',$yesterdayTS));
-        }
-        $rteEcowatt->checkAndUpdateCmd('today', $today);
-        $rteEcowatt->checkAndUpdateCmd('todayTS', $todayTS);
-        $rteEcowatt->checkAndUpdateCmd('tomorrow', $tomorrow);
-        $rteEcowatt->checkAndUpdateCmd('tomorrowTS', $tomorrowTS);
-
-        $jsonCmdValue = '{';
-        $jsonCmdValue .= '"yesterday":{"value":"' .$yesterday .'","datetime":"' .date('c',$yesterdayTS) .'"},';
-        $jsonCmdValue .= '"today":{"value":"' .$today .'","datetime":"' .date('c',$todayTS) .'"},';
-        $jsonCmdValue .= '"tomorrow":{"value":"' .$tomorrow .'","datetime":"' .date('c',$tomorrowTS) .'"},';
-        $jsonCmdValue .= '"prices":' .self::getTempoPricesJson(1);
-        $jsonCmdValue .= '}';
-  // message::add(__FUNCTION__, $jsonCmdValue);
-        $rteEcowatt->checkAndUpdateCmd('jsonCmdForWidget', str_replace('"','&quot;',$jsonCmdValue));
-         */
         $rteEcowatt->updateInfoTempoRTE(0,$decData);
         $rteEcowatt->refreshWidget();
       }
@@ -104,7 +72,6 @@ class rteEcowatt extends eqLogic {
   }
 
   public static function cron30() {
-// message::add(__CLASS__, __FUNCTION__ .' ' .date('H:i:s'));
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
       $datasource = $rteEcowatt->getConfiguration('datasource');
       if($datasource == 'consumptionRTE') {
@@ -817,13 +784,13 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       return $decData;
     }
 
-    // TODO MAJ de yesterday si pas à jour
+    // Check and update yesterday
     if(isset($decData['yesterday']['datetime'])) {
       $yesterdayDataTS = strtotime($decData['yesterday']['datetime']);
       if($yesterdayDataTS != $tsYesterday) $yesterdayDataTS = 0;
     }
     else $yesterdayDataTS = 0;
-message::add(__CLASS__, "YesterdayDataTS: ".date('c',$yesterdayDataTS) ." LatestOK: " .date('c',$tsLatestOK) ." Today:" .$decData["today"]["value"]);
+// message::add(__CLASS__, "YesterdayDataTS: ".date('c',$yesterdayDataTS) ." LatestOK: " .date('c',$tsLatestOK) ." Today:" .$decData["today"]["value"]);
 
         // request to RTE
     if($decData && $tsLatestOK == $tsTomorrow && $yesterdayDataTS) {
