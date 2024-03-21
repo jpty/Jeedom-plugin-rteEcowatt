@@ -25,9 +25,14 @@ function rteEcowatt_install() {
 // Fonction exécutée automatiquement après la mise à jour du plugin
 function rteEcowatt_update() {
   rteEcowatt::setCronDataEcowatt(1);
+  $nbEcow = 0;
   foreach (eqLogic::byType('rteEcowatt') as $eqLogic) {
+    if($eqLogic->getConfiguration('datasource') == 'rteEcowatt') $nbEcow++;
     $eqLogic->save();
+    log::add('rteEcowatt', 'debug', 'Mise à jour des commandes de l\'équipement '. $eqLogic->getHumanName() ." effectuée.");
   }
+  if($nbEcow)
+    message::add('rteEcowatt', "Vous utilisez $nbEcow équipement(s) Ecowatt (RTE). N'oubliez pas de vous abonner à l'API Ecowatt v5 sur le site de web de RTE.");
 }
 
 // Fonction exécutée automatiquement après la suppression du plugin
