@@ -1661,7 +1661,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     }
   }
 
-  public function toHtml_tempoRTE(&$replace,$loglevel) {
+  public function toHtml_tempoRTE(&$replace,$loglevel,$templateFile) {
     $t0 = -microtime(true);
     $json = self::getTempoPricesJson($this->getConfiguration('displayPrices',1),0);
     $price=json_decode($json,true);
@@ -2036,7 +2036,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       else if($templateF == 'plugin') $templateFile = 'rte_tempo';
       else if($templateF == 'custom') $templateFile = 'custom.rte_tempo';
       else $templateFile = substr($templateF,0,-5);
-      $this->toHtml_tempoRTE($replace,$loglevel);
+      $this->toHtml_tempoRTE($replace,$loglevel,$templateFile);
       $template = 'rte_tempo';
     }
     else if ($datasource == 'consumptionRTE') {
