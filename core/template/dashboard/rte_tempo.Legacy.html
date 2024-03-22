@@ -1,0 +1,93 @@
+<div class="eqLogic eqLogic-widget allowResize #custom_layout# #eqLogic_class# #class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
+  <center class="widget-name">
+    <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+      <i class="fas fa-sync"></i>
+    </span>
+    <span class="cmd infoRte pull-right cursor">
+      <a target="_blank" href="https://www.services-rte.com/fr/visualisez-les-donnees-publiees-par-rte/calendrier-des-offres-de-fourniture-de-type-tempo.html" title="Plus d'info sur le site RTE"><i class='fas fa-info-circle' style="margin-top: 3px;"></i></a>
+    </span>
+    <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+    <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+  </center>
+  <div class="cmds #isVerticalAlign#">
+    <center>
+      <!-- Texte sur bandeau de la couleur du jour
+      <div title="En ce moment #now#. #nowHelp#" class="content-sm" style="font-weight: 700;font-size: 24px;background-color: #nowBackgroundColor#;color: #nowColor#">#now# #nowPrice#
+      </div>
+      -->
+      <!-- Texte en couleur du jour
+      -->
+      <div title="En ce moment #now#. #nowHelp#" class="content-sm" style="font-weight: 700;font-size: 24px;color: #nowForegroundColor#;margin:4px 4px 15px 4px">#now#<br/>
+      </div>
+      <!-- Textes Aujourd'hui / Demain dans bulle avec la date en tooltip
+      -->
+      <span title="#todayDate#. #titleToday#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorToday#;color:#txtColorToday#;border: 1px solid #borderColorToday#">Aujourd'hui</span>&nbsp;
+      <span title="#tomorrowDate#. #titleTomorrow#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorTomorrow#;color:#txtColorTomorrow#;border: 1px solid #borderColorTomorrow#">Demain</span>
+      <!-- Textes date Aujourd'hui / Demain dans bulle
+      <div title="Aujourd'hui. #titleToday#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorToday#;color:#txtColorToday#;border: 1px solid #borderColorToday#;margin:5px">#todayDate#</div>
+      <div title="Demain. #titleTomorrow#" style="border-bottom-left-radius: 15px;border-top-left-radius: 15px;border-bottom-right-radius: 15px;border-top-right-radius: 15px;padding:6px;background-color:#colorTomorrow#;color:#txtColorTomorrow#;border: 1px solid #borderColorTomorrow#;margin:5px">#tomorrowDate#</div>
+      -->
+      <!-- Textes Aujourd'hui / Demain avec une punaise de couleur et la date en tooltip
+      <span title="#todayDate#. #titleToday#">Aujourd'hui
+        <i class="fa fa-circle fa-lg today" style="color: #colorToday#"></i>
+      </span>
+      <span title="#tomorrowDate#. #titleTomorrow#">Demain
+        <i class="fa fa-circle fa-lg tomorrow" style="color: #colorTomorrow#"></i>
+      </span>
+      -->
+      <!-- Séparateur
+      -->
+      <div style="border-bottom:1px solid #colorToday#;margin-top:15px;margin-bottom:12px;font-size: 10px; text-align:left;margin-left: 0px">
+      </div>
+      <!-- Paragraphe jours restants
+      -->
+      <span>Jours restants<sup><i class="fas fa-question-circle tooltips" title="Pour la période du 1er septembre #startSeason# au 31 août #endSeason#.<br/>Il y a #blue-totalDays# jours bleus, #white-totalDays# jours blancs et #red-totalDays# jours rouges "></i></sup>
+      </span>
+      <br/>
+      <div>
+        <span>#blue-remainingDays#</span>
+        <i title="Jour bleu" class="fa fa-circle fa-lg" style="color: #colorBLUE#"></i>&nbsp; &nbsp;
+        <span>#white-remainingDays#</span>
+        <i title="Jour blanc" class="fa fa-circle fa-lg" style="color: #colorWHITE#"></i>&nbsp; &nbsp;
+        <span>#red-remainingDays#</span>
+        <i title="Jour rouge" class="fa fa-circle fa-lg" style="color: #colorRED#"></i>
+      </div>
+    </center>
+    <!--
+    <div style="margin-left:45px">
+      <i class="fa fa-circle fa-lg" style="color : #colorBLUE#"></i>
+      <span> : #blue-remainingDays# / #blue-totalDays#</span><br/>
+      <i class="fa fa-circle fa-lg" style="color : #colorWHITE#"></i>
+      <span> : #white-remainingDays# / #white-totalDays#</span><br/>
+      <i class="fa fa-circle fa-lg" style="color : #colorRED#"></i>
+      <span> : #red-remainingDays# / #red-totalDays#</span>
+    </div>
+    -->
+    <center>
+      <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
+        #dataActuTempo#
+      </div>
+    </center>
+  </div>
+  <script>
+    if ('#refresh_id#' != '') {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+        jeedom.cmd.execute({id: '#refresh_id#'})
+      })
+    } else {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
+    }
+  </script>
+  <style>
+    div.eqLogic-widget.editingMode .cmd.infoRte {
+      display: none;
+    }
+    .yesterdayHC#id# {
+    }
+    .todayHP#id# {
+    }
+    .todayHC#id# {
+    }
+
+  </style>
+</div>

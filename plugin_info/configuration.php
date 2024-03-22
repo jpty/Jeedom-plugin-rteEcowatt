@@ -46,5 +46,43 @@ if(!isConnect('admin')) {
         <input class="configKey form-control" data-l1key="totalTempoRed" placeholder="22 par défaut"/>
       </div>
     </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Tempo: Fin de validité des prix.}}
+<sup><i class="fas fa-question-circle tooltips" title="{{Format: AAAA-MM-JJ}}"></i></sup>
+      </label>
+      <div class="col-md-2">
+        <input class="configKey form-control" data-l1key="tempoExpirationDate" placeholder="{{Format: AAAA-MM-JJ}}"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Prix Tempo à récupérer}} <a target="blank" href="https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf">ICI</a>{{ €/kWh Bleu HC}}</label>
+      <div class="col-md-1">
+        <input class="configKey form-control" data-l1key="HCJB"/>
+      </div>
+      <label class="col-md-1 control-label">{{Bleu HP}}</label>
+      <div class="col-md-1">
+        <input class="configKey form-control" data-l1key="HPJB"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Blanc HC}}</label>
+      <div class="col-md-1">
+        <input class="configKey form-control" data-l1key="HCJW"/>
+      </div>
+      <label class="col-md-1 control-label">{{Blanc HP}}</label>
+      <div class="col-md-1">
+        <input class="configKey form-control" data-l1key="HPJW"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Rouge HC}}</label>
+      <div class="col-md-1">
+        <input class="configKey form-control" data-l1key="HCJR"/>
+      </div>
+      <label class="col-md-1 control-label">{{Rouge HP}}</label>
+      <div class="col-md-1">
+        <input class="configKey form-control" data-l1key="HPJR"/>
+      </div>
+    </div>
   </fieldset>
 </form>
