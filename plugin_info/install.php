@@ -27,7 +27,7 @@ function rteEcowatt_update() {
   rteEcowatt::setCronDataEcowatt(1);
   $nbEcow = 0;
   foreach (eqLogic::byType('rteEcowatt') as $eqLogic) {
-    if($eqLogic->getConfiguration('datasource') == 'rteEcowatt') $nbEcow++;
+    if($eqLogic->getConfiguration('datasource') == 'ecowattRTE') $nbEcow++;
     $eqLogic->save();
     log::add('rteEcowatt', 'debug', 'Mise à jour des commandes de l\'équipement '. $eqLogic->getHumanName() ." effectuée.");
   }
