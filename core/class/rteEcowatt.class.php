@@ -40,6 +40,39 @@ class rteEcowatt extends eqLogic {
     // message::add(__CLASS__,__FUNCTION__ . " change $_value");
   }
 
+  public static function extractValueFromJsonTxt($cmdValue, $request) {
+    $txtJson = str_replace('&quot;','"',$cmdValue);
+    $json =json_decode($txtJson,true);
+    if($json !== null) {
+      $tags = explode('>', $request);
+      foreach ($tags as $tag) {
+        $tag = trim($tag);
+        if (isset($json[$tag])) {
+          $json = $json[$tag];
+        } elseif (is_numeric(intval($tag)) && isset($json[intval($tag)])) {
+          $json = $json[intval($tag)];
+        } elseif (is_numeric(intval($tag)) && intval($tag) < 0 && isset($json[count($json) + intval($tag)])) {
+          $json = $json[count($json) + intval($tag)];
+        } else {
+          $json = "Request error: tag[$tag] not found in " .json_encode($json);
+          break;
+        }
+      }
+      return (is_array($json)) ? json_encode($json) : $json;
+    }
+    return ("*** Unable to decode JSON: " .substr($txtJson,0,20));
+  }
+
+  public static function getJsonInfo($cmd_id, $request) {
+    $id = cmd::humanReadableToCmd('#' .$cmd_id .'#');
+    $cmd = cmd::byId(trim(str_replace('#', '', $id)));
+    if(is_object($cmd)) {
+      return self::extractValueFromJsonTxt($cmd->execCmd(), $request);
+    }
+    else log::add(__CLASS__, 'debug', "Command not found: $cmd");
+    return(null);
+  }
+
   public static function cronDaily() {
     $chgeDay = 1; // Changement de jour sans interrogation de RTE
     self::getTempoPricesJson(1); // 1 pour notification dans les logs des prix périmés ou absents
