@@ -1670,7 +1670,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     $t0 = -microtime(true);
     $json = self::getTempoPricesJson(0);
     $price=json_decode($json,true);
-    if($price['tempoExpirationDate'] == '0') {
+    if($this->getConfiguration('displayPrices',1) == 0) {
       $priceHC['BLUE'] = ''; $priceHP['BLUE'] = '';
       $priceHC['WHITE'] = ''; $priceHP['WHITE'] = '';
       $priceHC['RED'] = ''; $priceHP['RED'] = '';
@@ -1785,7 +1785,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       else if($cmdLogicalId == 'now') {
         $hphc = substr($val,0,2);
         $jour = substr($val,2);
-        if($price['tempoExpirationDate'] == '0') $replace['#nowPrice#'] = "";
+        if($this->getConfiguration('displayPrices',1) == 0) $replace['#nowPrice#'] = "";
         else if($price['tempoExpirationDate'] == 'UNDEFINED') $replace['#nowPrice#'] = "Date de fin de validité des prix Tempo non définie";
         else if($price['tempoExpirationDate'] == 'OUTOFDATE') $replace['#nowPrice#'] = "Date de fin de validité des prix Tempo dépassée.";
         else $replace['#nowPrice#'] = $price[$val] ."€/kWh";
