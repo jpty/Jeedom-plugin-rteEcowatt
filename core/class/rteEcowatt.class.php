@@ -1026,8 +1026,8 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       }
       $jsonCmdValue .= '"today":{"value":"'.$decData['today']['value'] .'","datetime":"' .$decData['today']['datetime'] .'"},';
       $jsonCmdValue .= '"tomorrow":{"value":"'.$decData['tomorrow']['value'] .'","datetime":"' .$decData['tomorrow']['datetime'] .'"},';
-      $jsonCmdValue .= '"remainingDays":{"BLUE":' .$nbRemainingBlue .',"WHITE":' .$nbRemainingWhite .',"RED":' .$nbRemainingRed .'"},';
-      $jsonCmdValue .= '"totalDays":{"BLUE":' .$nbTotBlue .',"WHITE":' .$nbTotWhite .',"RED":' .$nbTotRed .'"},';
+      $jsonCmdValue .= '"remainingDays":{"BLUE":' .$nbRemainingBlue .',"WHITE":' .$nbRemainingWhite .',"RED":' .$nbRemainingRed .'},';
+      $jsonCmdValue .= '"totalDays":{"BLUE":' .$nbTotBlue .',"WHITE":' .$nbTotWhite .',"RED":' .$nbTotRed .'},';
       $jsonCmdValue .= '"prices":' .self::getTempoPricesJson(1,0) .',';
       $jsonCmdValue .= '"colors":' .json_encode(self::$_colTempo) .'}';
 // message::add(__FUNCTION__, $jsonCmdValue);
