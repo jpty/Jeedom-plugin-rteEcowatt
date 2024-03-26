@@ -32,26 +32,26 @@
     <div>displayError : 0/1 ({{Affichage des erreurs JS}})</div>
   </template>
   <script>
-     /* JSON structure
-        { "yesterday":{"value":"BLUE","datetime":"2024-03-24T00:00:00+01:00"},
-          "today":{"value":"BLUE","datetime":"2024-03-25T00:00:00+01:00"},
-          "tomorrow":{"value":"WHITE","datetime":"2024-03-26T00:00:00+01:00"},
-          "remainingDays":{"BLUE":150,"WHITE":7,"RED":1"},
-          "totalDays":{"BLUE":301,"WHITE":43,"RED":22"},
-          "prices":{
-            "tempoExpirationDate":"2024-08-01",
-            "HCJB":0.1296,"HPJB":0.1609,
-            "HCJW":0.1486,"HPJW":0.1894,
-            "HCJR":0.1568,"HPJR":0.7562
-          },
-          "colors":{
-            "HCJB":"#46A1ED","HPJB":"#00518B",
-            "HCJW":"#DFDFDF","HPJW":"#FFFFFF",
-            "HCJR":"#F34B32","HPJR":"#C81640",
-            "UNDEFINED":"#7A7A7A","ERROR":"#000000"
-          }
+       /* JSON structure
+      { "yesterday":{"value":"BLUE","datetime":"2024-03-24T00:00:00+01:00"},
+        "today":{"value":"BLUE","datetime":"2024-03-25T00:00:00+01:00"},
+        "tomorrow":{"value":"WHITE","datetime":"2024-03-26T00:00:00+01:00"},
+        "remainingDays":{"BLUE":150,"WHITE":7,"RED":1"},
+        "totalDays":{"BLUE":301,"WHITE":43,"RED":22"},
+        "prices":{
+          "tempoExpirationDate":"2024-08-01",
+          "HCJB":0.1296,"HPJB":0.1609,
+          "HCJW":0.1486,"HPJW":0.1894,
+          "HCJR":0.1568,"HPJR":0.7562
+        },
+        "colors":{
+          "HCJB":"#46A1ED","HPJB":"#00518B",
+          "HCJW":"#DFDFDF","HPJW":"#FFFFFF",
+          "HCJR":"#F34B32","HPJR":"#C81640",
+          "UNDEFINED":"#7A7A7A","ERROR":"#000000"
         }
-       */
+      }
+        */
     jeedom.cmd.addUpdateFunction('#id#',function(_options) {
       let cmd = $('.cmd[data-cmd_id=#id#]');
       cmd.find('.errorMessage').empty(); // clean previous error
