@@ -6,11 +6,10 @@
     <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
     <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
   </center>
-  <div class="cmds #isVerticalAlign#">
-    <center>
+  <div class="cmds #isVerticalAlign#" style="width:calc(100% - 2px)">
       <!--         HEURE ACTUELLE Prochaine alerte
       -->
-      <div style="border-bottom:2px solid #curAlertColor#;margin-bottom:0px">
+      <div style="width: calc(100% - 10px) !important;border-bottom:2px solid #curAlertColor#;margin:5px;margin-bottom:0px;margin-top:0px">
         <table><tr><td style="background-color: rgb(var(--eq-bg-color))">#valueNow#</td><td style="background-color: rgb(var(--eq-bg-color))">&nbsp;#datenow#<br/>&nbsp;#nextAlert#</td></tr></table>
       </div>
       <!-- Titres des jours uniquement
@@ -90,7 +89,10 @@
         Niveaux d'alerte sur #numCmdsHour# heures.
         #dataHoursJson#
       </div>
+      <!--
+    <center>
     </center>
+      -->
     <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
       #dataActuEcowatt#
     </div>
