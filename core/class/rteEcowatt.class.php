@@ -498,71 +498,85 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
           'name' => __('Maintenant', __FILE__),
           'subtype' => 'string',
           'order' => 1,
+          'isVisible' => 0,
         ),
         'today' => array(
           'name' => __('Aujourd\'hui', __FILE__),
           'subtype' => 'string',
           'order' => 2,
+          'isVisible' => 0,
         ),
         'tomorrow' => array(
           'name' => __('Demain', __FILE__),
           'subtype' => 'string',
           'order' => 3,
+          'isVisible' => 0,
         ),
         'todayTS' => array(
           'name' => __('Aujourd\'hui timestamp', __FILE__),
           'subtype' => 'numeric',
           'order' => 4,
+          'isVisible' => 0,
         ),
         'tomorrowTS' => array(
           'name' => __('Demain timestamp', __FILE__),
           'subtype' => 'numeric',
           'order' => 5,
+          'isVisible' => 0,
         ),
         'blue-remainingDays' => array(
           'name' => __('Jours Bleus restants', __FILE__),
           'subtype' => 'numeric',
           'order' => 6,
+          'isVisible' => 0,
         ),
         'blue-totalDays' => array(
           'name' => __('Total jours Bleus', __FILE__),
           'subtype' => 'numeric',
           'order' => 7,
+          'isVisible' => 0,
         ),
         'white-remainingDays' => array(
           'name' => __('Jours Blancs restants', __FILE__),
           'subtype' => 'numeric',
           'order' => 8,
+          'isVisible' => 0,
         ),
         'white-totalDays' => array(
           'name' => __('Total jours Blancs', __FILE__),
           'subtype' => 'numeric',
           'order' => 9,
+          'isVisible' => 0,
         ),
         'red-remainingDays' => array(
           'name' => __('Jours Rouges restants', __FILE__),
           'subtype' => 'numeric',
           'order' => 10,
+          'isVisible' => 0,
         ),
         'red-totalDays' => array(
           'name' => __('Total jours Rouges', __FILE__),
           'subtype' => 'numeric',
           'order' => 11,
+          'isVisible' => 0,
         ),
         'jsonCmdForWidget' => array(
-          'name' => __('Cmd Json pour widget', __FILE__),
+          'name' => __('Json Cmd pour widget', __FILE__),
           'subtype' => 'string',
           'order' => 12,
+          'template' => __CLASS__ ."::widget4JsonCmdByPhpvarious",
         ),
         'yesterday' => array(
           'name' => __('Hier', __FILE__),
           'subtype' => 'string',
           'order' => 13,
+          'isVisible' => 0,
         ),
         'yesterdayDatetime' => array(
           'name' => __('Hier datetime', __FILE__),
           'subtype' => 'string',
           'order' => 14,
+          'isVisible' => 0,
         ),
       );
     }
@@ -580,9 +594,11 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
       if (!is_object($cmd)) {
         $cmd = new rteEcowattCmd();
         $cmd->setLogicalId($key);
-        $cmd->setIsVisible(1);
-        $cmd->setName($cmd_info['name']);
+        $cmd->setName($cmd_info['name']); 
+        if(isset($cmd_info['isVisible'])) $cmd->setIsVisible($cmd_info['isVisible']);
+        else $cmd->setIsVisible(1);
         if(isset($cmd_info['unit'])) $cmd->setUnite($cmd_info['unit']);
+        if(isset($cmd_info['template'])) $cmd->setTemplate('dashboard', $cmd_info['template']);
         $cmd->setOrder($cmd_info['order']);
         $msg .= " ++$key,";
       }
