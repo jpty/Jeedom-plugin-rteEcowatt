@@ -598,7 +598,10 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         if(isset($cmd_info['isVisible'])) $cmd->setIsVisible($cmd_info['isVisible']);
         else $cmd->setIsVisible(1);
         if(isset($cmd_info['unit'])) $cmd->setUnite($cmd_info['unit']);
-        if(isset($cmd_info['template'])) $cmd->setTemplate('dashboard', $cmd_info['template']);
+        if(isset($cmd_info['template'])) {
+          $cmd->setTemplate('dashboard', $cmd_info['template']);
+          $cmd->setTemplate('mobile', $cmd_info['template']);
+        }
         $cmd->setOrder($cmd_info['order']);
         $msg .= " ++$key,";
       }
