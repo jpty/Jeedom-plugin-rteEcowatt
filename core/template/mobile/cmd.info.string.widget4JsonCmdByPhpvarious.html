@@ -1,7 +1,7 @@
 <div class="cmd cmd-widget #history#" data-type="info" data-subtype="string" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#">
 <!-- ################ Tarification For plugin RteEcowattTempo ################ 
   Widget name : cmd.info.string.RteEcowattTempo_jsonCmdForWidget
-  Last Update : 2024/03/27 22h20
+  Last Update : 2024/03/28 21h20
 -->
   <template>
     <div> /i\ Pour choisir l'icone du selecteur, attribuez simplement une icône a la commande.</div>
@@ -242,7 +242,7 @@
         cmd.querySelector(".txtLabel#uid#").classList.add(nextLabel)
         
         
-        if (is_object(eqLogic = document.querySelector('.eqLogic[data-eqLogic_id="#eqLogic_id#"]'))) {  // possible not eqLogic display in design
+        if (is_object(eqLogic = document.querySelector('.eqLogic[data-eqLogic_id="#eqLogic_id#"]')) && '#version#' == 'dashboard') {  // possible not eqLogic display in design
           let happened = false
           if (tempoExpirationDate#uid#){
             if (tempoExpirationDate#uid# == 'OUTOFDATE' || tempoExpirationDate#uid# == 'UNDEFINED') happened = true
@@ -416,7 +416,7 @@
       text-align: center;
     }
     
-    .texte#uid# { margin: 10px; }
+    .texte#uid# { /* margin: 10px; */ margin-top: 10px;}
     .texte#uid# .bar-error#uid#, .bar-error#uid#,.texte#uid# .label-error#uid# {
       background-size: 30px 30px;
       background-image: linear-gradient(135deg, 
@@ -457,7 +457,7 @@
     [id*="bar"].label-hc-jr#uid# { color: var(--color-txt-hc-jr#uid#); }
     [id*="bar"].label-hp-jr#uid# { color: var(--color-txt-hp-jr#uid#); }
     
-    #remainingDays#uid# { margin: 5px; }
+    #remainingDays#uid# {  /* margin: 10px; */ margin-top: 10px; }
     #remainingDays#uid# span { vertical-align: middle; }
     #remainingDays#uid# > i.label-hc-jb#uid# { color: var(--color-hc-jb#uid#); }
     #remainingDays#uid# > i.label-hp-jb#uid# { color: var(--color-hp-jb#uid#); }
@@ -476,7 +476,7 @@
     #widget#uid# [id*="content"] [id*="bar"] span { vertical-align: middle; display: table-cell; max-width: 0; white-space: nowrap; overflow: hidden; }
     #widget#uid# [id*="content"] [id*="bar"] div { height: 100%; align-content: center; display: grid; }
     #widget#uid# [id*="content"] [id*="bar"] div[id*="date"] { float: left; margin-left: 10px; }
-    
+    /*
     [id*="content"] [id*="bar"].label-hp#uid# { border: 1px solid var(--color-hp#uid#); }
     [id*="content"] [id*="bar"].label-hc#uid# { border: 1px solid var(--color-hc#uid#); }
     [id*="content"] [id*="bar"].label-hc-jb#uid# { border: 1px solid var(--color-hc-jb#uid#); }
@@ -485,7 +485,7 @@
     [id*="content"] [id*="bar"].label-hp-jw#uid# { border: 1px solid var(--color-hp-jw#uid#); }
     [id*="content"] [id*="bar"].label-hc-jr#uid# { border: 1px solid var(--color-hc-jr#uid#); }
     [id*="content"] [id*="bar"].label-hp-jr#uid# { border: 1px solid var(--color-hp-jr#uid#); }
-    
+    */
     [id*="content"] [id*="bar"].label-hp#uid#:not(.is-gone#uid#), .circle#uid#.label-hp#uid# { background-color: var(--color-hp#uid#); }
     [id*="content"] [id*="bar"].label-hc#uid#:not(.is-gone#uid#), .circle#uid#.label-hc#uid# { background-color: var(--color-hc#uid#); }
     [id*="content"] [id*="bar"].label-hc-jb#uid#:not(.is-gone#uid#), .circle#uid#.label-hc-jb#uid# { background-color: var(--color-hc-jb#uid#); }
