@@ -308,11 +308,11 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
             <thead>
               <tr>
                 <th class="hidden-xs" style="min-width:50px;width:70px;">ID</th>
-                <th style="min-width:50px;width:50px;">{{LogicalId}}</th>
-                <th style="min-width:200px;width:350px;">{{Nom}}</th>
+                <th style="min-width:50px;">{{LogicalId}}</th>
+                <th style="min-width:100px;">{{Nom}}</th>
                 <th>{{Paramètres}}</th>
                 <th>{{Etat}}</th>
-                <th style="min-width:80px;width:200px;">{{Actions}}</th>
+                <th style="min-width:80px;">{{Actions}}</th>
                 <th></th>
               </tr>
             </thead>
