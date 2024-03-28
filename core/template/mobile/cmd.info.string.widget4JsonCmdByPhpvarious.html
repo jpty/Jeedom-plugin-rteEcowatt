@@ -1,0 +1,521 @@
+<div class="cmd cmd-widget #history#" data-type="info" data-subtype="string" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#">
+<!-- ################ Tarification For plugin RteEcowattTempo ################ 
+  Widget name : cmd.info.string.RteEcowattTempo_jsonCmdForWidget
+  Last Update : 2024/03/27 22h20
+-->
+  <template>
+    <div> /i\ Pour choisir l'icone du selecteur, attribuez simplement une icône a la commande.</div>
+    <div>heightBar : Hauteur des barres  [ Exemple : 12, 14 ... | défaut : 20]</div>
+    <div>radius : Taille des arrondis [ Exemple : 5, 10 ... | défaut : 10 ]</div>
+    <div>hideTexte : Cache le texte [ 1 = Cacher | defaut : 0 ]</div>
+    <div>hideBar : Cache les barres [ 1 = Cacher | defaut : 0 ]</div>
+    <div>hideRemaining : Cache les remainingDays [ 1 = Cacher | defaut : 0 ]</div>
+    <div>sizeSelector : Taille du selecteur [ Exemple : 10, 12 ... | défaut : 18]</div>
+    <div>colorTxt : Couleur du texte. [ Exemple : #fffff, white ... ]</div>
+    <div>hidePrices : Masquer les prix [ 1 = Cacher | defaut : 0 ]</div>
+  </template>
+  <div id="widget#uid#" class="graph#uid# type_#uid#">
+    <div class="day#uid#">
+      <span class="iconSel#uid#" id="iconSel#uid#">#name_display#</span>
+    </div>
+    <div id="content#uid#">
+      <div id="bar1_#uid#">
+        <div id="price1_#uid#"></div>
+      </div><div id="bar2_#uid#"><div id="date2_#uid#"></div><div id="price2_#uid#"></div></div><div id="bar3_#uid#"></div>
+    </div>
+    <div id="days#uid#" class="day#uid# day-grid#uid#">
+      <div>0h</div><div>6h</div><div>22h</div><!--<div>0h</div>-->
+    </div>
+    <div id="content2-#uid#">
+      <div id="bar4_#uid#"><div id="price4_#uid#"></div></div><div id="bar5_#uid#"><div id="date5_#uid#"></div><div id="price5_#uid#"></div></div><div id="bar6_#uid#"></div>
+    </div>
+  </div>
+  <div class="day#uid# texte#uid#">
+    <span class="iconTxt#uid#"><div class="circle#uid#"></div></span>
+    <span class="txt#uid#"></span><div class="label txtLabel#uid#"></div>
+  </div>
+  <div id="remainingDays#uid#" class="day#uid# remaining#uid#">
+    <div class="circle#uid# label-hp-jb#uid#" title="Jours Bleu"></div><span></span>
+    <div class="circle#uid# label-hp-jw#uid#" title="Jours Blanc"></div><span></span>
+    <div class="circle#uid# label-hp-jr#uid#" title="Jours Rouge"></div><span></span>
+  </div>
+  
+  <script>
+    function log#uid#(text) {
+      if (debug#uid#) console.log(text);
+    }
+    function add0#uid#(val){
+      return((val < 10) ? "0" : "") + val;
+    }   
+    function getTxt#uid#(key){
+      return labelsList#uid#.find(item => item.key.toLowerCase() === key.toLowerCase())?labelsList#uid#.find(item => item.key.toLowerCase() === key.toLowerCase()).data.txt:'Erreur'
+    }
+    function getTxtTempo#uid#(key){
+      return labelsList#uid#.find(item => item.key.toLowerCase() === key.toLowerCase())?labelsList#uid#.find(item => item.key.toLowerCase() === key.toLowerCase()).data.txtTempo:'Erreur'
+    }
+    function getLabel#uid#(key){
+      return labelsList#uid#.find(item => item.key.toLowerCase() === key.toLowerCase())?labelsList#uid#.find(item => item.key.toLowerCase() === key.toLowerCase()).data.label:'label-error#uid#'
+    }
+    function isCurrentTimeslot#uid#(currentDate, beginDate, endDate) {
+      	if (beginDate > endDate) endDate += 24;
+        if (beginDate > currentDate) currentDate += 24;
+        return currentDate >= beginDate && currentDate < endDate;
+    }
+    var debug#uid# = ('#debug#' == 1) ? true : false;
+    
+    log#uid#('Chargement Widget Tarification pour plugin RteEcowattTempo [#id#] Compatibilité V4.3 V4.4')
+    /* ---------------------------- */
+    /* Compatibilité V4.2 V4.3 V4.4 */
+    /* ---------------------------- */
+    if (typeof jeedom.cmd.addUpdateFunction !== 'function') { // a partir de la 4.3
+      log#uid#('| jeedom.cmd.addUpdateFunction no exist')
+      jeedom.cmd.addUpdateFunction = function(id,func) { jeedom.cmd.update[id]=func; }
+    }
+    
+    /* --------------------- */
+    /* Paramètres optionnels */
+    /* --------------------- */
+    if ('#colorTxt#' != '#'+'colorTxt#') document.documentElement.style.setProperty('--color-txt#uid#', '#colorTxt#')
+    if ('#sizeSelector#' != '#'+'sizeSelector#' && !isNaN('#sizeSelector#')) document.documentElement.style.setProperty('--size-selector#uid#', '#sizeSelector#px')
+    if ('#heightBar#' != '#'+'heightBar#' && !isNaN('#heightBar#')) document.documentElement.style.setProperty('--height-bar#uid#', '#heightBar#px')
+    if ('#radius#' != '#'+'radius#'  && !isNaN('#radius#')) document.documentElement.style.setProperty('--border-radius#uid#', '#radius#px')
+    
+    var icone#uid# = '#name_display#';
+    if(icone#uid#.indexOf('<i ') === -1) icone#uid# = '<i class="fas fa-map-marker-alt "></i>'
+    if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+      cmd.querySelector('.iconSel#uid#').innerHTML = icone#uid#
+      document.documentElement.style.setProperty('--offsetWidth#uid#', cmd.querySelector('.iconSel#uid# i').offsetWidth + 'px')
+      if ('#hideTexte#' == 1) cmd.querySelector('.texte#uid#').style.display = 'none'
+      else cmd.querySelector('.texte#uid#').style.display = ''
+      if ('#hideRemaining#' == 1) cmd.querySelector('.remaining#uid#').style.display = 'none'
+      else cmd.querySelector('.remaining#uid#').style.display = ''
+      if ('#hideBar#' == 1) cmd.querySelector('.graph#uid#').style.display = 'none'
+      else cmd.querySelector('.graph#uid#').style.display = ''
+    } 
+    
+    var timeslots#uid# = '0h|6h|22h'
+    var labels#uid# = 'HC|HP|HC'
+    var labelsList#uid# = [
+      { key: 'HP', data: { txt: 'Heures Pleines', color: 'var(--color-hp#uid#)', label: 'label-hp#uid#', txtTempo: 'Heures Pleines' }},
+      { key: 'HC', data: { txt: 'Heures Creuses', color: 'var(--color-hc#uid#)', label: 'label-hc#uid#', txtTempo: 'Heures Creuses' }},
+      { key: 'HPUNDEFINED', data: { txt: 'Heures Pleines', color: 'var(--color-hp#uid#)', label: 'label-hp#uid#', txtTempo: 'Heures Pleines Tempo non défini' }},
+      { key: 'HCUNDEFINED', data: { txt: 'Heures Creuses', color: 'var(--color-hc#uid#)', label: 'label-hc#uid#', txtTempo: 'Heures Creuses Tempo non défini' }},
+      { key: 'HCBLUE', data: { txt: 'Heures Creuses', color: 'var(--color-hc-jb#uid#)', label: 'label-hc-jb#uid#', txtTempo: 'Heures Creuses Jour BLEU' }},
+      { key: 'HPBLUE', data: { txt: 'Heures Pleines', color: 'var(--color-hp-jb#uid#)', label: 'label-hp-jb#uid#', txtTempo: 'Heures Pleines Jour BLEU' }},
+      { key: 'HCWHITE', data: { txt: 'Heures Creuses', color: 'var(--color-hc-jw#uid#)', label: 'label-hc-jw#uid#', txtTempo: 'Heures Creuses Jour BLANC' }},
+      { key: 'HPWHITE', data: { txt: 'Heures Pleines', color: 'var(--color-hp-jw#uid#)', label: 'label-hp-jw#uid#', txtTempo: 'Heures Pleines Jour BLANC' }},
+      { key: 'HCRED', data: { txt: 'Heures Creuses', color: 'var(--color-hc-jr#uid#)', label: 'label-hc-jr#uid#', txtTempo: 'Heures Creuses Jour ROUGE' }},
+      { key: 'HPRED', data: { txt: 'Heures Pleines', color: 'var(--color-hp-jr#uid#)', label: 'label-hp-jr#uid#', txtTempo: 'Heures Pleines Jour ROUGE' }}
+    ];
+    
+    var separators#uid# = ('#separator#'!='#'+'separator#') ? "#separator#" : '|'    
+    var timeslotsArray#uid# = timeslots#uid#.split(new RegExp("[" + separators#uid# + "]"))
+    var timeslotsIntArray#uid# = []
+    var labelsArray#uid# = labels#uid#.split(new RegExp("[" + separators#uid# + "]"))
+
+	var timer#uid#
+    var JsonTempoArray#uid# = []
+    var JsonPricesArray#uid# = []
+    var priorityPlugin#uid# = true
+    var remainingDays#uid# = []
+    var totalDays#uid# = []
+    var tempoExpirationDate#uid# = ''
+    var hidePrices#uid# = ('#hidePrices#' == 1) ? true : false
+    log#uid#('hidePrices#uid# : ' + hidePrices#uid#)
+   
+    timeslotsArray#uid#.map(function(timeslot, index){
+      const timeslotSplit#uid# = timeslot.split(/[hH]/)
+      const hoursTimeslot#uid# = timeslotSplit#uid#[0]
+      const minutesTimeslot#uid# = timeslotSplit#uid#[1]
+      timeslotsIntArray#uid#[index] = parseInt(hoursTimeslot#uid#) + ((minutesTimeslot#uid# == '')?0:parseInt(minutesTimeslot#uid#)/60)
+    })
+    
+    /* lancer par addUpdateFunction et toute les minutes */
+    function getTime#uid# () {
+      if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+        log#uid#('┌─────────────────── Widget Tarification pour plugin RteEcowattTempo [#id#] en debug [getTime()] ───────────────')
+        let label, txt, nextTxt, nextLabel, ecartMin, ecart, ecartHours
+        let ecartTxt = ''; let ecartTitle = ''; let posx = 0;
+        let date = new Date()
+        //date.setHours(6)
+        //date.setMinutes(0)
+        let dateText = date.toLocaleString(navigator.language,{dateStyle: "full",timeStyle: "short"})
+        let dateTextShort = date.toLocaleString(navigator.language,{dateStyle: "full"})
+        let dateTextDisplay = date.toLocaleDateString('fr-FR',{weekday: "short", month: 'long', day: 'numeric'})
+        let dateTimeTextDisplay = date.toLocaleDateString('fr-FR',{weekday: "short", month: 'long', day: 'numeric'}) + ' à ' + date.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})
+        let hours = date.getHours()
+        let minutes = date.getMinutes()
+        const hoursDec = hours + ( minutes / 60 )
+        log#uid#('| hoursDec : ' + hoursDec)
+        posx = hoursDec
+        hours = add0#uid#(hours)
+        minutes = add0#uid#(minutes)
+        const iMax = labelsArray#uid#.length
+        let indexPos = iMax-1
+        let indexTimesolt = 0
+        for (let i=0 ; i<iMax ; i++) {
+          if (isCurrentTimeslot#uid#(hoursDec, timeslotsIntArray#uid#[i], timeslotsIntArray#uid#[(i+1)%iMax])) {
+            indexPos = i
+            break
+          }
+        }
+        const nextTimeslotIndex = (getLabel#uid#(labelsArray#uid#[indexPos]) === getLabel#uid#(labelsArray#uid#[(indexPos+1)%iMax]))?(indexPos+2)%iMax:(indexPos+1)%iMax
+        const nextTimeslot = (timeslotsIntArray#uid#[nextTimeslotIndex] > hoursDec)?timeslotsIntArray#uid#[nextTimeslotIndex]:timeslotsIntArray#uid#[nextTimeslotIndex] + 24
+        ecart = nextTimeslot - hoursDec
+        ecartHours = Math.trunc(ecart)
+        ecartMin = Math.round((ecart - ecartHours) * 60)
+        log#uid#('| ecart : ' + ecart)
+        let dnextForLabel = new Date(date.getTime() + (((ecartHours * 60 * 60) + (ecartMin * 60)) * 1000));
+        let dnextTextForLabel = dnextForLabel.toLocaleString(navigator.language,{dateStyle: "full"})
+        let dtomorrow = new Date(date.getTime() + ((24 * 60 * 60) * 1000));
+        let dtomorrowText = dtomorrow.toLocaleString(navigator.language,{dateStyle: "full"})
+        let dtomorrowDisplay = dtomorrow.toLocaleDateString('fr-FR',{weekday: "short", month: 'long', day: 'numeric'})
+        let dyesterday = new Date(date.getTime() - ((24 * 60 * 60) * 1000));
+        let dyesterdayText = dyesterday.toLocaleString(navigator.language,{dateStyle: "full"})
+        
+        txt = getTxt#uid#(labelsArray#uid#[indexPos])
+        label = getLabel#uid#(labelsArray#uid#[indexPos])
+        nextTxt = getTxt#uid#(labelsArray#uid#[nextTimeslotIndex])
+        nextLabel = getLabel#uid#(labelsArray#uid#[nextTimeslotIndex] + ((JsonTempoArray#uid#[dnextTextForLabel]) ? JsonTempoArray#uid#[dnextTextForLabel] : ''))
+        
+        ecartTxt += dateTimeTextDisplay.charAt(0).toUpperCase() + dateTimeTextDisplay.slice(1) + ', dans '
+        if(ecartHours > 0) ecartTxt += ecartHours + 'h'
+        if(ecartMin > 0) ecartTxt += add0#uid#(ecartMin) + ' min'
+        ecartTxt += ', je serai en '
+        
+        document.getElementById("bar1_#uid#").classList.remove('label-hp#uid#','label-hc#uid#','label-hc-jw#uid#','label-hp-jw#uid#','label-hc-jr#uid#','label-hp-jr#uid#','label-hc-jb#uid#','label-hp-jb#uid#','is-gone#uid#')
+        document.getElementById("bar2_#uid#").classList.remove('label-hp#uid#','label-hc#uid#','label-hc-jw#uid#','label-hp-jw#uid#','label-hc-jr#uid#','label-hp-jr#uid#','label-hc-jb#uid#','label-hp-jb#uid#','is-gone#uid#')
+        document.getElementById("bar3_#uid#").classList.remove('label-hp#uid#','label-hc#uid#','label-hc-jw#uid#','label-hp-jw#uid#','label-hc-jr#uid#','label-hp-jr#uid#','label-hc-jb#uid#','label-hp-jb#uid#','is-gone#uid#')
+        document.getElementById("bar4_#uid#").classList.remove('label-hp#uid#','label-hc#uid#','label-hc-jw#uid#','label-hp-jw#uid#','label-hc-jr#uid#','label-hp-jr#uid#','label-hc-jb#uid#','label-hp-jb#uid#','is-gone#uid#')
+        document.getElementById("bar5_#uid#").classList.remove('label-hp#uid#','label-hc#uid#','label-hc-jw#uid#','label-hp-jw#uid#','label-hc-jr#uid#','label-hp-jr#uid#','label-hc-jb#uid#','label-hp-jb#uid#','is-gone#uid#')
+        document.getElementById("bar6_#uid#").classList.remove('label-hp#uid#','label-hc#uid#','label-hc-jw#uid#','label-hp-jw#uid#','label-hc-jr#uid#','label-hp-jr#uid#','label-hc-jb#uid#','label-hp-jb#uid#','is-gone#uid#')
+        cmd.querySelector(".txtLabel#uid#").classList.remove('label-hp#uid#','label-hc#uid#','label-hc-jw#uid#','label-hp-jw#uid#','label-hc-jr#uid#','label-hp-jr#uid#','label-hc-jb#uid#','label-hp-jb#uid#')
+        cmd.querySelector('.iconTxt#uid# > div').classList.remove('label-hp#uid#','label-hc#uid#','label-hc-jw#uid#','label-hp-jw#uid#','label-hc-jr#uid#','label-hp-jr#uid#','label-hc-jb#uid#','label-hp-jb#uid#')
+        
+        document.getElementById("bar1_#uid#").classList.add(getLabel#uid#('HC' + ((JsonTempoArray#uid#[dyesterdayText]) ? JsonTempoArray#uid#[dyesterdayText] : '')))
+        document.getElementById("bar2_#uid#").classList.add(getLabel#uid#('HP' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')))
+        document.getElementById("bar3_#uid#").classList.add(getLabel#uid#('HC' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')))
+        document.getElementById("bar4_#uid#").classList.add(getLabel#uid#('HC' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')))
+        document.getElementById("bar5_#uid#").classList.add(getLabel#uid#('HP' + ((JsonTempoArray#uid#[dtomorrowText]) ? JsonTempoArray#uid#[dtomorrowText] : '')))
+        document.getElementById("bar6_#uid#").classList.add(getLabel#uid#('HC' + ((JsonTempoArray#uid#[dtomorrowText]) ? JsonTempoArray#uid#[dtomorrowText] : '')))
+          
+        document.getElementById("bar1_#uid#").setAttribute('title', '<center>' + getTxtTempo#uid#('HC' + ((JsonTempoArray#uid#[dyesterdayText]) ? JsonTempoArray#uid#[dyesterdayText] : '')) + '</center>')
+        document.getElementById("bar2_#uid#").setAttribute('title', '<center>' + getTxtTempo#uid#('HP' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')) + '</center>')
+        document.getElementById("bar3_#uid#").setAttribute('title', '<center>' + getTxtTempo#uid#('HC' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')) + '</center>')
+        document.getElementById("bar4_#uid#").setAttribute('title', '<center>' + getTxtTempo#uid#('HC' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')) + '</center>')
+        document.getElementById("bar5_#uid#").setAttribute('title', '<center>' + getTxtTempo#uid#('HP' + ((JsonTempoArray#uid#[dtomorrowText]) ? JsonTempoArray#uid#[dtomorrowText] : '')) + '</center>')
+        document.getElementById("bar6_#uid#").setAttribute('title', '<center>' + getTxtTempo#uid#('HC' + ((JsonTempoArray#uid#[dtomorrowText]) ? JsonTempoArray#uid#[dtomorrowText] : '')) + '</center>')
+        if (!hidePrices#uid#) {
+          document.getElementById("price1_#uid#").innerHTML = (isset(JsonPricesArray#uid#['HC' + ((JsonTempoArray#uid#[dyesterdayText]) ? JsonTempoArray#uid#[dyesterdayText] : '')])) ? JsonPricesArray#uid#['HC' + ((JsonTempoArray#uid#[dyesterdayText]) ? JsonTempoArray#uid#[dyesterdayText] : '')] : ''
+          document.getElementById("price2_#uid#").innerHTML = (isset(JsonPricesArray#uid#['HP' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')])) ? JsonPricesArray#uid#['HP' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')] : ''
+          document.getElementById("price4_#uid#").innerHTML = (isset(JsonPricesArray#uid#['HC' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')])) ? JsonPricesArray#uid#['HC' + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')] : ''
+          document.getElementById("price5_#uid#").innerHTML = (isset(JsonPricesArray#uid#['HP' + ((JsonTempoArray#uid#[dtomorrowText]) ? JsonTempoArray#uid#[dtomorrowText] : '')])) ? JsonPricesArray#uid#['HP' + ((JsonTempoArray#uid#[dtomorrowText]) ? JsonTempoArray#uid#[dtomorrowText] : '')] : ''
+        }
+        
+        document.getElementById("date2_#uid#").innerHTML = dateTextDisplay.charAt(0).toUpperCase() + dateTextDisplay.slice(1)
+        document.getElementById("date5_#uid#").innerHTML = dtomorrowDisplay.charAt(0).toUpperCase() + dtomorrowDisplay.slice(1)
+        
+        if(hours >= 0 && hours < 6){
+          ecartTitle = ecartTxt + getTxtTempo#uid#(labelsArray#uid#[nextTimeslotIndex] + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : ''))
+          nextLabel = getLabel#uid#(labelsArray#uid#[nextTimeslotIndex] + (JsonTempoArray#uid#[dateTextShort] ? JsonTempoArray#uid#[dateTextShort] : ''))
+        }
+        else {
+          if (hours >= 6 && hours < 22){
+            ecartTitle = ecartTxt + getTxtTempo#uid#(labelsArray#uid#[nextTimeslotIndex] + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : ''))
+            nextLabel = getLabel#uid#(labelsArray#uid#[nextTimeslotIndex] + (JsonTempoArray#uid#[dateTextShort] ? JsonTempoArray#uid#[dateTextShort] : ''))
+          }
+          else 
+          {
+            ecartTitle = ecartTxt + getTxtTempo#uid#(labelsArray#uid#[nextTimeslotIndex] + ((JsonTempoArray#uid#[dtomorrowText]) ? JsonTempoArray#uid#[dtomorrowText] : ''))
+            nextLabel = getLabel#uid#(labelsArray#uid#[nextTimeslotIndex] + (JsonTempoArray#uid#[dtomorrowText] ? JsonTempoArray#uid#[dtomorrowText] : ''))
+          }
+        }
+        
+        if(isset(remainingDays#uid#['BLUE']) && isset(totalDays#uid#['BLUE'])) cmd.querySelector('#remainingDays#uid# > span:nth-child(2)').innerHTML = remainingDays#uid#['BLUE'] + '/' + totalDays#uid#['BLUE']
+        if(isset(remainingDays#uid#['WHITE']) && isset(totalDays#uid#['WHITE'])) cmd.querySelector('#remainingDays#uid# > span:nth-child(4)').innerHTML = remainingDays#uid#['WHITE'] + '/' + totalDays#uid#['WHITE']
+        if(isset(remainingDays#uid#['RED']) && isset(totalDays#uid#['RED'])) cmd.querySelector('#remainingDays#uid# > span:nth-child(6)').innerHTML = remainingDays#uid#['RED'] + '/' + totalDays#uid#['RED']
+        
+        cmd.querySelector('.iconTxt#uid# > div').classList.add(getLabel#uid#(labelsArray#uid#[indexPos] + ((JsonTempoArray#uid#[dateTextShort]) ? JsonTempoArray#uid#[dateTextShort] : '')))
+        cmd.querySelector('.iconSel#uid#').setAttribute('title', ecartTitle)
+        cmd.querySelector('.txt#uid#').innerHTML = ecartTxt
+        cmd.querySelector('.txtLabel#uid#').innerHTML = nextTxt
+        cmd.querySelector(".txtLabel#uid#").classList.add(nextLabel)
+        
+        
+        if (is_object(eqLogic = document.querySelector('.eqLogic[data-eqLogic_id="#eqLogic_id#"]'))) {  // possible not eqLogic display in design
+          let happened = false
+          if (tempoExpirationDate#uid#){
+            if (tempoExpirationDate#uid# == 'OUTOFDATE' || tempoExpirationDate#uid# == 'UNDEFINED') happened = true
+            else {
+              var dateTempoExpiration = new Date(tempoExpirationDate#uid#)
+              dateTempoExpiration.setHours(0)
+              dateTempoExpiration.setMinutes(0)
+              dateTempoExpiration.setSeconds(0)
+              dateTempoExpiration.setMilliseconds(0)
+              date.setHours(0)
+              date.setMinutes(0)
+              date.setSeconds(0)
+              date.setMilliseconds(0)
+              if (date.getTime() >= dateTempoExpiration.getTime()) happened = true
+            }
+          }
+          if (!is_object(eqLogic.querySelector("#tempoExpiration")))
+          {
+            var newLink = document.createElement('span');
+            newLink.id = 'tempoExpiration';
+            newLink.setAttribute('class', 'pull-right warning hidden');
+            newLink.setAttribute('style', 'font-size: 16px !important;');
+            newLink.innerHTML = '<i class="fas fa-info-circle" style="margin-top: 4px; font-size: 16px !important;"></i>'
+            eqLogic.querySelector(".widget-name").appendChild(newLink);
+          }
+          if (happened && !hidePrices#uid#) {
+            eqLogic.querySelector("#tempoExpiration").classList.remove('hidden')
+            let message = ''
+            if (tempoExpirationDate#uid# == 'OUTOFDATE') message = 'Date de fin de validité des prix Tempo est expirée.'
+            else if (tempoExpirationDate#uid# == 'UNDEFINED') message = 'Date de fin de validité des prix Tempo non définie'
+            else message = 'Date de fin de validité des prix Tempo est expirée (' + dateTempoExpiration.toLocaleString(navigator.language,{dateStyle: "full"}) + ').'
+            eqLogic.querySelector("#tempoExpiration").setAttribute('title', message)
+          }
+          else eqLogic.querySelector("#tempoExpiration").classList.add('hidden')
+        }
+        document.documentElement.style.setProperty('--posx#uid#', posx +'%')
+        timer#uid# = setTimeout("getTime#uid#()",60000)
+      }
+      log#uid#('└────────────────────────────────────')
+    }
+    
+    jeedom.cmd.addUpdateFunction('#id#', function(_options) {
+      log#uid#('┌─────────────────── Widget Tarification pour plugin RteEcowattTempo [#id#] en debug [addUpdateFunction()] ───────────────')
+      log#uid#('| value : ' + _options.display_value.replace(/&quot;/g,'"'))
+      JsonTempoArray#uid# = []
+      JsonPricesArray#uid# = []
+      remainingDays#uid# = []
+      totalDays#uid# = []
+      tempoExpirationDate#uid# = ''
+      let tempoJour = ''
+      let IS_JSON = true;
+      try { var obj = JSON.parse(_options.display_value.replace(/&quot;/g,'"')) }
+      catch(err) { IS_JSON = false }
+      if (_options.display_value != "" && IS_JSON && isNaN(_options.display_value)) // && autorizeTempo
+      {
+        log#uid#('|┌─────────────────── jsonTempo detecté ───────────────────')
+        log#uid#('|| Nombre de clés dans le json : ' + Object.keys(obj).length)
+        for(key in obj){
+          switch (key) {
+            case 'yesterday':
+            case 'today':
+            case 'tomorrow':
+              if(isset(obj[key]['datetime'])) {
+                let dateTemp = new Date(obj[key]['datetime'])
+                JsonTempoArray#uid#[(dateTemp.toLocaleString(navigator.language,{dateStyle: "full"}))] = (obj[key]['value'])?obj[key]['value']:'undefined'
+              }
+            break;
+            case 'prices':
+              for(key2 in obj['prices']){
+                if (key2 == 'tempoExpirationDate') {
+                  tempoExpirationDate#uid# = obj['prices'][key2]
+                }
+                else JsonPricesArray#uid#[key2.replace('JB', 'BLUE').replace('JW', 'WHITE').replace('JR', 'RED')] = obj['prices'][key2] + '€'
+              }
+            break;
+            case 'colors':
+              for(color in obj['colors']){
+                if (color == 'HCJB') document.documentElement.style.setProperty('--color-hc-jb#uid#', obj['colors'][color])
+                else if (color == 'HPJB') document.documentElement.style.setProperty('--color-hp-jb#uid#', obj['colors'][color])
+                else if (color == 'HCJW') document.documentElement.style.setProperty('--color-hc-jw#uid#', obj['colors'][color])
+                else if (color == 'HPJW') document.documentElement.style.setProperty('--color-hp-jw#uid#', obj['colors'][color])
+                else if (color == 'HCJR') document.documentElement.style.setProperty('--color-hc-jr#uid#', obj['colors'][color])
+                else if (color == 'HPJR') document.documentElement.style.setProperty('--color-hp-jr#uid#', obj['colors'][color])
+                else if (color == 'UNDEFINED') {
+                  document.documentElement.style.setProperty('--color-hc#uid#', obj['colors'][color])
+                  document.documentElement.style.setProperty('--color-hp#uid#', obj['colors'][color])
+                }
+                else if (color == 'ERROR') {
+                }
+              }
+            break;
+            case 'remainingDays':
+              for(remainingDay in obj['remainingDays']){
+                remainingDays#uid#[remainingDay] = obj['remainingDays'][remainingDay]
+              }
+              
+            break;  
+            case 'totalDays':
+              for(totalDay in obj['totalDays']){
+                totalDays#uid#[totalDay] = obj['totalDays'][totalDay]
+              }
+            break;  
+          }
+        }
+      }
+      log#uid#('|└────────────────────────────────────')
+      log#uid#('└────────────────────────────────────')
+      clearTimeout(timer#uid#);
+      getTime#uid#()
+    })
+    
+    jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }])
+  </script>
+  
+  <style>
+    :root {
+      --width#uid# : 22px;
+      --posx#uid# : 1;
+      --border-radius#uid# : 10px;
+      --offsetWidth#uid# : 9px;
+      
+      --color-icone#uid# : var(--color-txt#uid#);
+      --color-txt-hc#uid# : var(--sc-lightTxt-color);
+      --color-txt-hp#uid# : var(--sc-lightTxt-color);
+      --color-txt-hp-jr#uid# : white;
+      --color-txt-hc-jr#uid# : white;
+      --color-txt-hp-jb#uid# : white;
+      --color-txt-hc-jb#uid# : white;
+      --color-txt-hp-jw#uid# : black;
+      --color-txt-hc-jw#uid# : black;
+      
+      --color-hc#uid# : var(--al-success-color);
+      --color-hp#uid# : var(--al-warning-color);
+      --color-hp-jr#uid# : #F34B32;
+      --color-hc-jr#uid# : #f38979;
+      --color-hp-jb#uid# : #005BBB;
+      --color-hc-jb#uid# : #72a7df;
+      --color-hp-jw#uid# : #DFDFDF;
+      --color-hc-jw#uid# : #ffffff;
+      
+      --color-txt#uid# : var(--link-color);
+      
+      
+      --size-selector#uid#: 18px;
+      --height-bar#uid#: 20px;
+      --color-tempo#uid#: transparent;
+    }
+    
+    #widget#uid# {
+      margin-top: 10px;
+      text-align: left;
+      width: 100%;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .iconSel#uid# {  position: relative;  left: calc((var(--posx#uid#) * 100 / 24) - (var(--offsetWidth#uid#) / 2)); color: var(--color-icone#uid#); }
+    .iconSel#uid# > i { font-size: var(--size-selector#uid#); }
+    
+    .day#uid#{  width: 100%; position: relative; margin-bottom: 2px; }
+    
+    .day-grid#uid#{ margin: 2px 0 5px; height: 8px; display: inline-block; }
+    .day-grid#uid# div:nth-child(1) { text-align: right; /* left: 0px; */}
+    .day-grid#uid# div {
+      position: absolute;
+      display: block;
+      width: 30px;
+      margin-left: -14px;
+      font-size: 10px;
+      text-align: center;
+    }
+    
+    .texte#uid# { margin: 10px; }
+    .texte#uid# .bar-error#uid#, .bar-error#uid#,.texte#uid# .label-error#uid# {
+      background-size: 30px 30px;
+      background-image: linear-gradient(135deg, 
+        rgba(255, 0, 0, 0.5) 25%, 
+        rgba(255, 255, 255, 0.5) 25%, 
+        rgba(255, 255, 255, 0.5) 50%, 
+        rgba(255, 0, 0, 0.5) 50%, 
+        rgba(255, 0, 0, 0.5) 75%, 
+        rgba(255, 255, 255, 0.5) 75%, 
+        rgba(255, 255, 255, 0.5) 
+	  );
+      background-image: linear-gradient(135deg, 
+        rgb(163 163 163 / 50%) 25%,
+        rgba(255, 255, 255, 0.5) 25%, 
+        rgba(255, 255, 255, 0.5) 50%, 
+        rgb(163 163 163 / 50%) 50%, 
+        rgb(163 163 163 / 50%) 75%, 
+        rgba(255, 255, 255, 0.5) 75%, 
+        rgba(255, 255, 255, 0.5) 
+	  );
+    }
+    
+    .label.label-hp#uid# { background-color: var(--color-hp#uid#) !important; color: var(--color-txt-hp#uid#); }
+    .label.label-hc#uid# { background-color: var(--color-hc#uid#) !important; color: var(--color-txt-hc#uid#); }
+    .label.label-hp-jr#uid# { background-color: var(--color-hp-jr#uid#) !important; color: var(--color-txt-hp-jr#uid#); }
+    .label.label-hc-jr#uid# { background-color: var(--color-hc-jr#uid#) !important; color: var(--color-txt-hc-jr#uid#); }
+    .label.label-hp-jb#uid# { background-color: var(--color-hp-jb#uid#) !important; color: var(--color-txt-hp-jb#uid#); }
+    .label.label-hc-jb#uid# { background-color: var(--color-hc-jb#uid#) !important; color: var(--color-txt-hc-jb#uid#); }
+    .label.label-hp-jw#uid# { background-color: var(--color-hp-jw#uid#) !important; color: var(--color-txt-hp-jw#uid#); }
+    .label.label-hc-jw#uid# { background-color: var(--color-hc-jw#uid#) !important; color: var(--color-txt-hc-jw#uid#); }
+    
+    [id*="bar"].label-hc#uid# { color: var(--color-txt-hc#uid#); }
+    [id*="bar"].label-hp#uid# { color: var(--color-txt-hp#uid#); }
+    [id*="bar"].label-hc-jb#uid# { color: var(--color-txt-hc-jb#uid#); }
+    [id*="bar"].label-hp-jb#uid# { color: var(--color-txt-hp-jb#uid#); }
+    [id*="bar"].label-hc-jw#uid# { color: var(--color-txt-hc-jw#uid#); }
+    [id*="bar"].label-hp-jw#uid# { color: var(--color-txt-hp-jw#uid#); }
+    [id*="bar"].label-hc-jr#uid# { color: var(--color-txt-hc-jr#uid#); }
+    [id*="bar"].label-hp-jr#uid# { color: var(--color-txt-hp-jr#uid#); }
+    
+    #remainingDays#uid# { margin: 5px; }
+    #remainingDays#uid# span { vertical-align: middle; }
+    #remainingDays#uid# > i.label-hc-jb#uid# { color: var(--color-hc-jb#uid#); }
+    #remainingDays#uid# > i.label-hp-jb#uid# { color: var(--color-hp-jb#uid#); }
+    #remainingDays#uid# > i.label-hc-jw#uid# { color: var(--color-hc-jw#uid#); }
+    #remainingDays#uid# > i.label-hp-jw#uid# { color: var(--color-hp-jw#uid#); }
+    #remainingDays#uid# > i.label-hc-jr#uid# { color: var(--color-hc-jr#uid#); }
+    #remainingDays#uid# > i.label-hp-jr#uid# { color: var(--color-hp-jr#uid#); }
+    #remainingDays#uid# > i { padding-left: 10px; margin-right: 4px; }
+    
+    #bar1_#uid#, #bar4_#uid# { width: calc(600% / 24); border-radius: var(--border-radius#uid#) 0px 0px var(--border-radius#uid#); }
+    #bar2_#uid#, #bar5_#uid# { width: calc(1600% / 24); }
+    #bar3_#uid#, #bar6_#uid# { width: calc(200% / 24); border-radius: 0px var(--border-radius#uid#) var(--border-radius#uid#) 0px; border-left-width: 0px !important; }
+    
+    #widget#uid# [id*="content"] { border: 1px solid black; border-radius: var(--border-radius#uid#) var(--border-radius#uid#); width: 100%; }
+    #widget#uid# [id*="content"] [id*="bar"] { height: var(--height-bar#uid#); float: left; text-align: center; }
+    #widget#uid# [id*="content"] [id*="bar"] span { vertical-align: middle; display: table-cell; max-width: 0; white-space: nowrap; overflow: hidden; }
+    #widget#uid# [id*="content"] [id*="bar"] div { height: 100%; align-content: center; display: grid; }
+    #widget#uid# [id*="content"] [id*="bar"] div[id*="date"] { float: left; margin-left: 10px; }
+    
+    [id*="content"] [id*="bar"].label-hp#uid# { border: 1px solid var(--color-hp#uid#); }
+    [id*="content"] [id*="bar"].label-hc#uid# { border: 1px solid var(--color-hc#uid#); }
+    [id*="content"] [id*="bar"].label-hc-jb#uid# { border: 1px solid var(--color-hc-jb#uid#); }
+    [id*="content"] [id*="bar"].label-hp-jb#uid# { border: 1px solid var(--color-hp-jb#uid#); }
+    [id*="content"] [id*="bar"].label-hc-jw#uid# { border: 1px solid var(--color-hc-jw#uid#); }
+    [id*="content"] [id*="bar"].label-hp-jw#uid# { border: 1px solid var(--color-hp-jw#uid#); }
+    [id*="content"] [id*="bar"].label-hc-jr#uid# { border: 1px solid var(--color-hc-jr#uid#); }
+    [id*="content"] [id*="bar"].label-hp-jr#uid# { border: 1px solid var(--color-hp-jr#uid#); }
+    
+    [id*="content"] [id*="bar"].label-hp#uid#:not(.is-gone#uid#), .circle#uid#.label-hp#uid# { background-color: var(--color-hp#uid#); }
+    [id*="content"] [id*="bar"].label-hc#uid#:not(.is-gone#uid#), .circle#uid#.label-hc#uid# { background-color: var(--color-hc#uid#); }
+    [id*="content"] [id*="bar"].label-hc-jb#uid#:not(.is-gone#uid#), .circle#uid#.label-hc-jb#uid# { background-color: var(--color-hc-jb#uid#); }
+    [id*="content"] [id*="bar"].label-hp-jb#uid#:not(.is-gone#uid#), .circle#uid#.label-hp-jb#uid# { background-color: var(--color-hp-jb#uid#); }
+    [id*="content"] [id*="bar"].label-hc-jw#uid#:not(.is-gone#uid#), .circle#uid#.label-hc-jw#uid# { background-color: var(--color-hc-jw#uid#); }
+    [id*="content"] [id*="bar"].label-hp-jw#uid#:not(.is-gone#uid#), .circle#uid#.label-hp-jw#uid# { background-color: var(--color-hp-jw#uid#); }
+    [id*="content"] [id*="bar"].label-hc-jr#uid#:not(.is-gone#uid#), .circle#uid#.label-hc-jr#uid# { background-color: var(--color-hc-jr#uid#); }
+    [id*="content"] [id*="bar"].label-hp-jr#uid#:not(.is-gone#uid#), .circle#uid#.label-hp-jr#uid# { background-color: var(--color-hp-jr#uid#); }
+       
+    .circle#uid#.label-hp-jw#uid#, .circle#uid#.label-hc-jw#uid# { border-color: grey; }
+    .label.txtLabel#uid#.label-hp-jw#uid#, .label.txtLabel#uid#.label-hc-jw#uid# { border-color: grey; }
+    .label.txtLabel#uid# { border: 1px solid transparent; border-radius: var(--border-radius#uid#) var(--border-radius#uid#) !important; font-weight: bold;}
+    
+    .day-grid#uid# div:nth-child(2) { left: calc(600% / 24); }
+    .day-grid#uid# div:nth-child(3) { left: calc(2200% / 24); }
+    .day-grid#uid# div:nth-child(4) { right: 3px; text-align: right; }
+    
+    .txt#uid#, .txtLabel#uid# { vertical-align: middle; }
+    .circle#uid# {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 10px; margin-right: 4px;
+      border: 1px solid transparent;
+    }
+    
+    div.eqLogic-widget div.cmd-widget[data-cmd_id="#id#"] { width: 95%; color: var(--color-txt#uid#) !important; }
+    div.eqLogic-widget.editingMode #tempoExpiration { display: none; }
+    
+  </style>
+</div>
