@@ -42,7 +42,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
       echo '<div class="eqLogicThumbnailContainer">';
       foreach ($eqLogics as $eqLogic) {
         $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
-        echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
+        echo '<div class="eqLogicDisplayCard cursor ' .$opacity .'" data-eqLogic_id="' . $eqLogic->getId() . '">';
         echo '<img src="' . $plugin->getPathImgIcon() . '">';
         echo '<br>';
         echo '<span class="name">' . $eqLogic->getHumanName(true, true) . '</span>';
@@ -91,7 +91,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </div>
               </div>
               <div class="form-group">
-                <label class="col-sm-4 control-label" >{{Objet parent}}</label>
+                <label class="col-sm-4 control-label">{{Objet parent}}</label>
                 <div class="col-sm-6">
                   <select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
                     <option value="">{{Aucun}}</option>
@@ -150,9 +150,39 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
+                  <label class="col-sm-4 control-label" >{{Affichage des prix Tempo}}</label>
                   <div class="col-sm-7">
-                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplate" checked>
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="displayPrices" checked>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label">{{Template}}
+                  </label>
+                  <div class="col-sm-6">
+                    <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="templateTempo">
+                      <option value="plugin">{{Template du plugin}}</option>
+                      <option value="none">{{Pas de template}}</option>
+    <?php
+                      if(file_exists(__DIR__ .'/../../core/template/dashboard/custom.rte_tempo.html'))
+                        echo '<option value="custom">{{Template custom}}</option>';
+                      $files = array();
+                      if ($dh = opendir(__DIR__ .'/../../core/template/dashboard')) {
+                        while (($file = readdir($dh)) !== false) {
+                          if($file != 'custom.rte_tempo.html' && substr($file,0,17) == 'custom.rte_tempo.' && substr($file,-5) == '.html')
+                            $files[] = array('name' => substr($file,17,-5).' (custom)', 'fileName' => $file);
+                          if($file != 'rte_tempo.html' && substr($file,0,10) == 'rte_tempo.' && substr($file,-5) == '.html')
+                            $files[] = array('name' => substr($file,10,-5), 'fileName' => $file);
+                        }
+                        closedir($dh);
+                      }
+                      if(count($files)) {
+                        sort($files);
+                        foreach($files as $file) {
+                          echo '<option value="' .$file['fileName'] .'">' .$file['name'] .'</option>';
+                        }
+                      }
+    ?>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -160,7 +190,7 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
               <div class="datasource tempoEDF">
                 <div class="form-group">
                   <label class="col-sm-4 control-label" ></label>
-                  <div class="col-sm-7">Pas d'API RTE nécessaire pour ce type d'équipement.
+                  <div class="col-sm-7">Pas d'API pour ce type d'équipement. Les données sont récupérées sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/tempo.html#/">Web d'EDF</a> avec cette mention:<br> Seules les informations affichées sur votre compteur sont contractuelles. Les données communiquées sur le site internet le sont à titre indicatif. En effet, pour des raisons techniques, des différences peuvent parfois survenir entre la couleur indiquée et celle réellement pratiquée.
                   </div>
                 </div>
                 <div class="form-group">
@@ -174,7 +204,8 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
               <div class="datasource ejpEDF">
                 <div class="form-group">
                   <label class="col-sm-4 control-label" ></label>
-                  <div class="col-sm-7">Pas d'API RTE nécessaire pour ce type d'équipement.
+                  <div class="col-sm-7">Pas d'API pour ce type d'équipement. Les données sont récupérées sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/ejp.html#/">Web d'EDF</a> avec cette mention:<br> Ces informations sont non contractuelles et sans valeur d'engagement.
+La mise à jour des données est effectuée quotidiennement entre 13h et 15h, cependant des contraintes d'exploitation peuvent la retarder jusqu'à 5h du matin du jour EJP.
                   </div>
                 </div>
                 <div class="form-group">
@@ -212,7 +243,7 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
                 <div class="form-group">
                   <label class="col-sm-4 control-label" >{{Note sur ce type d'équipement}}</label>
                   <div class="col-sm-7">
-L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumption/Ecowatt/v4.0">Ecowatt</a> doit être associée à votre application créée sur le <a target="blank" href="https://data.rte-france.com/group/guest/apps">site RTE</a>.
+L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumption/Ecowatt/v5.0">Ecowatt v5</a> doit être associée à votre application créée sur le <a target="blank" href="https://data.rte-france.com/group/guest/apps">site RTE</a>.
                   </div>
                 </div>
 
@@ -230,7 +261,7 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
                       if ($dh = opendir(__DIR__ .'/../../core/template/dashboard')) {
                         while (($file = readdir($dh)) !== false) {
                           if($file != 'custom.rte_ecowatt.html' && substr($file,0,19) == 'custom.rte_ecowatt.' && substr($file,-5) == '.html')
-                            $files[] = array('name' => substr($file,19,-5), 'fileName' => $file);
+                            $files[] = array('name' => substr($file,19,-5).' (custom)', 'fileName' => $file);
                           if($file != 'rte_ecowatt.html' && substr($file,0,12) == 'rte_ecowatt.' && substr($file,-5) == '.html')
                             $files[] = array('name' => substr($file,12,-5), 'fileName' => $file);
                         }
@@ -277,12 +308,12 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
             <thead>
               <tr>
                 <th class="hidden-xs" style="min-width:50px;width:70px;">ID</th>
-                <th style="min-width:50px;width:50px;">{{LogicalId}}</th>
-                <th style="min-width:200px;width:350px;">{{Nom}}</th>
+                <th style="min-width:50px;">{{LogicalId}}</th>
+                <th style="min-width:100px;">{{Nom}}</th>
                 <th>{{Paramètres}}</th>
                 <th>{{Etat}}</th>
+                <th style="min-width:80px;">{{Actions}}</th>
                 <th></th>
-                <th style="min-width:80px;width:200px;">{{Actions}}</th>
               </tr>
             </thead>
             <tbody>
@@ -296,6 +327,6 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
 </div><!-- /.row row-overflow -->
 
 <!-- Inclusion du fichier javascript du plugin (dossier, nom_du_fichier, extension_du_fichier, id_du_plugin) -->
-<?php include_file('desktop', 'rteEcowatt', 'js', 'rteEcowatt');?>
+<?php include_file('desktop', 'rteEcowatt', 'js', 'rteEcowatt'); ?>
 <!-- Inclusion du fichier javascript du core - NE PAS MODIFIER NI SUPPRIMER -->
-<?php include_file('core', 'plugin.template', 'js');?>
+<?php include_file('core', 'plugin.template', 'js'); ?>

@@ -4,15 +4,15 @@
             "GenerationFichier": "2022-06-03T07:36:25+02:00",
             "jour": "2022-06-06T00:00:00+02:00",
             "dvalue": 1,
-            "message": "Situation normale ",
+            "message": " Pas d’alerte ",
             "values": [
                 {
                     "pas": 0,
-                    "hvalue": 1
+                    "hvalue": 0
                 },
                 {
                     "pas": 1,
-                    "hvalue": 1
+                    "hvalue": 0
                 },
                 {
                     "pas": 2,
@@ -108,7 +108,7 @@
             "GenerationFichier": "2022-06-03T07:36:25+02:00",
             "jour": "2022-06-04T00:00:00+02:00",
             "dvalue": 3,
-            "message": "Coupures d'électricité programmées",
+            "message": " Le système électrique se trouve dans une situation très tendue. Si nous ne baissons pas notre consommation d'électricité, des coupures ciblées sont inévitables. Adoptons tous les éco-gestes. ",
             "values": [
                 {
                     "pas": 0,
@@ -212,7 +212,7 @@
             "GenerationFichier": "2022-06-03T07:36:25+02:00",
             "jour": "2022-06-05T00:00:00+02:00",
             "dvalue": 2,
-            "message": "Risque de coupures d'électricité",
+            "message": " Le système électrique se trouve dans une situation tendue. Les éco-gestes citoyens sont les bienvenus.  ",
             "values": [
                 {
                     "pas": 0,
@@ -316,7 +316,7 @@
             "GenerationFichier": "2022-06-03T07:36:25+02:00",
             "jour": "2022-06-03T00:00:00+02:00",
             "dvalue": 3,
-            "message": "Coupures d'électricité en cours",
+            "message": " Le système électrique se trouve dans une situation très tendue. Si nous ne baissons pas notre consommation d'électricité, des coupures ciblées sont inévitables. Adoptons tous les éco-gestes. ",
             "values": [
                 {
                     "pas": 7,

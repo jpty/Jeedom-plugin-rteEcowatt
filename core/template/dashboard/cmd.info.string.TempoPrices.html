@@ -1,0 +1,106 @@
+<div class="cmd cmd-widget #history#" data-type="info" data-subtype="string" data-template="custom" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#">
+  <div class="title #hide_name#">
+    <div  class="cmdName">#name_display#</div>
+  </div>
+  <table border="1" style="width:98%">
+    <tr>
+      <td class="tableCmdcss pricesTitle#id# priceHCJB" style="color:white">Bleu HC</td>
+      
+      <td class="tableCmdcss pricesTitle#id# priceHPJB" style="color:white">Bleu HP</td>
+      <td class="tableCmdcss pricesTitle#id# priceHCJW" style="color:black">Blanc HC</td>
+      <td class="tableCmdcss pricesTitle#id# priceHPJW" style="color:black">Blanc HP</td>
+      <td class="tableCmdcss pricesTitle#id# priceHCJR" style="color:white">Rouge HC</td>
+      <td class="tableCmdcss pricesTitle#id# priceHPJR" style="color:white">Rouge HP</td>
+    </tr>
+    <tr>
+      <td title="HCJB" class="HCJB tableCmdcss prices#id#"></td>
+      <td title="HPJB" class="HPJB tableCmdcss prices#id#"></td>
+      <td title="HCJW" class="HCJW tableCmdcss prices#id#"></td>
+      <td title="HPJW" class="HPJW tableCmdcss prices#id#"></td>
+      <td title="HCJR" class="HCJR tableCmdcss prices#id#"></td>
+      <td title="HPJR" class="HPJR tableCmdcss prices#id#"></td>
+    <tr>
+    <tr>
+      <td colspan=6 style="text-align:center;padding:5px" class="tableCmdcss expirationDate"></td>
+    </tr>
+    <tr>
+      <td colspan=6 style="text-align:center;padding:5px" class="tableCmdcss errorMessage"></td>
+    </tr>
+  </table>
+  <template>
+    <div>displayExpirationDate : 0/1 ({{Affichage de la date d'expiration}})</div>
+    <div>displayError : 0/1 ({{Affichage des erreurs JS}})</div>
+  </template>
+  <script>
+       /* JSON structure
+      { "yesterday":{"value":"BLUE","datetime":"2024-03-24T00:00:00+01:00"},
+        "today":{"value":"BLUE","datetime":"2024-03-25T00:00:00+01:00"},
+        "tomorrow":{"value":"WHITE","datetime":"2024-03-26T00:00:00+01:00"},
+        "remainingDays":{"BLUE":150,"WHITE":7,"RED":1"},
+        "totalDays":{"BLUE":301,"WHITE":43,"RED":22"},
+        "prices":{
+          "tempoExpirationDate":"2024-08-01",
+          "HCJB":0.1296,"HPJB":0.1609,
+          "HCJW":0.1486,"HPJW":0.1894,
+          "HCJR":0.1568,"HPJR":0.7562
+        },
+        "colors":{
+          "HCJB":"#46A1ED","HPJB":"#00518B",
+          "HCJW":"#DFDFDF","HPJW":"#FFFFFF",
+          "HCJR":"#F34B32","HPJR":"#C81640",
+          "UNDEFINED":"#7A7A7A","ERROR":"#000000"
+        }
+      }
+        */
+    jeedom.cmd.addUpdateFunction('#id#',function(_options) {
+      let cmd = $('.cmd[data-cmd_id=#id#]');
+      cmd.find('.errorMessage').empty(); // clean previous error
+      try {
+        let json = _options.display_value.replaceAll('&quot;','"');
+        let obj = JSON.parse(json);
+        if(obj != null) {
+          let cd = new Date(obj.prices.tempoExpirationDate);
+          let dateTime = '';
+          let dayTxt = cd.toLocaleDateString('fr-FR', {month: 'short', day: 'numeric',weekday: 'long',year: 'numeric'});
+          if('#displayExpirationDate#' != '0') // ucfirst for weekday
+            dateTime = "Fin de validité des prix : "+dayTxt.charAt(0).toUpperCase()+dayTxt.slice(1);
+          cmd.find('.expirationDate').empty().append(dateTime);
+              
+          cmd.find('.HCJB').empty().append(obj.prices.HCJB);
+          cmd.find('.HPJB').empty().append(obj.prices.HPJB);
+          cmd.find('.HCJW').empty().append(obj.prices.HCJW);
+          cmd.find('.HPJW').empty().append(obj.prices.HPJW);
+          cmd.find('.HCJR').empty().append(obj.prices.HCJR);
+          cmd.find('.HPJR').empty().append(obj.prices.HPJR);
+          cmd.find('.priceHCJB').style('background-color', obj.colors.HCJB);
+          cmd.find('.priceHPJB').style('background-color', obj.colors.HPJB);
+          cmd.find('.priceHCJW').style('background-color', obj.colors.HCJW);
+          cmd.find('.priceHPJW').style('background-color', obj.colors.HPJW);
+          cmd.find('.priceHCJR').style('background-color', obj.colors.HCJR);
+          cmd.find('.priceHPJR').style('background-color', obj.colors.HPJR);
+          if('#displayError#' != '0')
+            cmd.find('.errorMessage').empty().append('Prix en €/kWh');
+        }
+      }
+      catch(err) {
+        if('#displayError#' != '0')
+          cmd.find('.errorMessage').empty().append('<strong>JSON data:' +_options.display_value.substr(0,30) +'...</strong><br>' +err.message);
+      }
+    });
+    jeedom.cmd.refreshValue([{cmd_id :'#id#',display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#'}])
+  </script>
+  <style>
+    .pricesTitle#id# {
+      text-align:center;
+      padding:5px;
+      font-weight:700;
+      font-size:14px!important
+    }
+    .prices#id# {
+      text-align:center;
+      padding:3px;
+      font-size:14px!important;
+      background-color: rgb(var(--eq-bg-color))
+    }
+  </style>
+</div>

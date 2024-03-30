@@ -37,11 +37,6 @@ function addCmdToTable(_cmd) {
   if (!isset(_cmd.configuration)) {
       _cmd.configuration = {}
   }
-  /*
-  if (init(_cmd.logicalId) == 'refresh') {
-    return;
-  }
-  */
   var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">'
   tr += '<td class="hidden-xs">'
   tr += '<span class="cmdAttr" data-l1key="id"></span>'
@@ -50,6 +45,8 @@ function addCmdToTable(_cmd) {
   tr += '<td>'
   tr += '<div class="input-group">'
   tr += '<input class="cmdAttr form-control input-sm roundedLeft" data-l1key="name" placeholder="{{Nom de la commande}}">'
+  tr += '<span class="input-group-btn"><a class="cmdAction btn btn-sm btn-default" data-l1key="chooseIcon" title="{{Choisir une icône}}"><i class="fas fa-icons"></i></a></span>'
+  tr += '<span class="cmdAttr input-group-addon roundedRight" data-l1key="display" data-l2key="icon" style="font-size:19px;padding:0 5px 0 0!important;"></span>'
   tr += '</div>'
   tr += '<select class="cmdAttr form-control input-sm" data-l1key="value" style="display:none;margin-top:5px;" title="{{Commande info liée}}">'
   tr += '<option value="">{{Aucune}}</option>'
@@ -59,9 +56,7 @@ function addCmdToTable(_cmd) {
   tr += '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isVisible" checked/>{{Afficher}}</label> '
   tr += '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isHistorized" checked/>{{Historiser}}</label> '
   tr += '</td>'
-  tr += '<td>';
-  tr += '<span class="cmdAttr" data-l1key="htmlstate"></span>'; 
-  tr += '</td>';
+  tr += '<td><span class="cmdAttr" data-l1key="htmlstate"></span></td>';
   tr += '<td>'
   if (is_numeric(_cmd.id)) {
       tr += '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fas fa-cogs"></i></a> '
