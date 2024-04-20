@@ -28,6 +28,15 @@ class rteEcowatt extends eqLogic {
                  "UNDEFINED"=>"#7A7A7A", "ERROR"=>"#000000");
 
   // public static function backupExclude() { return(array('data','desktop','plugin_info')); }
+  public static function postConfig_IDclientSecretB64($_value) {
+    /*
+    $oldID = trim(config::byKey('IDclientSecretB64', __CLASS__));
+    message::add(__CLASS__, "OldID: $oldID New: ".$_value);
+ */
+    config::save('tokenRTEexpires', 0, __CLASS__); // expires token if IDs RTE were changed
+    config::save('tokenRTE', '', __CLASS__); // unset token
+     message::add(__CLASS__,__FUNCTION__ . " change $_value");
+  }
   
   public static function postConfig_HPJR($_value) {
     foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
@@ -37,7 +46,7 @@ class rteEcowatt extends eqLogic {
         $rteEcowatt->refreshWidget();
       }
     }
-    // message::add(__CLASS__,__FUNCTION__ . " change $_value");
+    message::add(__CLASS__,__FUNCTION__ . " change $_value");
   }
 
   public static function extractValueFromJsonTxt($cmdValue, $request) {
@@ -71,6 +80,20 @@ class rteEcowatt extends eqLogic {
     }
     else log::add(__CLASS__, 'debug', "Command not found: $cmd");
     return(null);
+  }
+
+  public static function cron() { // Update remainingTime command
+    $t = time(); $h = date('Gm',$t);
+    if($h <600) $diff = strtotime('today 06:00:00') - $t;
+    else if($h <2200) $diff = strtotime('today 22:00:00') - $t;
+    else $diff = strtotime('tomorrow 06:00:00') - $t;
+      
+    foreach (self::byType(__CLASS__,true) as $rteEcowatt) {
+      $datasource = $rteEcowatt->getConfiguration('datasource');
+      if($datasource == 'tempoRTE') {
+        $rteEcowatt->checkAndUpdateCmd('remainingTime', abs($diff));
+      }
+    }
   }
 
   public static function cronDaily() {
@@ -261,8 +284,7 @@ class rteEcowatt extends eqLogic {
     // limitation des requetes 15 minutes pour l'API consumption
     if($demo || (!$demo && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
       $response = self::getResourceRTE($params, $api);
-        // TODO test du contenu de la réponse
-      if(json_decode($response,true)) {
+      if($response != '' && json_decode($response,true)) {
         if(!$demo) config::save('lastcall-consumptionRTE', time(), __CLASS__);
         $hdle = fopen($fileConsumption, "wb");
         if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
@@ -305,8 +327,7 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
     // limitation des requetes 15 minutes pour l'API ecowatt
     if($demo || (!$demo && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
       $response = self::getResourceRTE($params, $api);
-        // TODO test du contenu de la réponse
-      if(json_decode($response,true)) {
+      if($response != '' && json_decode($response,true)) {
         if(!$demo) config::save('lastcall-ecowattRTE', time(), __CLASS__);
         $hdle = fopen($fileEcowatt, "wb");
         if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
@@ -577,6 +598,11 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
           'subtype' => 'string',
           'order' => 14,
           'isVisible' => 0,
+        ),
+        'remainingTime' => array(
+          'name' => __('Temps restant', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 15,
         ),
       );
     }
@@ -875,6 +901,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     }
     $params = self::initParamRTE('tempoRTE');
     $response = self::getResourceRTE($params, $api);
+    if($response == '') return null;
 
     $dec = json_decode($response,true);
     $latest = 0;
@@ -1392,11 +1419,17 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
   public static function getTempoPricesJson($log=0) {
     $expDate = trim(config::byKey('tempoExpirationDate', __CLASS__, ''));
     $HCJB = trim(config::byKey('HCJB', __CLASS__, 0));
+    if(!is_numeric($HCJB)) $HCJB = '"'.$HCJB .'"';
     $HPJB = trim(config::byKey('HPJB', __CLASS__, 0));
+    if(!is_numeric($HPJB)) $HPJB = '"'.$HPJB .'"';
     $HCJW = trim(config::byKey('HCJW', __CLASS__, 0));
+    if(!is_numeric($HCJW)) $HCJW = '"'.$HCJW .'"';
     $HPJW = trim(config::byKey('HPJW', __CLASS__, 0));
+    if(!is_numeric($HPJW)) $HPJW = '"'.$HPJW .'"';
     $HCJR = trim(config::byKey('HCJR', __CLASS__, 0));
+    if(!is_numeric($HCJR)) $HCJR = '"'.$HCJR .'"';
     $HPJR = trim(config::byKey('HPJR', __CLASS__, 0));
+    if(!is_numeric($HPJR)) $HPJR = '"'.$HPJR .'"';
     if($expDate == '') {
       if($log) log::add(__CLASS__,'warning','Expiration date of Tempo prices not defined');
       return('{"tempoExpirationDate":"UNDEFINED","HCJB":' .$HCJB .',"HPJB":' .$HPJB .',"HCJW":' .$HCJW .',"HPJW":' .$HPJW .',"HCJR":' .$HCJR .',"HPJR":' .$HPJR .'}');
