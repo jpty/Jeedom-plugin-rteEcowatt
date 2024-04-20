@@ -29,13 +29,9 @@ class rteEcowatt extends eqLogic {
 
   // public static function backupExclude() { return(array('data','desktop','plugin_info')); }
   public static function postConfig_IDclientSecretB64($_value) {
-    /*
-    $oldID = trim(config::byKey('IDclientSecretB64', __CLASS__));
-    message::add(__CLASS__, "OldID: $oldID New: ".$_value);
- */
     config::save('tokenRTEexpires', 0, __CLASS__); // expires token if IDs RTE were changed
     config::save('tokenRTE', '', __CLASS__); // unset token
-     message::add(__CLASS__,__FUNCTION__ . " change $_value");
+    // message::add(__CLASS__,__FUNCTION__ . " change $_value");
   }
   
   public static function postConfig_HPJR($_value) {
@@ -46,7 +42,7 @@ class rteEcowatt extends eqLogic {
         $rteEcowatt->refreshWidget();
       }
     }
-    message::add(__CLASS__,__FUNCTION__ . " change $_value");
+    // message::add(__CLASS__,__FUNCTION__ . " change $_value");
   }
 
   public static function extractValueFromJsonTxt($cmdValue, $request) {
