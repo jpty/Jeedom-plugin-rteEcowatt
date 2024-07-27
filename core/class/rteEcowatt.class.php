@@ -255,8 +255,8 @@ class rteEcowatt extends eqLogic {
     $curlHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 // message::add(__CLASS__,"HeaderOut: ".json_encode($curlHeaderOut));
     if($curlHttpCode != 200) {
-      log::add(__CLASS__,'error',__FUNCTION__ ." ----- CURL return code: $curlHttpCode URL: $api");
-      log::add(__CLASS__,'error',__FUNCTION__ ." RTE response: [$response]");
+      log::add(__CLASS__,'error',__FUNCTION__ ." ----- CURL return code: $curlHttpCode URL: $api" 
+        .(($response != '') ? " response: [$response]" : ""));
     }
     // log::add(__CLASS__,'debug',$response);
     curl_close($curl);
@@ -280,18 +280,14 @@ class rteEcowatt extends eqLogic {
     // limitation des requetes 15 minutes pour l'API consumption
     if($demo || (!$demo && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
       $response = self::getResourceRTE($params, $api);
-      if($response != '' && json_decode($response,true)) {
-        if(!$demo) config::save('lastcall-consumptionRTE', time(), __CLASS__);
-        $hdle = fopen($fileConsumption, "wb");
-        if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
-        /*
-$fileSave = __DIR__ ."/../../data/consumptionRTE-" .date('Hi') .".json";
-$hdle = fopen($fileSave, "wb");
-if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
-         */
-      }
-      else {
-        log::add(__CLASS__, 'warning', "  Erreur json_decode: " .json_last_error_msg());
+      if($response != '') {
+        json_decode($response,true);
+        if(json_last_error() == JSON_ERROR_NONE) {
+          if(!$demo) config::save('lastcall-consumptionRTE', time(), __CLASS__);
+          $hdle = fopen($fileConsumption, "wb");
+          if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
+        }
+        else log::add(__CLASS__, 'warning', "  Erreur json_decode: " .json_last_error_msg());
       }
     }
     else {
@@ -323,13 +319,14 @@ if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
     // limitation des requetes 15 minutes pour l'API ecowatt
     if($demo || (!$demo && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
       $response = self::getResourceRTE($params, $api);
-      if($response != '' && json_decode($response,true)) {
-        if(!$demo) config::save('lastcall-ecowattRTE', time(), __CLASS__);
-        $hdle = fopen($fileEcowatt, "wb");
-        if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
-      }
-      else {
-        log::add(__CLASS__,'warning',"Erreur json_decode: " .json_last_error_msg());
+      if($response != '')  {
+        json_decode($response,true);
+        if(json_last_error() == JSON_ERROR_NONE) {
+          if(!$demo) config::save('lastcall-ecowattRTE', time(), __CLASS__);
+          $hdle = fopen($fileEcowatt, "wb");
+          if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
+        }
+        else log::add(__CLASS__,'warning',"Erreur json_decode: " .json_last_error_msg());
       }
     }
     else {
@@ -1137,82 +1134,84 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       $this->checkAndUpdateCmd('lastcallTS', $lastcall);
       if(isset($dec['short_term'])) {
         foreach($dec['short_term'] as $sTerm) {
-          if($sTerm['type'] == 'REALISED') {
-            $cmd = $this->getCmd(null,'REALISED');
-            if(is_object($cmd)) {
-              foreach($sTerm['values'] as $sT) {
-                $ts = strtotime($sT['start_date']);
-                $val = $sT['value'];
-                $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+          if(count($sTerm['values'])) {
+            if($sTerm['type'] == 'REALISED') {
+              $cmd = $this->getCmd(null,'REALISED');
+              if(is_object($cmd)) {
+                foreach($sTerm['values'] as $sT) {
+                  $ts = strtotime($sT['start_date']);
+                  $val = $sT['value'];
+                  $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+                }
+                $this->checkAndUpdateCmd('REALISED', $val,date('Y-m-d H:i:s',$ts)); // use last value
               }
-              $this->checkAndUpdateCmd('REALISED', $val,date('Y-m-d H:i:s',$ts)); // use last value
+              else message::add(__CLASS__,"Cmd REALISED not found. Equipment must be saved");
             }
-            else message::add(__CLASS__,"Cmd REALISED not found. Equipment must be saved");
-          }
-          else if($sTerm['type'] == 'ID') {
-            $cmd = $this->getCmd(null,'ID');
-            if(is_object($cmd)) {
-              foreach($sTerm['values'] as $sT) {
-                $ts = $st0 = strtotime($sT['start_date']);
-                $end0 = strtotime($sT['end_date']);
-                $val = $sT['value'];
-                $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
-                if($t >= $st0 && $t < $end0) {
-                  $this->checkAndUpdateCmd('ID', $val,date('Y-m-d H:i:s',$ts));
+            else if($sTerm['type'] == 'ID') {
+              $cmd = $this->getCmd(null,'ID');
+              if(is_object($cmd)) {
+                foreach($sTerm['values'] as $sT) {
+                  $ts = $st0 = strtotime($sT['start_date']);
+                  $end0 = strtotime($sT['end_date']);
+                  $val = $sT['value'];
+                  $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+                  if($t >= $st0 && $t < $end0) {
+                    $this->checkAndUpdateCmd('ID', $val,date('Y-m-d H:i:s',$ts));
+                  }
                 }
               }
+              else message::add(__CLASS__,"Cmd ID not found. Equipment must be resaved");
             }
-            else message::add(__CLASS__,"Cmd ID not found. Equipment must be resaved");
-          }
-          else if($sTerm['type'] == 'D-1') {
-            $cmd = $this->getCmd(null,'D-1');
-            if(is_object($cmd)) {
-              foreach($sTerm['values'] as $sT) {
-                $ts =  strtotime($sT['start_date']);
-                $st0 = $ts-86400;
-                $end0 = strtotime($sT['end_date'])-86400;
-                $val = $sT['value'];
-                $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
-                if($t >= $st0 && $t < $end0) {
-                  $this->checkAndUpdateCmd('D-1', $val,date('Y-m-d H:i:s',$ts));
+            else if($sTerm['type'] == 'D-1') {
+              $cmd = $this->getCmd(null,'D-1');
+              if(is_object($cmd)) {
+                foreach($sTerm['values'] as $sT) {
+                  $ts =  strtotime($sT['start_date']);
+                  $st0 = $ts-86400;
+                  $end0 = strtotime($sT['end_date'])-86400;
+                  $val = $sT['value'];
+                  $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+                  if($t >= $st0 && $t < $end0) {
+                    $this->checkAndUpdateCmd('D-1', $val,date('Y-m-d H:i:s',$ts));
+                  }
                 }
               }
+              else message::add(__CLASS__,"Cmd D-1 not found. Equipment must be resaved.");
             }
-            else message::add(__CLASS__,"Cmd D-1 not found. Equipment must be resaved.");
-          }
-          else if($sTerm['type'] == 'D-2') {
-            $cmd = $this->getCmd(null,'D-2');
-            if(is_object($cmd)) {
-              foreach($sTerm['values'] as $sT) {
-                $ts =  strtotime($sT['start_date']);
-                $st0 = $ts-172800; // -2 jours
-                $end0 = strtotime($sT['end_date'])-172800;
-                $val = $sT['value'];
-                $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
-                if($t >= $st0 && $t < $end0) {
-                  $this->checkAndUpdateCmd('D-2', $val,date('Y-m-d H:i:s',$ts));
+            else if($sTerm['type'] == 'D-2') {
+              $cmd = $this->getCmd(null,'D-2');
+              if(is_object($cmd)) {
+                foreach($sTerm['values'] as $sT) {
+                  $ts =  strtotime($sT['start_date']);
+                  $st0 = $ts-172800; // -2 jours
+                  $end0 = strtotime($sT['end_date'])-172800;
+                  $val = $sT['value'];
+                  $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+                  if($t >= $st0 && $t < $end0) {
+                    $this->checkAndUpdateCmd('D-2', $val,date('Y-m-d H:i:s',$ts));
+                  }
                 }
               }
+              else message::add(__CLASS__,"Cmd D-2 not found. Equipment must be resaved.");
             }
-            else message::add(__CLASS__,"Cmd D-2 not found. Equipment must be resaved.");
-          }
-          else if($sTerm['type'] == 'CORRECTED') {
-            $st0 = strtotime($sTerm['start_date']);
-            $end0 = strtotime($sTerm['end_date']); 
-            log::add(__CLASS__, 'debug', "  short_term[CORRECTED] from " .date('Y-m-d H:i:s',$st0) ." to " .date('Y-m-d H:i:s',$end0));
-          }
-          else {
-            $cmd = $this->getCmd(null,$sTerm['type']);
-            message::add(__CLASS__,"Processing [" .$sTerm['type'] ."] type");
-            if(is_object($cmd)) {
-              foreach($sTerm['values'] as $sT) {
-                $ts = strtotime($sT['end_date']);
-                $val = $sT['value'];
-                $cmd->addHistoryValue($sT['value'], date('Y-m-d H:i:s',$ts));
+            else if($sTerm['type'] == 'CORRECTED') {
+              $st0 = strtotime($sTerm['start_date']);
+              $end0 = strtotime($sTerm['end_date']); 
+              log::add(__CLASS__, 'debug', "  short_term[CORRECTED] from " .date('Y-m-d H:i:s',$st0) ." to " .date('Y-m-d H:i:s',$end0));
+            }
+            else {
+              $cmd = $this->getCmd(null,$sTerm['type']);
+              message::add(__CLASS__,"Processing [" .$sTerm['type'] ."] type");
+              if(is_object($cmd)) {
+                foreach($sTerm['values'] as $sT) {
+                  $ts = strtotime($sT['end_date']);
+                  $val = $sT['value'];
+                  $cmd->addHistoryValue($sT['value'], date('Y-m-d H:i:s',$ts));
+                }
+                $this->checkAndUpdateCmd($sTerm['type'], $val, date('Y-m-d H:i:s',$ts));
               }
-              $this->checkAndUpdateCmd($sTerm['type'], $val, date('Y-m-d H:i:s',$ts));
+              else message::add(__CLASS__,"Cmd " .$sTerm['type'] ." not found");
             }
-            else message::add(__CLASS__,"Cmd " .$sTerm['type'] ." not found");
           }
         }
       }
@@ -1254,71 +1253,73 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     }
     else {
       $dec = json_decode($response,true);
-      $data = array();
-      /* Simulation
-      $dec['signals'][0]['values'][16]['hvalue'] = 2;
-      $dec['signals'][0]['values'][17]['hvalue'] = 3;
-      $dec['signals'][0]['dvalue'] = 3;
-      $dec['signals'][0]['message'] = "Coupures d'électricité programmées";
-       */
-      $modNowTS = mktime(0,0,0,date('m',$nowTS),date('d',$nowTS),date('Y',$nowTS));
-      foreach($dec['signals'] as $signal) {
-        $ts =strtotime($signal['jour']);
-        $val = array();
-        // Init du tableau. Trous dans les datas de la sandbox
-        for($i=0;$i<24;$i++) $val[] = 0;
-        foreach($signal['values'] as $value) {
-          $val[$value['pas']] = $value['hvalue'];
+      if(isset($dec['signals'])) {
+        $data = array();
+        /* Simulation
+          $dec['signals'][0]['values'][16]['hvalue'] = 2;
+          $dec['signals'][0]['values'][17]['hvalue'] = 3;
+          $dec['signals'][0]['dvalue'] = 3;
+          $dec['signals'][0]['message'] = "Coupures d'électricité programmées";
+         */
+        $modNowTS = mktime(0,0,0,date('m',$nowTS),date('d',$nowTS),date('Y',$nowTS));
+        foreach($dec['signals'] as $signal) {
+          $ts =strtotime($signal['jour']);
+          $val = array();
+          // Init du tableau. Trous dans les datas de la sandbox
+          for($i=0;$i<24;$i++) $val[] = 0;
+          foreach($signal['values'] as $value) {
+            $val[$value['pas']] = $value['hvalue'];
+          }
+          if($ts >= $modNowTS) {
+            $data[] = array('jour' => $ts, 'dvalue' => $signal['dvalue'],
+                          'message' => $signal['message'], 'value' => $val);
+          }
+          unset($val);
         }
-        if($ts >= $modNowTS) {
-          $data[] = array('jour' => $ts, 'dvalue' => $signal['dvalue'],
-                        'message' => $signal['message'], 'value' => $val);
-        }
-        unset($val);
-      }
-      sort($data); // les données de la sandbox ne sont pas dans l'ordre chronologique
-      $start = -1;
-      $nextAlertTS = 0; $firstAlert = 0;
-      $valHours = array();
-      for($day=0;$day<4;$day++) {
-        if(!isset($data[$day])) {
-          $this->checkAndUpdateCmd("dayTimestampD$day", $nowTS+$day*86400);
-          $this->checkAndUpdateCmd("dayValueD$day", -1);
-          $this->checkAndUpdateCmd("messageD$day", "Données RTE non disponibles.");
-          $this->checkAndUpdateCmd("dataHourD$day", substr(str_repeat('-1,',24),0,-1));
-          if($demo == 0 && $day != 3) log::add(__CLASS__, 'debug', "  Data for day $day not set");
-        }
-        else {
-          $tsDay = $data[$day]['jour'];
-          $this->checkAndUpdateCmd("dayTimestampD$day", $tsDay);
-          $this->checkAndUpdateCmd("dayValueD$day", $data[$day]['dvalue']);
-          $this->checkAndUpdateCmd("messageD$day", $data[$day]['message']);
-          $this->checkAndUpdateCmd("dataHourD$day", implode(',',$data[$day]['value']));
-          for($i=0;$i<24;$i++) {
-            if($nowTS >= $tsDay && $nowTS < $tsDay + 3600) {
-              $start = 0;
-  // log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'][$i] ." " .date('Y-m-d H:i',$tsDay));
-              $foundNowTS = 1;
-              $nowTS = $tsDay;
-              $valueAlertNow = $data[$day]['value'][$i];
-            }
-            if($start >= 0) {
-              $hValue = $data[$day]['value'][$i];
-              if($hValue > 1) {
-                if($firstAlert == 1) {
-                  $nextAlertTS = $tsDay;
-                }
-                $firstAlert++;
+        sort($data); // les données de la sandbox ne sont pas dans l'ordre chronologique
+        $start = -1;
+        $nextAlertTS = 0; $firstAlert = 0;
+        $valHours = array();
+        for($day=0;$day<4;$day++) {
+          if(!isset($data[$day])) {
+            $this->checkAndUpdateCmd("dayTimestampD$day", $nowTS+$day*86400);
+            $this->checkAndUpdateCmd("dayValueD$day", -1);
+            $this->checkAndUpdateCmd("messageD$day", "Données RTE non disponibles.");
+            $this->checkAndUpdateCmd("dataHourD$day", substr(str_repeat('-1,',24),0,-1));
+            if($demo == 0 && $day != 3) log::add(__CLASS__, 'debug', "  Data for day $day not set");
+          }
+          else {
+            $tsDay = $data[$day]['jour'];
+            $this->checkAndUpdateCmd("dayTimestampD$day", $tsDay);
+            $this->checkAndUpdateCmd("dayValueD$day", $data[$day]['dvalue']);
+            $this->checkAndUpdateCmd("messageD$day", $data[$day]['message']);
+            $this->checkAndUpdateCmd("dataHourD$day", implode(',',$data[$day]['value']));
+            for($i=0;$i<24;$i++) {
+              if($nowTS >= $tsDay && $nowTS < $tsDay + 3600) {
+                $start = 0;
+    // log::add(__CLASS__, 'debug', __FUNCTION__." Cmd now OK Val:".$data[$day]['value'][$i] ." " .date('Y-m-d H:i',$tsDay));
+                $foundNowTS = 1;
+                $nowTS = $tsDay;
+                $valueAlertNow = $data[$day]['value'][$i];
               }
-              $valHours[date('c',$tsDay)] = array("TS" => $tsDay,"hValue" => $hValue);
+              if($start >= 0) {
+                $hValue = $data[$day]['value'][$i];
+                if($hValue > 1) {
+                  if($firstAlert == 1) {
+                    $nextAlertTS = $tsDay;
+                  }
+                  $firstAlert++;
+                }
+                $valHours[date('c',$tsDay)] = array("TS" => $tsDay,"hValue" => $hValue);
+              }
+              $tsDay += 3600;
+              if($start >= 0) $start++;
             }
-            $tsDay += 3600;
-            if($start >= 0) $start++;
           }
         }
+        $this->checkAndUpdateCmd("dataHoursJson", json_encode($valHours));
+        unset($data);
       }
-      $this->checkAndUpdateCmd("dataHoursJson", json_encode($valHours));
-      unset($data);
     }
     $startAlert = 0; $endAlert = 0;
     if($foundNowTS) {
@@ -1699,7 +1700,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     if (!isset($replace['#innerSizePM#'])) $replace['#innerSizePM#'] = '75%';
   }
 
-  public function toHtml_tempoEDF(&$replace,$loglevel) {
+  public function toHtml_tempoEDF(&$replace,$loglevel,$templateFile) {
     $t0 = -microtime(true);
     $color['BLUE'] = self::$_colTempo['HPJB']; $title['BLUE'] = 'Jour bleu';
     $color['WHITE'] = self::$_colTempo['HPJW']; $title['WHITE'] = 'Jour blanc';
@@ -1744,6 +1745,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     if($loglevel == 'debug') {
       $replace['#dataActuTempo#'] .= '. Affichage: '.date('H:i:s');
       $replace['#dataActuTempo#'] .= ' en '.round($t0+microtime(true),3).'s';
+      $replace['#dataActuTempo#'] .= " Template : " .$templateFile;
     }
   }
 
@@ -2099,9 +2101,12 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       $template = 'rte_ecowatt';
     }
     else if ($datasource == 'tempoEDF') {
-      if($this->getConfiguration('usePluginTemplateTempoEdf','1') == '0')
-        return parent::toHtml($_version);
-      $this->toHtml_tempoEDF($replace,$loglevel);
+      $templateF = $this->getConfiguration('templateTempoEdf','plugin');
+      if($templateF == 'none') return parent::toHtml($_version);
+      else if($templateF == 'plugin') $templateFile = 'edf_tempo';
+      else if($templateF == 'custom') $templateFile = 'custom.edf_tempo';
+      else $templateFile = substr($templateF,0,-5);
+      $this->toHtml_tempoEDF($replace,$loglevel,$templateFile);
       $template = 'edf_tempo';
     }
     else if ($datasource == 'tempoRTE') {
