@@ -194,9 +194,32 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
+                  <label class="col-sm-4 control-label">{{Template}}</label>
                   <div class="col-sm-7">
-                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplateTempoEdf" checked>
+                    <select class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="templateTempoEdf">
+                      <option value="plugin">{{Template du plugin}}</option>
+                      <option value="none">{{Pas de template}}</option>
+    <?php
+                      if(file_exists(__DIR__ .'/../../core/template/dashboard/custom.edf_tempo.html'))
+                        echo '<option value="custom">{{Template custom}}</option>';
+                      $files = array();
+                      if ($dh = opendir(__DIR__ .'/../../core/template/dashboard')) {
+                        while (($file = readdir($dh)) !== false) {
+                          if($file != 'custom.edf_tempo.html' && substr($file,0,17) == 'custom.edf_tempo.' && substr($file,-5) == '.html')
+                            $files[] = array('name' => substr($file,17,-5).' (custom)', 'fileName' => $file);
+                          if($file != 'edf_tempo.html' && substr($file,0,10) == 'edf_tempo.' && substr($file,-5) == '.html')
+                            $files[] = array('name' => substr($file,10,-5), 'fileName' => $file);
+                        }
+                        closedir($dh);
+                      }
+                      if(count($files)) {
+                        sort($files);
+                        foreach($files as $file) {
+                          echo '<option value="' .$file['fileName'] .'">' .$file['name'] .'</option>';
+                        }
+                      }
+    ?>
+                    </select>
                   </div>
                 </div>
               </div>
