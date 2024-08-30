@@ -137,8 +137,8 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     <option value="consumptionRTE">{{Consommation (RTE)}}</option>
 <!--
 -->
-                    <option value="tempoEDF">{{Tempo (EDF)}}</option>
-                    <option value="ejpEDF">{{Ejp (EDF)}}</option>
+                    <option value="tempoEDF">{{Tempo (EDF) HS}}</option>
+                    <option value="ejpEDF">{{Ejp (EDF) HS}}</option>
                   </select>
                 </div>
               </div>
@@ -190,8 +190,13 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
               <div class="datasource tempoEDF">
                 <div class="form-group">
                   <label class="col-sm-4 control-label" ></label>
+                  <div class="col-sm-8">Ce type d'équipement n'est plus fonctionnel. Les données ne sont plus accessibles sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/tempo.html#/">Web d'EDF</a>.<br/>
+Vous pouvez modifier le Type de source de données ci-dessus en "Tempo (RTE)"
+                  </div>
+<!--
                   <div class="col-sm-7">Pas d'API pour ce type d'équipement. Les données sont récupérées sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/tempo.html#/">Web d'EDF</a> avec cette mention:<br> Seules les informations affichées sur votre compteur sont contractuelles. Les données communiquées sur le site internet le sont à titre indicatif. En effet, pour des raisons techniques, des différences peuvent parfois survenir entre la couleur indiquée et celle réellement pratiquée.
                   </div>
+-->
                 </div>
                 <div class="form-group">
                   <label class="col-sm-4 control-label">{{Template}}</label>
@@ -227,9 +232,13 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
               <div class="datasource ejpEDF">
                 <div class="form-group">
                   <label class="col-sm-4 control-label" ></label>
+                  <div class="col-sm-7">Ce type d'équipement n'est plus fonctionnel. Les données ne sont plus accessibles sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/ejp.html#/">Web d'EDF</a>
+                  </div>
+<!--
                   <div class="col-sm-7">Pas d'API pour ce type d'équipement. Les données sont récupérées sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/ejp.html#/">Web d'EDF</a> avec cette mention:<br> Ces informations sont non contractuelles et sans valeur d'engagement.
 La mise à jour des données est effectuée quotidiennement entre 13h et 15h, cependant des contraintes d'exploitation peuvent la retarder jusqu'à 5h du matin du jour EJP.
                   </div>
+-->
                 </div>
                 <div class="form-group">
                   <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
