@@ -139,6 +139,8 @@ class rteEcowatt extends eqLogic {
   }
 
   public static function pullDataEcowatt() {
+    /* EDF HS
+     */
       // deplacé de cronHourly pour étaler les requetes chez EDF
     $hour = array('tempoEDF' => array(0, 11, 12, 14, 16),
                   'ejpEDF' => array(1, 6, 12, 16, 17, 19, 22));
@@ -342,16 +344,37 @@ class rteEcowatt extends eqLogic {
   }
 
   public static function valueFromUrl($datasource,$_url) {
-    $request_http = new com_http($_url);
-    $request_http->setUserAgent('Wget/1.20.3 (linux-gnu)'); // User-Agent idem HA
-    $dataUrl = $request_http->exec(20);
-    $file = __DIR__ ."/../../data/$datasource.json";
-    $hdle = fopen($file, "wb");
-    if($hdle !== FALSE) { fwrite($hdle, $dataUrl); fclose($hdle); }
-    if(is_json($dataUrl) === false) {
+/* Ne fonctionne pas erreur ajax coté Jeedom ?????????????????
+    if($datasource == 'EDFtempoDays') {
+      $ch = curl_init();
+      // configuration des options
+      curl_setopt($ch, CURLOPT_URL, $_url);
+      // curl_setopt($ch, CURLOPT_HEADER, 0);
+      // curl_setopt_array($ch, $curloptions);
+      $response = curl_exec($ch);
+      $curlHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      $curl_error = curl_error($ch);
+      curl_close($ch);
+      unset($ch);
+      if ($response === false)
+        log::add(__CLASS__,'error', "Failed curl_error: " .$curl_error);
+
       return null;
     }
-    return json_decode($dataUrl, true);
+    else {
+    }
+*/
+      $request_http = new com_http($_url);
+      $request_http->setLogError(true);
+      $request_http->setUserAgent('Wget/1.20.3 (linux-gnu)'); // User-Agent idem HA
+      $dataUrl = $request_http->exec(20);
+      $file = __DIR__ ."/../../data/$datasource.json";
+      $hdle = fopen($file, "wb");
+      if($hdle !== FALSE) { fwrite($hdle, $dataUrl); fclose($hdle); }
+      if(is_json($dataUrl) === false) {
+        return null;
+      }
+      return json_decode($dataUrl, true);
   }
 
   public function preInsert() {
@@ -677,7 +700,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   public function updateInfoEdfEjp($fetch) {
     $dat = date('nd');
      // log::add(__CLASS__,'warning', "Date $dat");
-    if($dat > 331 && $dat <= 1031) {
+    if( 1 /* $dat > 331 && $dat <= 1031*/) {
       $this->checkAndUpdateCmd('today', 'OUT_OF_PERIOD');
       $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
       $this->checkAndUpdateCmd('ejpRemainingDays', 0);
@@ -729,6 +752,12 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   }
 
   public function updateInfoEdfTempo($fetch) {
+    $this->checkAndUpdateCmd('blue-remainingDays', -1);
+    $this->checkAndUpdateCmd('white-remainingDays', -1);
+    $this->checkAndUpdateCmd('red-remainingDays', -1);
+    $this->checkAndUpdateCmd('today', 'ERROR');
+    $this->checkAndUpdateCmd('tomorrow', 'ERROR');
+    return; // EDF HS
     $t = time();
     $cmd = $this->getCmd(null,'today');
     if(is_object($cmd)) $today = $cmd->execCmd();
@@ -776,14 +805,16 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $nbTotRed = config::byKey('totalTempoRed', __CLASS__, 22);
     $nbTotBlue = 365 + $leapYear - $nbTotWhite - $nbTotRed;
       // Interrogation sur nombre de jours
-    $nbTempoDays = self::valueFromUrl('EDFtempoDays','https://particulier.edf.fr/services/rest/referentiel/getNbTempoDays?TypeAlerte=TEMPO');
+    // $nbTempoDays = self::valueFromUrl('EDFtempoDays','https://particulier.edf.fr/services/rest/referentiel/getNbTempoDays?TypeAlerte=TEMPO');
+    $nbTempoDays = self::valueFromUrl('EDFtempoDays','https://api-commerce.edf.fr/commerce/activet/v1/saisons/search?option=TEMPO&dateReference=' .date('Y-m-d'));
     if($nbTempoDays === null) {
       log::add(__CLASS__,'warning', "Unable to retrieve Tempo information from EDF");
-      $this->checkAndUpdateCmd('blue-remainingDays', $nbTotBlue);
-      $this->checkAndUpdateCmd('white-remainingDays', $nbTotWhite);
-      $this->checkAndUpdateCmd('red-remainingDays', $nbTotRed);
+      $this->checkAndUpdateCmd('blue-remainingDays', -1);
+      $this->checkAndUpdateCmd('white-remainingDays', -1);
+      $this->checkAndUpdateCmd('red-remainingDays', -1);
     }
     else {
+      /*
       $file = __DIR__ ."/../../data/ecowattTempoEDFnbDays.json";
       $hdle = fopen($file, "wb");
       if($hdle !== FALSE) { fwrite($hdle, json_encode($nbTempoDays)); fclose($hdle); }
@@ -793,6 +824,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $this->checkAndUpdateCmd('blue-remainingDays', $nbBlue);
       $this->checkAndUpdateCmd('white-remainingDays', $nbWhite);
       $this->checkAndUpdateCmd('red-remainingDays', $nbRed);
+       */
     }
       // Nb jours total
     $this->checkAndUpdateCmd('blue-totalDays', $nbTotBlue); // Total bleu
