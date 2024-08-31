@@ -923,6 +923,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         $start_date = date('c',$tsYesterday);
       log::add(__CLASS__, 'debug', "RTE REQUESTS DATES: $start_date $end_date, LatestOK: " .date('c',$tsLatestOK));
       $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=$start_date&end_date=$end_date&fallback_status=false";
+      // $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=2023-09-01T00:00:00+02:00&end_date=2024-09-01T00:00:00+02:00&fallback_status=false";
     }
     $params = self::initParamRTE('tempoRTE');
     $response = self::getResourceRTE($params, $api);
@@ -950,21 +951,21 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
           else if($color == 'BLANC') { $color = 'WHITE'; }
           else if($color == 'BLEU') { $color = 'BLUE'; }
           else $color = 'UNDEFINED';
-message::add(__CLASS__, date('c') ." DateApplication: " .$tempo['DateApplication'] ." Color: ".$tempo['Couleur']);
+// message::add(__CLASS__, date('c') ." DateApplication: " .$tempo['DateApplication'] ." Color: ".$tempo['Couleur']);
           if($todayOK == 0 || $tomorrowOK == 0) {
             $deb= strtotime($tempo['DateApplication'] .' 00:00:00');
             $fin= $deb + 86400;
             if($todayOK == 0) {
               if($today >= $deb && $today < $fin) {
                 $decData["today"] = array("value"=>"$color", "datetime"=>date('c',$tsToday));
-message::add(__CLASS__, date('c') ." TsToday = " .date('c',$tsToday) ." Color: $color");
+// message::add(__CLASS__, date('c') ." TsToday = " .date('c',$tsToday) ." Color: $color");
                 $todayOK = 1;
               }
             }
             if($tomorrowOK == 0) {
               if($tomorrow >= $deb && $tomorrow < $fin) {
                 $decData["tomorrow"] = array("value"=> "$color", "datetime"=>date('c',$tsTomorrow));
-message::add(__CLASS__, date('c') ." TsTomorrow = " .date('c',$tsTomorrow) ." Color: $color");
+// message::add(__CLASS__, date('c') ." TsTomorrow = " .date('c',$tsTomorrow) ." Color: $color");
                 $tomorrowOK = 1;
               }
             }
