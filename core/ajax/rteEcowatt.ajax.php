@@ -16,20 +16,24 @@
  */
 
 try {
-    require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
+    require_once __DIR__ . '/../../../../core/php/core.inc.php';
     include_file('core', 'authentification', 'php');
 
-    if (!isConnect('admin')) {
-        throw new Exception(__('401 - Accès non autorisé', __FILE__));
+    if(!isConnect('admin')) {
+      throw new Exception(__('401 - Accès non autorisé', __FILE__));
     }
 
-  /* Fonction permettant l'envoi de l'entête 'Content-Type: application/json'
-    En V3 : indiquer l'argument 'true' pour contrôler le token d'accès Jeedom
-    En V4 : autoriser l'exécution d'une méthode 'action' en GET en indiquant le(s) nom(s) de(s) action(s) dans un tableau en argument
-  */
     ajax::init();
-
-
+ 
+      // remove data/dataTempo.json
+    if(init('action') == 'removeDataTempoJson') {
+      $file = realpath(__DIR__ . '/../../data/dataTempo.json');
+      if(file_exists($file)) {
+        if(@unlink($file)) ajax::success();
+        else ajax::error();
+      }
+      else ajax::success();
+    }
 
     throw new Exception(__('Aucune méthode correspondante à', __FILE__) . ' : ' . init('action'));
     /*     * *********Catch exception*************** */
