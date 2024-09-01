@@ -242,14 +242,14 @@ class rteEcowatt extends eqLogic {
     return(0);
   }
 
-  public static function getResourceRTE($params, $api) {
-    log::add(__CLASS__,'debug',"----- CURL ".__FUNCTION__ ." URL: $api");
+  public static function getResourceRTE($params, $apiUrl) {
+    log::add(__CLASS__,'debug',"----- CURL ".__FUNCTION__ ." URL: $apiUrl");
     $header = array("Authorization: Bearer {$params['tokenRTE']}",
-      "Content-Type: application/json",
+      /* "Content-Type: application/json", */
       "Host: digital.iservices.rte-france.com");
     $curl = curl_init();
     curl_setopt_array($curl, array(
-        CURLOPT_URL => $api, CURLOPT_HTTPHEADER => $header,
+        CURLOPT_URL => $apiUrl, CURLOPT_HTTPHEADER => $header,
         CURLOPT_SSL_VERIFYPEER => false, CURLOPT_RETURNTRANSFER => true));
     $response = curl_exec($curl);
     if ($response === false)
@@ -257,7 +257,7 @@ class rteEcowatt extends eqLogic {
     $curlHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 // message::add(__CLASS__,"HeaderOut: ".json_encode($curlHeaderOut));
     if($curlHttpCode != 200) {
-      log::add(__CLASS__,'error',__FUNCTION__ ." ----- CURL return code: $curlHttpCode URL: $api" 
+      log::add(__CLASS__,'error',__FUNCTION__ ." ----- CURL return code: $curlHttpCode URL: $apiUrl" 
         .(($response != '') ? " response: [$response]" : ""));
     }
     // log::add(__CLASS__,'debug',$response);
@@ -409,7 +409,7 @@ class rteEcowatt extends eqLogic {
           'order' => 2,
         ),
         'ejpRemainingDays' => array(
-          'name' => __('EJP restants', __FILE__),
+          'name' => __('EJP non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 3,
         )
@@ -498,7 +498,7 @@ class rteEcowatt extends eqLogic {
           'order' => 2,
         ),
         'blue-remainingDays' => array(
-          'name' => __('Jours Bleus restants', __FILE__),
+          'name' => __('Jours Bleus non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 3,
         ),
@@ -508,7 +508,7 @@ class rteEcowatt extends eqLogic {
           'order' => 4,
         ),
         'white-remainingDays' => array(
-          'name' => __('Jours Blancs restants', __FILE__),
+          'name' => __('Jours Blancs non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 5,
         ),
@@ -518,7 +518,7 @@ class rteEcowatt extends eqLogic {
           'order' => 6,
         ),
         'red-remainingDays' => array(
-          'name' => __('Jours Rouges restants', __FILE__),
+          'name' => __('Jours Rouges non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 7,
         ),
@@ -562,7 +562,7 @@ class rteEcowatt extends eqLogic {
           'isVisible' => 0,
         ),
         'blue-remainingDays' => array(
-          'name' => __('Jours Bleus restants', __FILE__),
+          'name' => __('Jours Bleus non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 6,
           'isVisible' => 0,
@@ -574,7 +574,7 @@ class rteEcowatt extends eqLogic {
           'isVisible' => 0,
         ),
         'white-remainingDays' => array(
-          'name' => __('Jours Blancs restants', __FILE__),
+          'name' => __('Jours Blancs non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 8,
           'isVisible' => 0,
@@ -586,7 +586,7 @@ class rteEcowatt extends eqLogic {
           'isVisible' => 0,
         ),
         'red-remainingDays' => array(
-          'name' => __('Jours Rouges restants', __FILE__),
+          'name' => __('Jours Rouges non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 10,
           'isVisible' => 0,
@@ -1108,7 +1108,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       $this->checkAndUpdateCmd('todayTS', strtotime($decData['today']['datetime']));
       $this->checkAndUpdateCmd('tomorrow', $decData['tomorrow']['value']);
       $this->checkAndUpdateCmd('tomorrowTS', strtotime($decData['tomorrow']['datetime']));
-        // Nb jours restants
+        // Nb jours non placés
       $nbRemainingBlue = $nbTotBlue - $nbUsedBlue;
       $nbRemainingWhite = $nbTotWhite - $nbUsedWhite;
       $nbRemainingRed = $nbTotRed - $nbUsedRed;
