@@ -1395,7 +1395,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
 
     // remplacement de strftime pour des formats simples $format est le meme que strftime
   public static function myStrftime($format,$timestamp=null) {
-    if($timestamp === null) $timestamp = time();
+    if($timestamp === null || trim($timestamp) == '') $timestamp = time();
     $resu = $format;
     $language = config::byKey('language', 'core', 'fr_FR');
     if($language == 'fr_FR') {
@@ -1885,6 +1885,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         $replace['#backgroundUndef#'] = $backgroundUndef[$val];
       }
       else if($cmdLogicalId == 'todayTS') {
+        $val = time();
         $replace['#todayDate#'] = self::myStrftime('%A %e %B',$val);
         if(date('m',$val)<9) { // Avant 1er septembre
           $replace['#endSeason#'] = date('Y');
