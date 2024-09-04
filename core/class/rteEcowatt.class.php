@@ -139,6 +139,8 @@ class rteEcowatt extends eqLogic {
   }
 
   public static function pullDataEcowatt() {
+    /* EDF HS
+     */
       // deplacé de cronHourly pour étaler les requetes chez EDF
     $hour = array('tempoEDF' => array(0, 11, 12, 14, 16),
                   'ejpEDF' => array(1, 6, 12, 16, 17, 19, 22));
@@ -240,14 +242,14 @@ class rteEcowatt extends eqLogic {
     return(0);
   }
 
-  public static function getResourceRTE($params, $api) {
-    log::add(__CLASS__,'debug',"----- CURL ".__FUNCTION__ ." URL: $api");
+  public static function getResourceRTE($params, $apiUrl) {
+    log::add(__CLASS__,'debug',"----- CURL ".__FUNCTION__ ." URL: $apiUrl");
     $header = array("Authorization: Bearer {$params['tokenRTE']}",
-      "Content-Type: application/json",
+      /* "Content-Type: application/json", */
       "Host: digital.iservices.rte-france.com");
     $curl = curl_init();
     curl_setopt_array($curl, array(
-        CURLOPT_URL => $api, CURLOPT_HTTPHEADER => $header,
+        CURLOPT_URL => $apiUrl, CURLOPT_HTTPHEADER => $header,
         CURLOPT_SSL_VERIFYPEER => false, CURLOPT_RETURNTRANSFER => true));
     $response = curl_exec($curl);
     if ($response === false)
@@ -255,7 +257,7 @@ class rteEcowatt extends eqLogic {
     $curlHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 // message::add(__CLASS__,"HeaderOut: ".json_encode($curlHeaderOut));
     if($curlHttpCode != 200) {
-      log::add(__CLASS__,'error',__FUNCTION__ ." ----- CURL return code: $curlHttpCode URL: $api" 
+      log::add(__CLASS__,'error',__FUNCTION__ ." ----- CURL return code: $curlHttpCode URL: $apiUrl" 
         .(($response != '') ? " response: [$response]" : ""));
     }
     // log::add(__CLASS__,'debug',$response);
@@ -342,16 +344,37 @@ class rteEcowatt extends eqLogic {
   }
 
   public static function valueFromUrl($datasource,$_url) {
-    $request_http = new com_http($_url);
-    $request_http->setUserAgent('Wget/1.20.3 (linux-gnu)'); // User-Agent idem HA
-    $dataUrl = $request_http->exec(20);
-    $file = __DIR__ ."/../../data/$datasource.json";
-    $hdle = fopen($file, "wb");
-    if($hdle !== FALSE) { fwrite($hdle, $dataUrl); fclose($hdle); }
-    if(is_json($dataUrl) === false) {
+/* Ne fonctionne pas erreur ajax coté Jeedom ?????????????????
+    if($datasource == 'EDFtempoDays') {
+      $ch = curl_init();
+      // configuration des options
+      curl_setopt($ch, CURLOPT_URL, $_url);
+      // curl_setopt($ch, CURLOPT_HEADER, 0);
+      // curl_setopt_array($ch, $curloptions);
+      $response = curl_exec($ch);
+      $curlHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      $curl_error = curl_error($ch);
+      curl_close($ch);
+      unset($ch);
+      if ($response === false)
+        log::add(__CLASS__,'error', "Failed curl_error: " .$curl_error);
+
       return null;
     }
-    return json_decode($dataUrl, true);
+    else {
+    }
+*/
+      $request_http = new com_http($_url);
+      $request_http->setLogError(true);
+      $request_http->setUserAgent('Wget/1.20.3 (linux-gnu)'); // User-Agent idem HA
+      $dataUrl = $request_http->exec(20);
+      $file = __DIR__ ."/../../data/$datasource.json";
+      $hdle = fopen($file, "wb");
+      if($hdle !== FALSE) { fwrite($hdle, $dataUrl); fclose($hdle); }
+      if(is_json($dataUrl) === false) {
+        return null;
+      }
+      return json_decode($dataUrl, true);
   }
 
   public function preInsert() {
@@ -386,7 +409,7 @@ class rteEcowatt extends eqLogic {
           'order' => 2,
         ),
         'ejpRemainingDays' => array(
-          'name' => __('EJP restants', __FILE__),
+          'name' => __('EJP non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 3,
         )
@@ -475,7 +498,7 @@ class rteEcowatt extends eqLogic {
           'order' => 2,
         ),
         'blue-remainingDays' => array(
-          'name' => __('Jours Bleus restants', __FILE__),
+          'name' => __('Jours Bleus non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 3,
         ),
@@ -485,7 +508,7 @@ class rteEcowatt extends eqLogic {
           'order' => 4,
         ),
         'white-remainingDays' => array(
-          'name' => __('Jours Blancs restants', __FILE__),
+          'name' => __('Jours Blancs non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 5,
         ),
@@ -495,7 +518,7 @@ class rteEcowatt extends eqLogic {
           'order' => 6,
         ),
         'red-remainingDays' => array(
-          'name' => __('Jours Rouges restants', __FILE__),
+          'name' => __('Jours Rouges non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 7,
         ),
@@ -539,7 +562,7 @@ class rteEcowatt extends eqLogic {
           'isVisible' => 0,
         ),
         'blue-remainingDays' => array(
-          'name' => __('Jours Bleus restants', __FILE__),
+          'name' => __('Jours Bleus non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 6,
           'isVisible' => 0,
@@ -551,7 +574,7 @@ class rteEcowatt extends eqLogic {
           'isVisible' => 0,
         ),
         'white-remainingDays' => array(
-          'name' => __('Jours Blancs restants', __FILE__),
+          'name' => __('Jours Blancs non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 8,
           'isVisible' => 0,
@@ -563,7 +586,7 @@ class rteEcowatt extends eqLogic {
           'isVisible' => 0,
         ),
         'red-remainingDays' => array(
-          'name' => __('Jours Rouges restants', __FILE__),
+          'name' => __('Jours Rouges non placés', __FILE__),
           'subtype' => 'numeric',
           'order' => 10,
           'isVisible' => 0,
@@ -677,7 +700,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   public function updateInfoEdfEjp($fetch) {
     $dat = date('nd');
      // log::add(__CLASS__,'warning', "Date $dat");
-    if($dat > 331 && $dat <= 1031) {
+    if( 1 /* $dat > 331 && $dat <= 1031*/) {
       $this->checkAndUpdateCmd('today', 'OUT_OF_PERIOD');
       $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
       $this->checkAndUpdateCmd('ejpRemainingDays', 0);
@@ -729,6 +752,12 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   }
 
   public function updateInfoEdfTempo($fetch) {
+    $this->checkAndUpdateCmd('blue-remainingDays', -1);
+    $this->checkAndUpdateCmd('white-remainingDays', -1);
+    $this->checkAndUpdateCmd('red-remainingDays', -1);
+    $this->checkAndUpdateCmd('today', 'ERROR');
+    $this->checkAndUpdateCmd('tomorrow', 'ERROR');
+    return; // EDF HS
     $t = time();
     $cmd = $this->getCmd(null,'today');
     if(is_object($cmd)) $today = $cmd->execCmd();
@@ -776,14 +805,16 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $nbTotRed = config::byKey('totalTempoRed', __CLASS__, 22);
     $nbTotBlue = 365 + $leapYear - $nbTotWhite - $nbTotRed;
       // Interrogation sur nombre de jours
-    $nbTempoDays = self::valueFromUrl('EDFtempoDays','https://particulier.edf.fr/services/rest/referentiel/getNbTempoDays?TypeAlerte=TEMPO');
+    // $nbTempoDays = self::valueFromUrl('EDFtempoDays','https://particulier.edf.fr/services/rest/referentiel/getNbTempoDays?TypeAlerte=TEMPO');
+    $nbTempoDays = self::valueFromUrl('EDFtempoDays','https://api-commerce.edf.fr/commerce/activet/v1/saisons/search?option=TEMPO&dateReference=' .date('Y-m-d'));
     if($nbTempoDays === null) {
       log::add(__CLASS__,'warning', "Unable to retrieve Tempo information from EDF");
-      $this->checkAndUpdateCmd('blue-remainingDays', $nbTotBlue);
-      $this->checkAndUpdateCmd('white-remainingDays', $nbTotWhite);
-      $this->checkAndUpdateCmd('red-remainingDays', $nbTotRed);
+      $this->checkAndUpdateCmd('blue-remainingDays', -1);
+      $this->checkAndUpdateCmd('white-remainingDays', -1);
+      $this->checkAndUpdateCmd('red-remainingDays', -1);
     }
     else {
+      /*
       $file = __DIR__ ."/../../data/ecowattTempoEDFnbDays.json";
       $hdle = fopen($file, "wb");
       if($hdle !== FALSE) { fwrite($hdle, json_encode($nbTempoDays)); fclose($hdle); }
@@ -793,6 +824,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $this->checkAndUpdateCmd('blue-remainingDays', $nbBlue);
       $this->checkAndUpdateCmd('white-remainingDays', $nbWhite);
       $this->checkAndUpdateCmd('red-remainingDays', $nbRed);
+       */
     }
       // Nb jours total
     $this->checkAndUpdateCmd('blue-totalDays', $nbTotBlue); // Total bleu
@@ -891,6 +923,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         $start_date = date('c',$tsYesterday);
       log::add(__CLASS__, 'debug', "RTE REQUESTS DATES: $start_date $end_date, LatestOK: " .date('c',$tsLatestOK));
       $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=$start_date&end_date=$end_date&fallback_status=false";
+      // $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=2023-09-01T00:00:00+02:00&end_date=2024-09-01T00:00:00+02:00&fallback_status=false";
     }
     $params = self::initParamRTE('tempoRTE');
     $response = self::getResourceRTE($params, $api);
@@ -918,21 +951,21 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
           else if($color == 'BLANC') { $color = 'WHITE'; }
           else if($color == 'BLEU') { $color = 'BLUE'; }
           else $color = 'UNDEFINED';
-message::add(__CLASS__, date('c') ." DateApplication: " .$tempo['DateApplication'] ." Color: ".$tempo['Couleur']);
+// message::add(__CLASS__, date('c') ." DateApplication: " .$tempo['DateApplication'] ." Color: ".$tempo['Couleur']);
           if($todayOK == 0 || $tomorrowOK == 0) {
             $deb= strtotime($tempo['DateApplication'] .' 00:00:00');
             $fin= $deb + 86400;
             if($todayOK == 0) {
               if($today >= $deb && $today < $fin) {
                 $decData["today"] = array("value"=>"$color", "datetime"=>date('c',$tsToday));
-message::add(__CLASS__, date('c') ." TsToday = " .date('c',$tsToday) ." Color: $color");
+// message::add(__CLASS__, date('c') ." TsToday = " .date('c',$tsToday) ." Color: $color");
                 $todayOK = 1;
               }
             }
             if($tomorrowOK == 0) {
               if($tomorrow >= $deb && $tomorrow < $fin) {
                 $decData["tomorrow"] = array("value"=> "$color", "datetime"=>date('c',$tsTomorrow));
-message::add(__CLASS__, date('c') ." TsTomorrow = " .date('c',$tsTomorrow) ." Color: $color");
+// message::add(__CLASS__, date('c') ." TsTomorrow = " .date('c',$tsTomorrow) ." Color: $color");
                 $tomorrowOK = 1;
               }
             }
@@ -1075,7 +1108,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       $this->checkAndUpdateCmd('todayTS', strtotime($decData['today']['datetime']));
       $this->checkAndUpdateCmd('tomorrow', $decData['tomorrow']['value']);
       $this->checkAndUpdateCmd('tomorrowTS', strtotime($decData['tomorrow']['datetime']));
-        // Nb jours restants
+        // Nb jours non placés
       $nbRemainingBlue = $nbTotBlue - $nbUsedBlue;
       $nbRemainingWhite = $nbTotWhite - $nbUsedWhite;
       $nbRemainingRed = $nbTotRed - $nbUsedRed;
@@ -1362,7 +1395,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
 
     // remplacement de strftime pour des formats simples $format est le meme que strftime
   public static function myStrftime($format,$timestamp=null) {
-    if($timestamp === null) $timestamp = time();
+    if($timestamp === null || trim($timestamp) == '') $timestamp = time();
     $resu = $format;
     $language = config::byKey('language', 'core', 'fr_FR');
     if($language == 'fr_FR') {
@@ -1852,6 +1885,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         $replace['#backgroundUndef#'] = $backgroundUndef[$val];
       }
       else if($cmdLogicalId == 'todayTS') {
+        $val = time();
         $replace['#todayDate#'] = self::myStrftime('%A %e %B',$val);
         if(date('m',$val)<9) { // Avant 1er septembre
           $replace['#endSeason#'] = date('Y');

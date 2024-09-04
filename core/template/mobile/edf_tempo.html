@@ -10,7 +10,7 @@
       <span>#name_display# <span class="object_name">#object_name#</span></span><br/>
     </span>
 	</center>
-  <div style="padding: 5px;">
+  <div style="padding: 5px;display:none">
     <center>
       <span>Aujourd'hui
         <i class="fa fa-circle fa-lg today" style="color: #colorToday#"></i>
@@ -22,7 +22,7 @@
       <br/>
     </center>
     <div style="margin-left:20px;">
-      <span style="font-weight: bold; Cursor:default">Jours restants:</span>
+      <span style="font-weight: bold; Cursor:default">Jours non placés:</span>
       <div style="margin-left:20px;">
           <i class="fa fa-circle fa-lg" style="color: #colorBLUE#"></i>
           <span> : #blue-remainingDays# / #blue-totalDays#</span><br/>
@@ -32,6 +32,17 @@
           <span> : #red-remainingDays# / #red-totalDays#</span>
       </div>
     </div>
+  </div>
+  <div style="display: block;background-color: #005BBB;color: white">
+    <center>
+      <span style="font-weight: 700;font-size: 18px">
+    Attention<br/>
+      </span>
+      <span style="font-weight: 400;font-size: 14px">
+        Les informations Tempo du site EDF ne sont plus disponibles.<br/>
+        Vous pouvez modifier la source utilisée par cet équipement en: Tempo (RTE)
+      </span>
+    </center>
   </div>
 	<script>
     if ('#refresh_id#' != '') {

@@ -84,5 +84,40 @@ if(!isConnect('admin')) {
         <input class="configKey form-control" data-l1key="HPJR"/>
       </div>
     </div>
+    <div class="col-lg-6 col-sm-12">
+        <legend><i class="fas fa-wrench"></i>{{Réparations}}</legend>
+        <div class="form-group">
+            <label class="col-sm-1 control-label">&nbsp;</label>
+            <div class="col-sm-5">
+                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"><i class="fas fa-trash" style="display:none;"></i> <i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
+            </div>
+            <div class="col-sm-6"></div>
+        </div>
+    </div>
   </fieldset>
 </form>
+<script>
+// Réparations
+// Remove data/dataTempo.json
+$('#bt_removeDataTempoJson').on('click', function () {
+    bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer le fichier des historiques Tempo:}}<br/><b>plugins/rteEcowatt/data/dataTempo.json</b>{{ ?}}', function(result) {
+        if (!result) return;
+        $.post({
+          url: "plugins/rteEcowatt/core/ajax/rteEcowatt.ajax.php",
+          data: {
+            action: "removeDataTempoJson"
+          },
+          error: function (request, status, error) {
+            handleAjaxError(request, status, error);
+          },
+          success: function(data) {
+            if (data.state != 'ok') {
+              $.fn.showAlert({message: 'Unable to remove dataTempo.json', level: 'danger'});
+              return;
+            }
+            $.fn.showAlert({message: '{{Fichier supprimé.}}', level: 'success'});
+          }
+        });
+    });
+});
+</script>
