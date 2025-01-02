@@ -136,9 +136,9 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     <option value="tempoRTE">{{Tempo (RTE)}}</option>
                     <option value="consumptionRTE">{{Consommation (RTE)}}</option>
 <!--
+-->
                     <option value="tempoEDF">{{Tempo (EDF) HS}}</option>
                     <option value="ejpEDF">{{Ejp (EDF) HS}}</option>
--->
                   </select>
                 </div>
               </div>
