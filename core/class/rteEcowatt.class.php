@@ -139,8 +139,7 @@ class rteEcowatt extends eqLogic {
   }
 
   public static function pullDataEcowatt() {
-    /* EDF HS
-     */
+    /* EDF obsolete */
       // deplacé de cronHourly pour étaler les requetes chez EDF
     $hour = array('tempoEDF' => array(0, 11, 12, 14, 16),
                   'ejpEDF' => array(1, 6, 12, 16, 17, 19, 22));
@@ -698,57 +697,10 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
   }
 
   public function updateInfoEdfEjp($fetch) {
-    $dat = date('nd');
-     // log::add(__CLASS__,'warning', "Date $dat");
-    if( 1 /* $dat > 331 && $dat <= 1031*/) {
-      $this->checkAndUpdateCmd('today', 'OUT_OF_PERIOD');
-      $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
-      $this->checkAndUpdateCmd('ejpRemainingDays', 0);
-      return;
-    }
-    $ejpdays = self::valueFromUrl('EDFejp','https://particulier.edf.fr/services/rest/referentiel/historicEJPStore');
-    if($ejpdays === null) {
-      log::add(__CLASS__,'warning', "Unable to retrieve EJP information from EDF");
-      $this->checkAndUpdateCmd('today', 'ERROR');
-      $this->checkAndUpdateCmd('tomorrow', 'ERROR');
-      $this->checkAndUpdateCmd('ejpRemainingDays', 0);
-    }
-    else {
-      config::save('lastcall-ejpEdf', time(), __CLASS__);
-      $startEjpPeriod = strtotime($ejpdays['dateDebutPeriode']);
-      $endEjpPeriod = strtotime($ejpdays['dateFinPeriode']);
-      $todayTS = mktime(0,0,0);
-      $tomorrowTS = mktime(0,0,0,date('m'),date('d')+1);
-      $todayEjp = 0; $tomorrowEjp = 0;
-      if($todayTS > $startEjpPeriod && $todayTS <= $endEjpPeriod) {
-        foreach($ejpdays['listeEjp'] as $ejp) {
-          $ejpTS = ($ejp['dateApplication']/1000);
-          if($ejpTS == $todayTS) $todayEjp = 1;
-          if($ejpTS == $tomorrowTS) $tomorrowEjp = 1;
-        }
-        if($todayEjp == 0) $this->checkAndUpdateCmd('today', "NOT_EJP");
-        else if($todayEjp == 1) $this->checkAndUpdateCmd('today', "EJP");
-        if($tomorrowEjp == 0) {
-          if($todayTS == $endEjpPeriod) {
-            $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
-          }
-          else if($tomorrowTS == $startEjpPeriod) {
-            $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
-          }
-          else {
-            if(date('G') < 16) $this->checkAndUpdateCmd('tomorrow', "UNDEFINED");
-            else $this->checkAndUpdateCmd('tomorrow', "NOT_EJP");
-          }
-        }
-        else if($tomorrowEjp == 1) $this->checkAndUpdateCmd('tomorrow', "EJP");
-        $this->checkAndUpdateCmd('ejpRemainingDays', $ejpdays['nbEjpRestants']);
-      }
-      else {
-        $this->checkAndUpdateCmd('today', 'OUT_OF_PERIOD');
-        $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
-        $this->checkAndUpdateCmd('ejpRemainingDays', 0);
-      }
-    }
+    $this->checkAndUpdateCmd('today', 'ERROR');
+    $this->checkAndUpdateCmd('tomorrow', 'ERROR');
+    $this->checkAndUpdateCmd('ejpRemainingDays', 0);
+    return; // EJP EDF obsolete
   }
 
   public function updateInfoEdfTempo($fetch) {
@@ -758,78 +710,6 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $this->checkAndUpdateCmd('today', 'ERROR');
     $this->checkAndUpdateCmd('tomorrow', 'ERROR');
     return; // EDF HS
-    $t = time();
-    $cmd = $this->getCmd(null,'today');
-    if(is_object($cmd)) $today = $cmd->execCmd();
-    else $today = 'UNDEFINED';
-    $cmd = $this->getCmd(null,'tomorrow');
-    if(is_object($cmd)) $tomorrow = $cmd->execCmd();
-    else $tomorrow = 'UNDEFINED';
-    $tempoDays = self::valueFromUrl('EDFtempoColors','https://particulier.edf.fr/services/rest/referentiel/searchTempoStore?dateRelevant=' .date('Y-m-d'));
-    if($tempoDays === null) {
-      log::add(__CLASS__,'warning', "Unable to retrieve Tempo colors from EDF");
-      $this->checkAndUpdateCmd('today', 'ERROR');
-      $this->checkAndUpdateCmd('tomorrow', 'ERROR');
-    }
-    else {
-      $file = __DIR__ ."/../../data/ecowattTempoEDF.json";
-      $hdle = fopen($file, "wb");
-      if($hdle !== FALSE) { fwrite($hdle, json_encode($tempoDays)); fclose($hdle); }
-        // Aujourd'hui
-      $color = $tempoDays['couleurJourJ'];
-      if($color == 'TEMPO_ROUGE') $color='RED';
-      else if($color == 'TEMPO_BLANC')  $color = 'WHITE';
-      else if($color == 'TEMPO_BLEU') $color = 'BLUE';
-      else if($color == 'NON_DEFINI') $color = 'UNDEFINED';
-      else $color = 'ERROR';
-      $this->checkAndUpdateCmd('today', $color);
-        // Demain
-      $color = $tempoDays['couleurJourJ1'];
-      if($color == 'TEMPO_ROUGE') $color='RED';
-      else if($color == 'TEMPO_BLANC')  $color = 'WHITE';
-      else if($color == 'TEMPO_BLEU') $color = 'BLUE';
-      else if($color == 'NON_DEFINI') $color = 'UNDEFINED';
-      else $color = 'ERROR';
-      $this->checkAndUpdateCmd('tomorrow', $color);
-      config::save('lastcall-tempoEDF', $t, __CLASS__);
-    }
-      // Calcul nombre total de jours de chaque couleur
-    if(date('m',$t)<9) { // Avant 1er septembre
-      $leapYear = date('L',$t); // L'année en cours est-elle bissextile?
-    }
-    else { // Après 1er septembre
-      $t2 = mktime(12,0,0,1,1,date('Y',$t)+1); // l'année prochaine est-elle bissextile?
-      $leapYear = date('L',$t2);
-    }
-    $nbTotWhite = config::byKey('totalTempoWhite', __CLASS__, 43);
-    $nbTotRed = config::byKey('totalTempoRed', __CLASS__, 22);
-    $nbTotBlue = 365 + $leapYear - $nbTotWhite - $nbTotRed;
-      // Interrogation sur nombre de jours
-    // $nbTempoDays = self::valueFromUrl('EDFtempoDays','https://particulier.edf.fr/services/rest/referentiel/getNbTempoDays?TypeAlerte=TEMPO');
-    $nbTempoDays = self::valueFromUrl('EDFtempoDays','https://api-commerce.edf.fr/commerce/activet/v1/saisons/search?option=TEMPO&dateReference=' .date('Y-m-d'));
-    if($nbTempoDays === null) {
-      log::add(__CLASS__,'warning', "Unable to retrieve Tempo information from EDF");
-      $this->checkAndUpdateCmd('blue-remainingDays', -1);
-      $this->checkAndUpdateCmd('white-remainingDays', -1);
-      $this->checkAndUpdateCmd('red-remainingDays', -1);
-    }
-    else {
-      /*
-      $file = __DIR__ ."/../../data/ecowattTempoEDFnbDays.json";
-      $hdle = fopen($file, "wb");
-      if($hdle !== FALSE) { fwrite($hdle, json_encode($nbTempoDays)); fclose($hdle); }
-      $nbBlue = $nbTempoDays['PARAM_NB_J_BLEU'];
-      $nbWhite = $nbTempoDays['PARAM_NB_J_BLANC'];
-      $nbRed = $nbTempoDays['PARAM_NB_J_ROUGE'];
-      $this->checkAndUpdateCmd('blue-remainingDays', $nbBlue);
-      $this->checkAndUpdateCmd('white-remainingDays', $nbWhite);
-      $this->checkAndUpdateCmd('red-remainingDays', $nbRed);
-       */
-    }
-      // Nb jours total
-    $this->checkAndUpdateCmd('blue-totalDays', $nbTotBlue); // Total bleu
-    $this->checkAndUpdateCmd('white-totalDays', $nbTotWhite); // Total blanc
-    $this->checkAndUpdateCmd('red-totalDays', $nbTotRed);   // Total rouge
   }
    
   public static function getTempoData($chgeDay = 0,$fetch=0) {
@@ -905,7 +785,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
 
         // request to RTE
     if($decData && $tsLatestOK == $tsTomorrow && $yesterdayDataTS) {
-      if($fetch) {
+      if($fetch == 2) { // fetch = 2 si demandé par l'utilisateur sur l'équipement
         $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars"; // request for tomorrow only
         log::add(__CLASS__, 'debug', "Fetching data but Tomorrow is already OK since: ".date('c',$tsTomorrow) ." LatestOK: " .date('c',$tsLatestOK) ." Today:" .$decData["today"]["value"]);
       }
@@ -1567,7 +1447,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       else if(substr($cmdLogicalId,0,13) == 'dayTimestampD') {
         $idx = substr($cmdLogicalId,13);
         $replace["#date$idx#"] = self::myStrftime('%A %e %B',$cmd->execCmd());
-        $replace["#date${idx}dm#"] = self::myStrftime('%e %B',$cmd->execCmd());
+        $replace["#date{$idx}dm#"] = self::myStrftime('%e %B',$cmd->execCmd());
       }
       else if($cmdLogicalId == 'datenowTS') {
         $val = $cmd->execCmd();
@@ -1598,7 +1478,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
             $tabHCbar .= '{ data: [1], name: "'.$title .'", color: "' .$color[$data] .'"},';
           }
           $tab .= '</td>';
-          $dataHighcharts = "{ name: '${i}h-" .($i+1) ."h', y: 15, color: '" .$color[$data] ."'";
+          $dataHighcharts = "{ name: '{$i}h-" .($i+1) ."h', y: 15, color: '" .$color[$data] ."'";
           if($dayTS[$idx] + $i * 3600 == $datenowTS) {
             $dataHighcharts .= ", sliced:true, selected: true";
             $icurH = $i;
@@ -1615,10 +1495,10 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         }
         $tab .= "</tr></table>";
         $replace["#dataHourD$idx#"] = "$tab";
-        $replace["#dataHour${idx}HCpieAM#"] = $dataHCpieAM;
-        $replace["#dataHour${idx}HCpiePM#"] = $dataHCpiePM;
-        $replace["#dataHour${idx}HCcolumn#"] = $tabHCcolumn;
-        $replace["#dataHour${idx}HCbar#"] = $tabHCbar;
+        $replace["#dataHour{$idx}HCpieAM#"] = $dataHCpieAM;
+        $replace["#dataHour{$idx}HCpiePM#"] = $dataHCpiePM;
+        $replace["#dataHour{$idx}HCcolumn#"] = $tabHCcolumn;
+        $replace["#dataHour{$idx}HCbar#"] = $tabHCbar;
 
       }
       else if($cmdLogicalId == 'dataHoursJson') {
@@ -1680,8 +1560,8 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         $idx = substr($cmdLogicalId,9);
         $colD = $cmd->execCmd();
         $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
-        $replace["#dataDay${idx}HC#"] = "{ name: 'Jour', y: 360, color: '" .$color[$colD] ."'}";
-        $replace["#dayColor${idx}#"] = $color[$colD];
+        $replace["#dataDay{$idx}HC#"] = "{ name: 'Jour', y: 360, color: '" .$color[$colD] ."'}";
+        $replace["#dayColor{$idx}#"] = $color[$colD];
       }
       else $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
     }
@@ -1945,7 +1825,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       // else if($i==0) $replace['#hr'.$i .'#'] ='0h';
       else if($i==6) $replace['#hr'.$i .'#'] ='6h';
       else if($i==22) $replace['#hr'.$i .'#'] ='22h';
-      else if($i == ($hr + 1)) $replace['#hr'.$i .'#'] ="${i}h";
+      else if($i == ($hr + 1)) $replace['#hr'.$i .'#'] ="{$i}h";
       else $replace['#hr'.$i .'#'] ='&nbsp;';
     }
     $lastcallTempoTS = config::byKey("lastcall-tempoRTE", __CLASS__, 0);
@@ -2164,7 +2044,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     }
 
     if($templateFile == '') {
-      if (file_exists( __DIR__ ."/../template/$_version/custom.${template}.html")) {
+      if (file_exists( __DIR__ ."/../template/$_version/custom.{$template}.html")) {
         return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, "custom." .$template, __CLASS__)));
       }
       else {
@@ -2172,7 +2052,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       }
     }
     else {
-      if (file_exists( __DIR__ ."/../template/$_version/${templateFile}.html")) {
+      if (file_exists( __DIR__ ."/../template/$_version/{$templateFile}.html")) {
         if($loglevel == 'debug') $replace['#dataActuEcowatt#'] .= " Template :  " .$templateFile;
         return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, $templateFile, __CLASS__)));
       }
@@ -2210,7 +2090,7 @@ class rteEcowattCmd extends cmd {
   public function execute($_options = array()) {
     if ($this->getLogicalId() == 'refresh') {
       $eqLogic = $this->getEqLogic();
-      $eqLogic->updateInfo(1);
+      $eqLogic->updateInfo(2);
     }
   }
 }
