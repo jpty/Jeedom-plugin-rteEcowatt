@@ -34,11 +34,10 @@
     <div style="display:#outOfEjpPeriod#;background-color: #colorEjpToday#;color: white">
       <center>
         <span style="font-weight: 700;font-size: 18px">
-      Attention<br/>
+      #datenow#<br/>
         </span>
         <span style="font-weight: 400;font-size: 14px">
-          Les informations EJP du site EDF ne sont plus disponibles.<br/>
-          Cet équipement n'est plus opérationnel.
+          La période EJP est terminée.<br/>Rendez-vous le 31 octobre.
         </span>
       </center>
     </div>
@@ -46,8 +45,7 @@
 	<script>
     if ('#refresh_id#' != '') {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
-        jeedom.cmd.execute({id: '#refresh_id#'})
-      })
+        jeedom.cmd.execute({id: '#refresh_id#'})})
     } else {
       $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
     }
