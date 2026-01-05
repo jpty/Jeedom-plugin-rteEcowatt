@@ -72,12 +72,12 @@ try {
             }
 
             if ($inTempo && preg_match('/^'.$puissance.'\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})/', $line, $m)) {
-                $bleuHC = (float)(str_replace(',', '.', $m[2]));
-                $bleuHP = (float)(str_replace(',', '.', $m[3]));
-                $blancHC = (float)(str_replace(',', '.', $m[4]));
-                $blancHP = (float)(str_replace(',', '.', $m[5]));
-                $rougeHC = (float)(str_replace(',', '.', $m[6]));
-                $rougeHP = (float)(str_replace(',', '.', $m[7]));
+                $bleuHC = round((float)(str_replace(',', '.', $m[2])/100),4);
+                $bleuHP = round((float)(str_replace(',', '.', $m[3])/100),4);
+                $blancHC = round((float)(str_replace(',', '.', $m[4])/100),4);
+                $blancHP = round((float)(str_replace(',', '.', $m[5])/100),4);
+                $rougeHC = round((float)(str_replace(',', '.', $m[6])/100),4);
+                $rougeHP = round((float)(str_replace(',', '.', $m[7])/100),4);
 
                 ajax::success([
                     'bleuHC' => $bleuHC,
