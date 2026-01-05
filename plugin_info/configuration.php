@@ -109,7 +109,7 @@ if(!isConnect('admin')) {
         <div class="form-group">
             <label class="col-sm-1 control-label">&nbsp;</label>
             <div class="col-sm-5">
-                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"><i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
+                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"><i class="fas fa-trash" style="display:none;"></i> <i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
             </div>
             <div class="col-sm-6"></div>
         </div>
@@ -152,7 +152,6 @@ $('#bt_fetchTempoPrices').on('click', function () {
             $.fn.showAlert({message: '{{Aucune URL définie (ni saisie ni placeholder)}}', level: 'warning'});
             return;
         }
-        // Optionnel : on peut même remplir automatiquement le champ pour l'utilisateur
         urlInput.val(url);
     }
 
