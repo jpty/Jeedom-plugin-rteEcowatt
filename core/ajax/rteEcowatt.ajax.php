@@ -35,6 +35,63 @@ try {
       else ajax::success();
     }
 
+    if(init('action') == 'fetchTempoPrices') {
+        $url = init('url');
+        $puissance = init('puissance');
+
+        if ($url == '' || !filter_var($url, FILTER_VALIDATE_URL)) {
+            ajax::error('URL invalide');
+        }
+        if (!in_array($puissance, ['6','9','12','15','18','30','36'])) {
+            ajax::error('Puissance invalide');
+        }
+
+        $pdfContent = @file_get_contents($url);
+        if ($pdfContent === false) {
+            ajax::error('Impossible de télécharger le PDF');
+        }
+
+        $tempPdf = sys_get_temp_dir() . '/edf_tempo.pdf';
+        file_put_contents($tempPdf, $pdfContent);
+
+        $text = shell_exec("pdftotext -layout '$tempPdf' - 2>/dev/null");
+        unlink($tempPdf);
+
+        if (empty($text)) {
+            ajax::error('Échec extraction texte (pdftotext indisponible ?)');
+        }
+
+        $lines = explode("\n", $text);
+        $inTempo = false;
+        foreach ($lines as $line) {
+            $line = trim(preg_replace('/\s+/', ' ', $line));
+
+            if (stripos($line, 'Option Tempo') !== false) {
+                $inTempo = true;
+                continue;
+            }
+
+            if ($inTempo && preg_match('/^'.$puissance.'\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})/', $line, $m)) {
+                $bleuHC = (float)(str_replace(',', '.', $m[2]));
+                $bleuHP = (float)(str_replace(',', '.', $m[3]));
+                $blancHC = (float)(str_replace(',', '.', $m[4]));
+                $blancHP = (float)(str_replace(',', '.', $m[5]));
+                $rougeHC = (float)(str_replace(',', '.', $m[6]));
+                $rougeHP = (float)(str_replace(',', '.', $m[7]));
+
+                ajax::success([
+                    'bleuHC' => $bleuHC,
+                    'bleuHP' => $bleuHP,
+                    'blancHC' => $blancHC,
+                    'blancHP' => $blancHP,
+                    'rougeHC' => $rougeHC,
+                    'rougeHP' => $rougeHP
+                ]);
+            }
+        }
+        ajax::error('Prix non trouvés pour cette puissance dans le PDF');
+    }    
+
     throw new Exception(__('Aucune méthode correspondante à', __FILE__) . ' : ' . init('action'));
     /*     * *********Catch exception*************** */
 }
