@@ -61,13 +61,13 @@ if(!isConnect('admin')) {
       </div>
       <div class="col-sm-1">
         <select class="configKey form-control" data-l1key="tempoAbo">
-          <option value="6" selected>6 KVA</option>
-          <option value="9">9 KVA</option>
-          <option value="12">12 KVA</option>
-          <option value="15">15 KVA</option>
-          <option value="18">18 KVA</option>
-          <option value="30">30 KVA</option>
-          <option value="36">36 KVA</option>
+          <option value="6" selected>6 kVA</option>
+          <option value="9">9 kVA</option>
+          <option value="12">12 kVA</option>
+          <option value="15">15 kVA</option>
+          <option value="18">18 kVA</option>
+          <option value="30">30 kVA</option>
+          <option value="36">36 kVA</option>
         </select>
       </div>
       <div class="col-sm-2">
@@ -109,7 +109,7 @@ if(!isConnect('admin')) {
         <div class="form-group">
             <label class="col-sm-1 control-label">&nbsp;</label>
             <div class="col-sm-5">
-                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"><i class="fas fa-trash" style="display:none;"></i> <i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
+                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"><i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
             </div>
             <div class="col-sm-6"></div>
         </div>
@@ -117,7 +117,8 @@ if(!isConnect('admin')) {
   </fieldset>
 </form>
 <script>
-// Réparations existant
+// Réparations
+// Remove data/dataTempo.json
 $('#bt_removeDataTempoJson').on('click', function () {
     bootbox.confirm('{{Êtes-vous sûr de vouloir supprimer le fichier des historiques Tempo:}}<br/><b>plugins/rteEcowatt/data/dataTempo.json</b>{{ ?}}', function(result) {
         if (!result) return;
