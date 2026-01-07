@@ -63,8 +63,12 @@ try {
 
         $lines = explode("\n", $text);
         $inTempo = false;
+        $dateOfRates = '';
         foreach ($lines as $line) {
             $line = trim(preg_replace('/\s+/', ' ', $line));
+            if (stripos($line, 'Applicable au') !== false) {
+              $dateOfRates = $line;
+            }
 
             if (stripos($line, 'Option Tempo') !== false) {
                 $inTempo = true;
@@ -72,6 +76,7 @@ try {
             }
 
             if ($inTempo && preg_match('/^'.$puissance.'\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})/', $line, $m)) {
+                $subscription = round((float)(str_replace(',', '.', $m[1])),2);
                 $bleuHC = round((float)(str_replace(',', '.', $m[2])/100),4);
                 $bleuHP = round((float)(str_replace(',', '.', $m[3])/100),4);
                 $blancHC = round((float)(str_replace(',', '.', $m[4])/100),4);
@@ -80,6 +85,8 @@ try {
                 $rougeHP = round((float)(str_replace(',', '.', $m[7])/100),4);
 
                 ajax::success([
+                    'dateOfRates' => $dateOfRates,
+                    'subscription' => $subscription,
                     'bleuHC' => $bleuHC,
                     'bleuHP' => $bleuHP,
                     'blancHC' => $blancHC,
