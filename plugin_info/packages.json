@@ -1,0 +1,11 @@
+{
+  "pre-install": {},
+  "apt": {
+    "poppler-utils" : {}
+  },
+  "pip3": {},
+  "npm": {},
+  "yarn": {},
+  "plugin": {},
+  "post-install": {}
+}
