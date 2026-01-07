@@ -47,15 +47,42 @@ if(!isConnect('admin')) {
       </div>
     </div>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Tempo: Fin de validité des prix.}}
-<sup><i class="fas fa-question-circle tooltips" title="{{Format: AAAA-MM-JJ}}"></i></sup>
-      </label>
-      <div class="col-md-2">
-        <input class="configKey form-control" data-l1key="tempoExpirationDate" placeholder="{{Format: AAAA-MM-JJ}}"/>
+      <label class="col-md-4 control-label">{{Fichier des tarifs Tempo}}</label>
+      <div class="col-md-5">
+        <input class="configKey form-control" data-l1key="tempoPriceUrl" placeholder="https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf"/>
       </div>
     </div>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Prix Tempo à récupérer}} <a target="blank" href="https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf">ICI</a>{{ €/kWh Bleu HC}}</label>
+      <label class="col-md-4 control-label">{{Puissance souscrite Tempo}}</label>
+      <div class="col-sm-1">
+        <select class="configKey form-control" data-l1key="tempoAbo">
+          <option value="6" selected>6 kVA</option>
+          <option value="9">9 kVA</option>
+          <option value="12">12 kVA</option>
+          <option value="15">15 kVA</option>
+          <option value="18">18 kVA</option>
+          <option value="30">30 kVA</option>
+          <option value="36">36 kVA</option>
+        </select>
+      </div>
+      <div class="col-sm-4">
+        <a class="btn btn-success" id="bt_fetchTempoPrices"><i class="fas fa-download"></i> {{Récupérer les prix Tempo}}</a>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Date tarification}}</label>
+      <div class="col-md-2">
+        <input class="configKey form-control" data-l1key="dateOfRates"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Abonnement mensuel}}</label>
+      <div class="col-md-1">
+        <input class="configKey form-control" data-l1key="subscription"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Bleu HC}}</label>
       <div class="col-md-1">
         <input class="configKey form-control" data-l1key="HCJB"/>
       </div>
@@ -84,12 +111,20 @@ if(!isConnect('admin')) {
         <input class="configKey form-control" data-l1key="HPJR"/>
       </div>
     </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Tempo: Fin de validité des prix.}}
+<sup><i class="fas fa-question-circle tooltips" title="{{Format: AAAA-MM-JJ}}"></i></sup>
+      </label>
+      <div class="col-md-2">
+        <input class="configKey form-control" data-l1key="tempoExpirationDate" placeholder="{{Format: AAAA-MM-JJ}}"/>
+      </div>
+    </div>
     <div class="col-lg-6 col-sm-12">
         <legend><i class="fas fa-wrench"></i>{{Réparations}}</legend>
         <div class="form-group">
             <label class="col-sm-1 control-label">&nbsp;</label>
             <div class="col-sm-5">
-                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"><i class="fas fa-trash" style="display:none;"></i> <i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
+                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"> <i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
             </div>
             <div class="col-sm-6"></div>
         </div>
@@ -118,6 +153,59 @@ $('#bt_removeDataTempoJson').on('click', function () {
             $.fn.showAlert({message: '{{Fichier supprimé.}}', level: 'success'});
           }
         });
+    });
+});
+
+// Nouveau bouton : Récupérer les prix Tempo depuis le PDF
+$('#bt_fetchTempoPrices').on('click', function () {
+    var urlInput = $('.configKey[data-l1key="tempoPriceUrl"]');
+    var url = urlInput.val().trim();
+
+    // Si le champ est vide, on utilise la valeur du placeholder
+    if (url == '') {
+        url = urlInput.attr('placeholder');
+        if (url == '' || url === undefined) {
+            $.fn.showAlert({message: '{{Aucune URL définie (ni saisie ni placeholder)}}', level: 'warning'});
+            return;
+        }
+        urlInput.val(url);
+    }
+
+    var puissance = $('.configKey[data-l1key="tempoAbo"]').val();
+
+    $('#bt_fetchTempoPrices').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> {{Chargement...}}');
+
+    $.ajax({
+        type: "POST",
+        url: "plugins/rteEcowatt/core/ajax/rteEcowatt.ajax.php",
+        data: {
+            action: "fetchTempoPrices",
+            url: url,
+            puissance: puissance
+        },
+        dataType: 'json',
+        error: function (request, status, error) {
+            handleAjaxError(request, status, error);
+            $('#bt_fetchTempoPrices').prop('disabled', false).html('<i class="fas fa-download"></i> {{Récupérer les prix Tempo}}');
+        },
+        success: function (data) {
+            $('#bt_fetchTempoPrices').prop('disabled', false).html('<i class="fas fa-download"></i> {{Récupérer les prix Tempo}}');
+            if (data.state != 'ok') {
+                $.fn.showAlert({message: data.result, level: 'danger'});
+                return;
+            }
+            // Mise à jour des champs (valeurs en euros)
+            $('.configKey[data-l1key="dateOfRates"]').val(data.result.dateOfRates);
+            $('.configKey[data-l1key="subscription"]').val(data.result.subscription);
+            $('.configKey[data-l1key="HCJB"]').val(data.result.bleuHC);
+            $('.configKey[data-l1key="HPJB"]').val(data.result.bleuHP);
+            $('.configKey[data-l1key="HCJW"]').val(data.result.blancHC);
+            $('.configKey[data-l1key="HPJW"]').val(data.result.blancHP);
+            $('.configKey[data-l1key="HCJR"]').val(data.result.rougeHC);
+            $('.configKey[data-l1key="HPJR"]').val(data.result.rougeHP);
+
+            $.fn.showAlert({message: '{{Prix Tempo mis à jour pour ' + puissance + ' kVA !}}', level: 'success'});
+        }
     });
 });
 </script>
