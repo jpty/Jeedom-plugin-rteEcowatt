@@ -47,18 +47,13 @@ if(!isConnect('admin')) {
       </div>
     </div>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Tempo: Fin de validité des prix.}}
-<sup><i class="fas fa-question-circle tooltips" title="{{Format: AAAA-MM-JJ}}"></i></sup>
-      </label>
-      <div class="col-md-2">
-        <input class="configKey form-control" data-l1key="tempoExpirationDate" placeholder="{{Format: AAAA-MM-JJ}}"/>
+      <label class="col-md-4 control-label">{{Fichier des tarifs Tempo}}</label>
+      <div class="col-md-5">
+        <input class="configKey form-control" data-l1key="tempoPriceUrl" placeholder="https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf"/>
       </div>
     </div>
     <div class="form-group">
-      <label class="col-md-4 control-label">{{Lien vers Prix Tempo à récupérer : }}</label>
-      <div class="col-md-4">
-        <input class="configKey form-control" data-l1key="tempoPriceUrl" placeholder="https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf"/>
-      </div>
+      <label class="col-md-4 control-label">{{Puissance souscrite Tempo}}</label>
       <div class="col-sm-1">
         <select class="configKey form-control" data-l1key="tempoAbo">
           <option value="6" selected>6 kVA</option>
@@ -70,8 +65,20 @@ if(!isConnect('admin')) {
           <option value="36">36 kVA</option>
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-sm-4">
         <a class="btn btn-success" id="bt_fetchTempoPrices"><i class="fas fa-download"></i> {{Récupérer les prix Tempo}}</a>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Date tarification}}</label>
+      <div class="col-md-2">
+        <input class="configKey form-control" data-l1key="dateOfRates"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Abonnement mensuel}}</label>
+      <div class="col-md-1">
+        <input class="configKey form-control" data-l1key="subscription"/>
       </div>
     </div>
     <div class="form-group">
@@ -104,12 +111,20 @@ if(!isConnect('admin')) {
         <input class="configKey form-control" data-l1key="HPJR"/>
       </div>
     </div>
+    <div class="form-group">
+      <label class="col-md-4 control-label">{{Tempo: Fin de validité des prix.}}
+<sup><i class="fas fa-question-circle tooltips" title="{{Format: AAAA-MM-JJ}}"></i></sup>
+      </label>
+      <div class="col-md-2">
+        <input class="configKey form-control" data-l1key="tempoExpirationDate" placeholder="{{Format: AAAA-MM-JJ}}"/>
+      </div>
+    </div>
     <div class="col-lg-6 col-sm-12">
         <legend><i class="fas fa-wrench"></i>{{Réparations}}</legend>
         <div class="form-group">
             <label class="col-sm-1 control-label">&nbsp;</label>
             <div class="col-sm-5">
-                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"><i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
+                <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"> <i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
             </div>
             <div class="col-sm-6"></div>
         </div>
@@ -179,7 +194,9 @@ $('#bt_fetchTempoPrices').on('click', function () {
                 $.fn.showAlert({message: data.result, level: 'danger'});
                 return;
             }
-            // Mise à jour des champs (valeurs en centimes)
+            // Mise à jour des champs (valeurs en euros)
+            $('.configKey[data-l1key="dateOfRates"]').val(data.result.dateOfRates);
+            $('.configKey[data-l1key="subscription"]').val(data.result.subscription);
             $('.configKey[data-l1key="HCJB"]').val(data.result.bleuHC);
             $('.configKey[data-l1key="HPJB"]').val(data.result.bleuHP);
             $('.configKey[data-l1key="HCJW"]').val(data.result.blancHC);
