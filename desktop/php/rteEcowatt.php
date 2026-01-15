@@ -63,7 +63,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
       <span class="input-group-btn">
         <!-- Les balises <a></a> sont volontairement fermées à la ligne suivante pour éviter les espaces entre les boutons. Ne pas modifier -->
         <a class="btn btn-sm btn-default eqLogicAction roundedLeft" data-action="configure"><i class="fas fa-cogs"></i><span class="hidden-xs"> {{Configuration avancée}}</span>
-        </a><a class="btn btn-sm btn-success eqLogicAction" data-action="save"><i class="fas fa-check-circle"></i> {{Sauvegarder}}
+        </a><a class="btn btn-default btn-sm eqLogicAction" data-action="copy"><i class="fas fa-copy"></i> {{Dupliquer}}</a><a class="btn btn-sm btn-success eqLogicAction" data-action="save"><i class="fas fa-check-circle"></i> {{Sauvegarder}}
         </a><a class="btn btn-sm btn-danger eqLogicAction roundedRight" data-action="remove"><i class="fas fa-minus-circle"></i> {{Supprimer}}
         </a>
       </span>
@@ -136,9 +136,9 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     <option value="tempoRTE">{{Tempo (RTE)}}</option>
                     <option value="consumptionRTE">{{Consommation (RTE)}}</option>
 <!--
-                    <option value="tempoEDF">{{Tempo (EDF) HS}}</option>
-                    <option value="ejpEDF">{{Ejp (EDF) HS}}</option>
 -->
+                    <option value="tempoEDF">{{Tempo (EDF) HS}}</option>
+                    <option value="ejpEDF">{{Ejp (EDF)}}</option>
                   </select>
                 </div>
               </div>
@@ -232,13 +232,9 @@ Vous pouvez modifier le Type de source de données ci-dessus en "Tempo (RTE)"
               <div class="datasource ejpEDF">
                 <div class="form-group">
                   <label class="col-sm-4 control-label" ></label>
-                  <div class="col-sm-7">Ce type d'équipement n'est plus fonctionnel. Les données ne sont plus accessibles sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/ejp.html#/">Web d'EDF</a>
-                  </div>
-<!--
                   <div class="col-sm-7">Pas d'API pour ce type d'équipement. Les données sont récupérées sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/ejp.html#/">Web d'EDF</a> avec cette mention:<br> Ces informations sont non contractuelles et sans valeur d'engagement.
 La mise à jour des données est effectuée quotidiennement entre 13h et 15h, cependant des contraintes d'exploitation peuvent la retarder jusqu'à 5h du matin du jour EJP.
                   </div>
--->
                 </div>
                 <div class="form-group">
                   <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
