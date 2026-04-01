@@ -770,8 +770,8 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     switch ($datasource) {
       case 'tempoRTE': $this->updateInfoTempoRTE($fetch,null); break;
       case 'consumptionRTE': $this->updateInfoConsumption($fetch);
-            $this->fetchDataConsumptionRTEWeekly($fetch);
-            $this->fetchDataConsumptionRTEyearly($fetch);
+            // $this->fetchDataConsumptionRTEWeekly($fetch);
+            // $this->fetchDataConsumptionRTEyearly($fetch);
       break;
       case 'ecowattRTE': $this->updateInfoEcowatt($fetch); break;
       case 'tempoEDF': $this->updateInfoEdfTempo($fetch); break;
