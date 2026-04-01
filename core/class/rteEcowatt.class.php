@@ -1544,7 +1544,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         if($date == '0201' || $date == '0801') { // Date parution: 1er février ou 1er aout
           $tsEnd = strtotime($debTxt ." +6 months");
           $expTxt = date('Y-m-d',$tsEnd);
-          message::add(__CLASS__, "Deb $debTxt -> $expTxt");
+          // message::add(__CLASS__, "Deb $debTxt -> $expTxt");
         }
         $result['tempoExpirationDate'] = $expTxt;
       }
