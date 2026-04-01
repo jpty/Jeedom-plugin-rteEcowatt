@@ -48,7 +48,7 @@ if(!isConnect('admin')) {
     </div>
     <div class="form-group">
       <label class="col-md-4 control-label">{{Fichier des tarifs Tempo}}</label>
-      <div class="col-md-5">
+      <div class="col-md-7">
         <input class="configKey form-control" data-l1key="tempoPriceUrl" placeholder="https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf"/>
       </div>
     </div>
@@ -71,7 +71,7 @@ if(!isConnect('admin')) {
     </div>
     <div class="form-group">
       <label class="col-md-4 control-label">{{Date tarification}}</label>
-      <div class="col-md-2">
+      <div class="col-md-4">
         <input class="configKey form-control" data-l1key="dateOfRates"/>
       </div>
     </div>
@@ -123,7 +123,7 @@ if(!isConnect('admin')) {
         <legend><i class="fas fa-wrench"></i>{{Réparations}}</legend>
         <div class="form-group">
             <label class="col-sm-1 control-label">&nbsp;</label>
-            <div class="col-sm-5">
+            <div class="col-sm-6">
                 <a class="btn btn-danger" id="bt_removeDataTempoJson" style="width:100%;"> <i class="fas fa-trash"></i> {{Supprimer le fichier d'historique Tempo}}</a>
             </div>
             <div class="col-sm-6"></div>
@@ -156,7 +156,7 @@ $('#bt_removeDataTempoJson').on('click', function () {
     });
 });
 
-// Nouveau bouton : Récupérer les prix Tempo depuis le PDF
+// Récupérer les prix Tempo depuis le PDF d'EDF
 $('#bt_fetchTempoPrices').on('click', function () {
     var urlInput = $('.configKey[data-l1key="tempoPriceUrl"]');
     var url = urlInput.val().trim();
@@ -197,12 +197,13 @@ $('#bt_fetchTempoPrices').on('click', function () {
             // Mise à jour des champs (valeurs en euros)
             $('.configKey[data-l1key="dateOfRates"]').val(data.result.dateOfRates);
             $('.configKey[data-l1key="subscription"]').val(data.result.subscription);
-            $('.configKey[data-l1key="HCJB"]').val(data.result.bleuHC);
-            $('.configKey[data-l1key="HPJB"]').val(data.result.bleuHP);
-            $('.configKey[data-l1key="HCJW"]').val(data.result.blancHC);
-            $('.configKey[data-l1key="HPJW"]').val(data.result.blancHP);
-            $('.configKey[data-l1key="HCJR"]').val(data.result.rougeHC);
-            $('.configKey[data-l1key="HPJR"]').val(data.result.rougeHP);
+            $('.configKey[data-l1key="HCJB"]').val(data.result.HCJB);
+            $('.configKey[data-l1key="HPJB"]').val(data.result.HPJB);
+            $('.configKey[data-l1key="HCJW"]').val(data.result.HCJW);
+            $('.configKey[data-l1key="HPJW"]').val(data.result.HPJW);
+            $('.configKey[data-l1key="HCJR"]').val(data.result.HCJR);
+            $('.configKey[data-l1key="HPJR"]').val(data.result.HPJR);
+            $('.configKey[data-l1key="tempoExpirationDate"]').val(data.result.tempoExpirationDate);
 
             $.fn.showAlert({message: '{{Prix Tempo mis à jour pour ' + puissance + ' kVA !}}', level: 'success'});
         }
