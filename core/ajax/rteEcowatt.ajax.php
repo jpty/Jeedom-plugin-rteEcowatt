@@ -46,58 +46,24 @@ try {
             ajax::error('Puissance invalide');
         }
 
-        $pdfContent = @file_get_contents($url);
-        if ($pdfContent === false) {
-            ajax::error('Impossible de télécharger le PDF');
-        }
-
-        $tempPdf = sys_get_temp_dir() . '/edf_tempo.pdf';
-        file_put_contents($tempPdf, $pdfContent);
-
-        $text = shell_exec("pdftotext -layout '$tempPdf' - 2>/dev/null");
-        unlink($tempPdf);
-
-        if (empty($text)) {
-            ajax::error('Échec extraction texte (pdftotext indisponible ?)');
-        }
-
-        $lines = explode("\n", $text);
-        $inTempo = false;
-        $dateOfRates = '';
-        foreach ($lines as $line) {
-            $line = trim(preg_replace('/\s+/', ' ', $line));
-            if (stripos($line, 'Applicable au') !== false) {
-              $dateOfRates = $line;
-            }
-
-            if (stripos($line, 'Option Tempo') !== false) {
-                $inTempo = true;
-                continue;
-            }
-
-            if ($inTempo && preg_match('/^'.$puissance.'\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})/', $line, $m)) {
-                $subscription = round((float)(str_replace(',', '.', $m[1])),2);
-                $bleuHC = round((float)(str_replace(',', '.', $m[2])/100),4);
-                $bleuHP = round((float)(str_replace(',', '.', $m[3])/100),4);
-                $blancHC = round((float)(str_replace(',', '.', $m[4])/100),4);
-                $blancHP = round((float)(str_replace(',', '.', $m[5])/100),4);
-                $rougeHC = round((float)(str_replace(',', '.', $m[6])/100),4);
-                $rougeHP = round((float)(str_replace(',', '.', $m[7])/100),4);
-
+        $result = rteEcowatt::fetchEdf4TempoPrices($url, $puissance);
+        if (isset($result["error"]))
+          ajax::error($result["error"]);
+        else if (isset($result["subscription"]))
                 ajax::success([
-                    'dateOfRates' => $dateOfRates,
-                    'subscription' => $subscription,
-                    'bleuHC' => $bleuHC,
-                    'bleuHP' => $bleuHP,
-                    'blancHC' => $blancHC,
-                    'blancHP' => $blancHP,
-                    'rougeHC' => $rougeHC,
-                    'rougeHP' => $rougeHP
+                    'dateOfRates' => $result["dateOfRates"],
+                    'subscription' => $result["subscription"],
+                    'HCJB' => $result["HCJB"],
+                    'HPJB' => $result["HPJB"],
+                    'HCJW' => $result["HCJW"],
+                    'HPJW' => $result["HPJW"],
+                    'HCJR' => $result["HCJR"],
+                    'HPJR' => $result["HPJR"],
+                    'tempoExpirationDate' => $result["tempoExpirationDate"]
                 ]);
-            }
-        }
-        ajax::error('Prix non trouvés pour cette puissance dans le PDF');
-    }    
+        else
+          ajax::error('Prix non trouvés pour cette puissance dans le PDF');
+    }
 
     throw new Exception(__('Aucune méthode correspondante à', __FILE__) . ' : ' . init('action'));
     /*     * *********Catch exception*************** */
