@@ -276,14 +276,15 @@ class rteEcowatt extends eqLogic {
     $params = self::initParamRTE('consumptionRTE');
     $type ="?type=REALISED,ID";
     $dateGi = date('Gi'); 
-    if($dateGi >= 1930 && $dateGi < 2000) $type .= ",D-1";
-    if($dateGi >= 700 && $dateGi < 730) $type .= ",D-2";
+    if($fetch == 2 || ($dateGi >= 1930 && $dateGi < 2030)) $type .= ",D-1";
+    if($fetch == 2 || ($dateGi >= 700 && $dateGi < 800)|| ($dateGi >= 2100 && $dateGi < 2200)) $type .= ",D-2";
+    // rattrapage $type = "?type=D-1&start_date=2026-01-01T00:00:00+01:00&end_date=2026-01-13T00:00:00+01:00";
     // $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/short_term"; // ?type=<valeur(s)>&start_date=<valeur>&end_date=<valeur>";
     $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/short_term$type";
     $fileConsumption = __DIR__ ."/../../data/consumptionRTE.json";
     log::add(__CLASS__, 'debug', '  Lastcall: '.date('d-m-Y H:i:s',$params['lastcall']));
     // limitation des requetes 15 minutes pour l'API consumption
-    if(time() - $params['lastcall'] > 900) { // plus d'un quart d'heure depuis derniere requete
+    if($fetch == 2 || time() - $params['lastcall'] > 900) { // plus d'un quart d'heure depuis derniere requete
       $response = self::getResourceRTE($params, $api);
       if($response != '') {
         $dec = json_decode($response,true);
@@ -296,9 +297,87 @@ class rteEcowatt extends eqLogic {
       }
     }
     else {
-      log::add(__CLASS__, 'warning', '15 minutes minimum entre 2 demandes de mise à jour. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
+      if($fetch != 2)
+        log::add(__CLASS__, 'warning', '1- 15 minutes minimum entre 2 demandes de mise à jour. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
       if(file_exists($fileConsumption)) {
         $response = file_get_contents($fileConsumption);
+        if($response != '') log::add(__CLASS__, 'debug', '  Mise à jour de l\'interface avec les données de la requête précédente.');
+        else return false;
+      }
+      else return false;
+    }
+    return $response;
+  }
+
+  public function fetchDataConsumptionRTEWeekly($fetch) {
+// message::add(__CLASS__,"Appel ".__FUNCTION__ ." consumptionRTE ".date('H:i:s'));
+    $datasource = 'consumptionRTEweekly';
+    $params = self::initParamRTE($datasource);
+    $dateGi = date('Gi');
+    $sdate = date('c',strtotime("+3 days midnight")); 
+    $edate = date('c',strtotime("+10 days midnight")); 
+    $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/weekly_forecasts?start_date={$sdate}&end_date={$edate}";
+    // https://digital.iservices.rte-france.com/open_api/consumption/v1/weekly_forecasts?start_date=<valeur>&end_date=<valeur>
+    $fileConsumptionWeekly = __DIR__ ."/../../data/{$datasource}.json";
+    log::add(__CLASS__, 'debug', '  Lastcall: '.date('d-m-Y H:i:s',$params['lastcall']));
+    // limitation des requetes 15 minutes pour l'API consumption et MAJ entre 1330 et 1430
+    // limitation des requetes 15 minutes pour l'API consumption
+    if($fetch == 2 || (($dateGi >= 1330 && $dateGi < 1430) && time() - $params['lastcall'] > 900)) {
+      $response = self::getResourceRTE($params, $api);
+      if($response != '') {
+        $dec = json_decode($response,true);
+        if(json_last_error() == JSON_ERROR_NONE) {
+          config::save("lastcall-{$datasource}", time(), __CLASS__);
+          $hdle = fopen($fileConsumptionWeekly, "wb");
+          if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
+        }
+        else log::add(__CLASS__, 'warning', "  Erreur json_decode: " .json_last_error_msg());
+      }
+    }
+    else {
+      if($fetch != 2)
+        log::add(__CLASS__, 'warning', '2- 15 minutes minimum entre 2 demandes de mise à jour. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
+      if(file_exists($fileConsumptionWeekly)) {
+        $response = file_get_contents($fileConsumptionWeekly);
+        if($response != '') log::add(__CLASS__, 'debug', '  Mise à jour de l\'interface avec les données de la requête précédente.');
+        else return false;
+      }
+      else return false;
+    }
+    return $response;
+  }
+
+  public function fetchDataConsumptionRTEyearly($fetch) {
+// message::add(__CLASS__,"Appel ".__FUNCTION__ ." consumptionRTE ".date('H:i:s'));
+    $datasource = 'consumptionRTEyearly';
+    $params = self::initParamRTE($datasource);
+    $dateGi = date('Gi');
+    $sdate = date('c',strtotime("first day of january last year midnight")); 
+    // $sdate = "2025-01-01T00:00:00+01:00"; 
+    $edate = date('c',strtotime("first day of january this year midnight")); 
+    // $edate = "2026-01-01T00:00:00+01:00"; 
+    $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/annual_forecasts?start_date={$sdate}&end_date={$edate}";
+    // https://digital.iservices.rte-france.com/open_api/consumption/v1/annual_forecasts?start_date=<valeur>&end_date=<valeur>
+    $fileConsumptionYearly = __DIR__ ."/../../data/{$datasource}.json";
+    log::add(__CLASS__, 'debug', '  Lastcall: '.date('d-m-Y H:i:s',$params['lastcall']));
+    // limitation des requetes 15 minutes pour l'API consumption et MAJ entre 1330 et 1430
+    if($fetch == 2 || (($dateGi >= 1330 && $dateGi < 1430) && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
+      $response = self::getResourceRTE($params, $api);
+      if($response != '') {
+        $dec = json_decode($response,true);
+        if(json_last_error() == JSON_ERROR_NONE) {
+          config::save("lastcall-{$datasource}", time(), __CLASS__);
+          $hdle = fopen($fileConsumptionYearly, "wb");
+          if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
+        }
+        else log::add(__CLASS__, 'warning', "  Erreur json_decode: " .json_last_error_msg());
+      }
+    }
+    else {
+      if($fetch != 2)
+        log::add(__CLASS__, 'warning', '3- 15 minutes minimum entre 2 demandes de mise à jour. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
+      if(file_exists($fileConsumptionYearly)) {
+        $response = file_get_contents($fileConsumptionYearly);
         if($response != '') log::add(__CLASS__, 'debug', '  Mise à jour de l\'interface avec les données de la requête précédente.');
         else return false;
       }
@@ -335,7 +414,8 @@ class rteEcowatt extends eqLogic {
       }
     }
     else {
-      log::add(__CLASS__, 'warning', '15 minutes entre 2 demandes de mise à jour minimum. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
+      if($fetch != 2)
+        log::add(__CLASS__, 'warning', '15 minutes entre 2 demandes de mise à jour minimum. Réessayez aprés: ' .date('H:i:s',$params['lastcall']+900));
       if(file_exists($fileEcowatt)) {
         $response = file_get_contents($fileEcowatt);
         if($response != '') log::add(__CLASS__, 'debug', 'Mise à jour de l\'interface avec les données de la requête précédente.');
@@ -421,7 +501,7 @@ class rteEcowatt extends eqLogic {
     else if ($datasource == 'consumptionRTE') {
       $cmd_list = array(
         'REALISED' => array(
-          'name' => __('Consommation réalisée', __FILE__),
+          'name' => __('Puissance réalisée', __FILE__),
           'subtype' => 'numeric',
           'unit' => 'MW',
           'isHistorized' => 1,
@@ -689,7 +769,10 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     log::add(__CLASS__, 'info', "---------------------- updateInfo $datasource Equipment [$eqName] Fetch: $fetch");
     switch ($datasource) {
       case 'tempoRTE': $this->updateInfoTempoRTE($fetch,null); break;
-      case 'consumptionRTE': $this->updateInfoConsumption($fetch); break;
+      case 'consumptionRTE': $this->updateInfoConsumption($fetch);
+            $this->fetchDataConsumptionRTEWeekly($fetch);
+            $this->fetchDataConsumptionRTEyearly($fetch);
+      break;
       case 'ecowattRTE': $this->updateInfoEcowatt($fetch); break;
       case 'tempoEDF': $this->updateInfoEdfTempo($fetch); break;
       case 'ejpEDF': $this->updateInfoEdfEjp($fetch); break;
@@ -774,7 +857,9 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
           if($cal['statut'] == 'NON_EJP') $cal['statut'] = 'NOT_EJP';
           elseif($today == 'EJP') $todayEJP = 'EJP'; else $todayEJP = 'UNDEFINED';
           if($cal['dateApplication'] == $todayDate) $today = $cal['statut'];
-          if($cal['dateApplication'] == $tomorrowDate) $tomorrow = $cal['statut'];
+          if($cal['dateApplication'] == $tomorrowDate) {
+            $tomorrow = ($cal['statut'] == 'HORS_PERIODE_EJP') ? 'OUT_OF_PERIOD' : $cal['statut'];
+          }
         }
         $this->checkAndUpdateCmd('ejpRemainingDays', (22-$ejpDays));
       }
@@ -1213,6 +1298,8 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
           }
         }
       }
+      else if(isset($dec['weekly_forecasts'])) {
+      }
     }
   }
 
@@ -1412,8 +1499,120 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     return($resu);
   }
 
+  public static function fetchEdf4TempoPrices($url,$power) {
+    $pdfContent = @file_get_contents($url);
+    $result = array();
+    if ($pdfContent === false) {
+      $result["error"] ="Impossible de télécharger le PDF $url";
+      return($result);
+    }
+    $tempPdf = sys_get_temp_dir() . '/edf_tempo.pdf';
+    file_put_contents($tempPdf, $pdfContent);
+
+    $text = shell_exec("pdftotext -layout '$tempPdf' - 2>/dev/null");
+    unlink($tempPdf);
+
+    /*
+    $hdle = fopen(__DIR__ ."/../../data/extractTxtFromPdf.txt", "wb");
+    if($hdle !== FALSE) { fwrite($hdle, $text); fclose($hdle); }
+     */
+
+    if (empty($text)) {
+      $result["error"] ="Échec extraction texte";
+      return($result);
+    }
+
+    $lines = explode("\n", $text);
+    $inTempo = false;
+    $dateOfRates = '';
+    foreach ($lines as $line) {
+      $line = trim(preg_replace('/\s+/', ' ', $line));
+      $pos = stripos($line, 'Applicable au ');
+      if ($pos !== false) {
+        $result["dateOfRates"] = $line;
+        $expTxt = trim(config::byKey('tempoExpirationDate', __CLASS__, ''));
+        $debTxt = substr($line,$pos+14);
+        $mois = [ 'janvier' => 'January', 'février' => 'February', 'fevrier' => 'February',
+            'mars' => 'March', 'avril' => 'April', 'mai' => 'May',
+            'juin' => 'June', 'juillet' => 'July', 'août' => 'August',
+            'aout' => 'August', 'septembre' => 'September', 'octobre'   => 'October',
+            'novembre' => 'November', 'décembre' => 'December', 'decembre' => 'December' ];
+        $debTxt = str_ireplace(array_keys($mois), array_values($mois), $debTxt);
+        $debTxt = str_replace('1er', '1', $debTxt);
+        $tsStart = strtotime($debTxt);
+        $date = date('md', $tsStart);
+        if($date == '0201' || $date == '0801') { // Date parution: 1er février ou 1er aout
+          $tsEnd = strtotime($debTxt ." +6 months");
+          $expTxt = date('Y-m-d',$tsEnd);
+          message::add(__CLASS__, "Deb $debTxt -> $expTxt");
+        }
+        $result['tempoExpirationDate'] = $expTxt;
+      }
+
+      if (stripos($line, 'Option Tempo') !== false) {
+        $inTempo = true;
+        continue;
+      }
+
+      if ($inTempo && preg_match('/^'.$power.'\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})\s+([0-9]{1,3},[0-9]{2})/', $line, $m)) {
+        $result["subscription"] = round((float)(str_replace(',', '.', $m[1])),2);
+        $result["HCJB"] = round((float)(str_replace(',', '.', $m[2])/100),4);
+        $result["HPJB"] = round((float)(str_replace(',', '.', $m[3])/100),4);
+        $result["HCJW"] = round((float)(str_replace(',', '.', $m[4])/100),4);
+        $result["HPJW"] = round((float)(str_replace(',', '.', $m[5])/100),4);
+        $result["HCJR"] = round((float)(str_replace(',', '.', $m[6])/100),4);
+        $result["HPJR"] = round((float)(str_replace(',', '.', $m[7])/100),4);
+        break;
+      }
+    }
+    return($result);
+  }
+
+  public static function check4NewTempoPrices() {
+log::add(__CLASS__, 'info', __FUNCTION__);
+    $url = trim(config::byKey('tempoPriceUrl', __CLASS__, ''));
+    if($url == '') $url = "https://particulier.edf.fr/content/dam/2-Actifs/Documents/Offres/Grille_prix_Tarif_Bleu.pdf";
+    $puis = config::byKey('tempoAbo', __CLASS__);
+    // message::add(__CLASS__, "URL: {$url} Power: {$puis}");
+    // message::add(__CLASS__, "Power: $puis");
+    $result = self::fetchEdf4TempoPrices($url,$puis);
+    $oldDateOfRates = trim(config::byKey('dateOfRates', __CLASS__));
+    // message::add(__CLASS__, "Old dateOfRates: $oldDateOfRates");
+    if (isset($result["dateOfRates"]) && $oldDateOfRates != $result["dateOfRates"]) {
+      // message::add(__CLASS__, "Nouveaux tarifs {$result["dateOfRates"]} disponible");
+      if(isset($result['subscription'])) {
+        config::save('subscription', $result['subscription'], __CLASS__);
+        config::save('dateOfRates', $result['dateOfRates'], __CLASS__);
+        config::save('HCJB', $result['HCJB'], __CLASS__);
+        config::save('HPJB', $result['HPJB'], __CLASS__);
+        config::save('HCJW', $result['HCJW'], __CLASS__);
+        config::save('HPJW', $result['HPJW'], __CLASS__);
+        config::save('HCJR', $result['HCJR'], __CLASS__);
+        config::save('HPJR', $result['HPJR'], __CLASS__);
+        if(isset($result['tempoExpirationDate'])) {
+          config::save('tempoExpirationDate', $result['tempoExpirationDate'], __CLASS__);
+          message::add(__CLASS__, "Nouveaux tarifs Tempo: {$result["dateOfRates"]}.");
+        }
+        else message::add(__CLASS__, "Nouveaux tarifs {$result["dateOfRates"]}. Veuillez corriger la date de fin de validité dans la configuration du plugin.");
+
+      }
+    }
+  }
+
   public static function getTempoPricesJson($log=0) {
     $expDate = trim(config::byKey('tempoExpirationDate', __CLASS__, ''));
+      // MAJ prix
+    if($expDate == '') {
+      self::check4NewTempoPrices();
+      $expDate = trim(config::byKey('tempoExpirationDate', __CLASS__, ''));
+    }
+    else {
+      $expDateTS = strtotime($expDate ."00:00:00");
+      if($expDateTS < time()) {
+        self::check4NewTempoPrices();
+        $expDate = trim(config::byKey('tempoExpirationDate', __CLASS__, ''));
+      }
+    }
     $HCJB = trim(config::byKey('HCJB', __CLASS__, 0));
     if(!is_numeric($HCJB)) $HCJB = '"'.$HCJB .'"';
     $HPJB = trim(config::byKey('HPJB', __CLASS__, 0));
