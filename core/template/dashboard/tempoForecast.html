@@ -1,0 +1,39 @@
+<div class="eqLogic eqLogic-widget allowResize #custom_layout# #eqLogic_class# #class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
+  <center class="widget-name">
+    <span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
+      <i class="fas fa-sync"></i>
+    </span>
+    <span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+    <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
+  </center>
+  <div class="cmds #isVerticalAlign#" style="align-content:center;margin-left:5px;margin-right:5px;width:calc(100% - 10px)">
+    #calTempoTable#
+    #openDpeTable#
+  </div>
+  <script>
+    if ('#refresh_id#' != '') {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
+        jeedom.cmd.execute({id: '#refresh_id#'})
+      })
+    } else {
+      $('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove()
+    }
+  </script>
+  <style>
+.tempo-bar {
+  display: flex;
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #333;
+}
+
+.tempo-blue { background: #00518B; }
+.tempo-blueprev { background: #46A1ED; }
+.tempo-white { background: #fff; }
+.tempo-whiteprev { background: #DFDFDF; }
+.tempo-red { background: #C81640; }
+.tempo-redprev { background: #F34B32; }
+  </style>
+</div>
