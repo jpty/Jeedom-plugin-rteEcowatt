@@ -227,7 +227,7 @@ class rteEcowatt extends eqLogic {
     $curl = curl_init();
     curl_setopt_array($curl, $curloptions);
     $response = curl_exec($curl);
-    $curlHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $curl_error = curl_error($curl);
     curl_close($curl);
     unset($curl);
@@ -247,7 +247,7 @@ class rteEcowatt extends eqLogic {
     return(0);
   }
 
-  public static function getResourceRTE($params, $apiUrl) {
+  public static function getResourceRTE($params, $apiUrl, $datasource='') {
     log::add(__CLASS__,'debug',"----- CURL ".__FUNCTION__ ." URL: $apiUrl");
     $header = array("Authorization: Bearer {$params['tokenRTE']}",
       /* "Content-Type: application/json", */
@@ -259,22 +259,30 @@ class rteEcowatt extends eqLogic {
     $response = curl_exec($curl);
     if ($response === false)
       log::add(__CLASS__,'warning', "Failed curl_error: " .curl_error($curl));
-    $curlHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 // message::add(__CLASS__,"HeaderOut: ".json_encode($curlHeaderOut));
-    if($curlHttpCode != 200) {
-      log::add(__CLASS__,'warning',__FUNCTION__ ." ----- CURL return code: $curlHttpCode URL: $apiUrl" 
+    curl_close($curl);
+    unset($curl);
+    if($httpCode == 401) {
+      log::add(__CLASS__, 'warning', __FUNCTION__ ." ----- CURL return code: 401 Vérifiez l'activation de votre application sur le site RTE");
+    }
+    elseif($httpCode == 403) {
+      log::add(__CLASS__, 'warning', __FUNCTION__ ." ----- CURL return code: 403 Vérifiez l'association de l'API $datasource à votre application sur le site RTE");
+      log::add(__CLASS__, 'debug', $response);
+    }
+    elseif($httpCode != 200) {
+      log::add(__CLASS__,'warning',__FUNCTION__ ." ----- CURL return code: $httpCode URL: $apiUrl" 
         .(($response != '') ? " response: [$response]" : ""));
       $response = '';
     }
     // log::add(__CLASS__,'debug',$response);
-    curl_close($curl);
-    unset($curl);
     return ($response);
   }
 
   public function fetchDataConsumptionRTE($fetch) {
-// message::add(__CLASS__,"Appel ".__FUNCTION__ ." consumptionRTE ".date('H:i:s'));
-    $params = self::initParamRTE('consumptionRTE');
+    $datasource = 'consumptionRTE';
+// message::add(__CLASS__,"Appel ".__FUNCTION__ ." $datasource ".date('H:i:s'));
+    $params = self::initParamRTE($datasource);
     $type ="?type=REALISED,ID";
     $dateGi = date('Gi'); 
     if($fetch == 2 || ($dateGi >= 1930 && $dateGi < 2030)) $type .= ",D-1";
@@ -282,15 +290,15 @@ class rteEcowatt extends eqLogic {
     // rattrapage $type = "?type=D-1&start_date=2026-01-01T00:00:00+01:00&end_date=2026-01-13T00:00:00+01:00";
     // $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/short_term"; // ?type=<valeur(s)>&start_date=<valeur>&end_date=<valeur>";
     $api = "https://digital.iservices.rte-france.com/open_api/consumption/v1/short_term$type";
-    $fileConsumption = __DIR__ ."/../../data/consumptionRTE.json";
+    $fileConsumption = __DIR__ ."/../../data/{$datasource}.json";
     log::add(__CLASS__, 'debug', '  Lastcall: '.date('d-m-Y H:i:s',$params['lastcall']));
     // limitation des requetes 15 minutes pour l'API consumption
     if($fetch == 2 || time() - $params['lastcall'] > 900) { // plus d'un quart d'heure depuis derniere requete
-      $response = self::getResourceRTE($params, $api);
+      $response = self::getResourceRTE($params, $api, $datasource);
       if($response != '') {
         $dec = json_decode($response,true);
         if(json_last_error() == JSON_ERROR_NONE) {
-          config::save('lastcall-consumptionRTE', time(), __CLASS__);
+          config::save("lastcall-$datasource", time(), __CLASS__);
           $hdle = fopen($fileConsumption, "wb");
           if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         }
@@ -324,11 +332,11 @@ class rteEcowatt extends eqLogic {
     // limitation des requetes 15 minutes pour l'API consumption et MAJ entre 1330 et 1430
     // limitation des requetes 15 minutes pour l'API consumption
     if($fetch == 2 || (($dateGi >= 1330 && $dateGi < 1430) && time() - $params['lastcall'] > 900)) {
-      $response = self::getResourceRTE($params, $api);
+      $response = self::getResourceRTE($params, $api, 'consumptionRTE');
       if($response != '') {
         $dec = json_decode($response,true);
         if(json_last_error() == JSON_ERROR_NONE) {
-          config::save("lastcall-{$datasource}", time(), __CLASS__);
+          config::save("lastcall-$datasource", time(), __CLASS__);
           $hdle = fopen($fileConsumptionWeekly, "wb");
           if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         }
@@ -363,11 +371,11 @@ class rteEcowatt extends eqLogic {
     log::add(__CLASS__, 'debug', '  Lastcall: '.date('d-m-Y H:i:s',$params['lastcall']));
     // limitation des requetes 15 minutes pour l'API consumption et MAJ entre 1330 et 1430
     if($fetch == 2 || (($dateGi >= 1330 && $dateGi < 1430) && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
-      $response = self::getResourceRTE($params, $api);
+      $response = self::getResourceRTE($params, $api, 'consumptionRTE');
       if($response != '') {
         $dec = json_decode($response,true);
         if(json_last_error() == JSON_ERROR_NONE) {
-          config::save("lastcall-{$datasource}", time(), __CLASS__);
+          config::save("lastcall-$datasource", time(), __CLASS__);
           $hdle = fopen($fileConsumptionYearly, "wb");
           if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         }
@@ -390,24 +398,25 @@ class rteEcowatt extends eqLogic {
   public function fetchDataEcowattRTE() {
     // $demo = config::byKey('demoMode', __CLASS__, 0);
     $demo = $this->getConfiguration('demoMode',0);
-// message::add(__CLASS__,"Appel ".__FUNCTION__ ." ecowattRTE ".date('H:i:s'));
-    $params = self::initParamRTE('ecowattRTE');
+    $datasource = 'ecowattRTE';
+// message::add(__CLASS__,"Appel ".__FUNCTION__ ." $datasource ".date('H:i:s'));
+    $params = self::initParamRTE($datasource);
     if($demo) { // mode demo. Données du bac à sable RTE
       $api = "https://digital.iservices.rte-france.com/open_api/ecowatt/v5/sandbox/signals";
       $fileEcowatt = __DIR__ ."/../../data/ecowattRTEsandbox.json";
     }
     else {
       $api = "https://digital.iservices.rte-france.com/open_api/ecowatt/v5/signals";
-      $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
+      $fileEcowatt = __DIR__ ."/../../data/{$datasource}.json";
     }
     log::add(__CLASS__, 'debug', '  Lastcall: '.date('d-m-Y H:i:s',$params['lastcall']));
     // limitation des requetes 15 minutes pour l'API ecowatt
     if($demo || (!$demo && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
-      $response = self::getResourceRTE($params, $api);
+      $response = self::getResourceRTE($params, $api, $datasource);
       if($response != '')  {
         json_decode($response,true);
         if(json_last_error() == JSON_ERROR_NONE) {
-          if(!$demo) config::save('lastcall-ecowattRTE', time(), __CLASS__);
+          if(!$demo) config::save("lastcall-$datasource", time(), __CLASS__);
           $hdle = fopen($fileEcowatt, "wb");
           if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
         }
@@ -1066,7 +1075,8 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=$start_date&end_date=$end_date&fallback_status=false";
       // $api = "https://digital.iservices.rte-france.com/open_api/tempo_like_supply_contract/v1/tempo_like_calendars?start_date=2023-09-01T00:00:00+02:00&end_date=2024-09-01T00:00:00+02:00&fallback_status=false";
     }
-    $params = self::initParamRTE('tempoRTE');
+    $datasource = 'tempoRTE';
+    $params = self::initParamRTE($datasource);
     $response = self::getResourceRTE($params, $api);
     if($response == '') return null;
 
@@ -1145,7 +1155,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
       if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
       log::add(__CLASS__, 'debug', "getTempoDataRTE JSON saved in $fileTempo");
        */
-      config::save('lastcall-tempoRTE', time(), __CLASS__);
+      config::save("lastcall-$datasource", time(), __CLASS__);
       $listeTempo = (isset($decData["TempoDays"]))?$decData["TempoDays"]:array();
       $nbUsedBlue = isset($decData["nbUsedBlue"])?$decData["nbUsedBlue"]:0;
       $nbUsedWhite = isset($decData["nbUsedWhite"])?$decData["nbUsedWhite"]:0;
@@ -2041,6 +2051,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
         $tabHCcolumn = ''; $tabHCbar = '';
         if(count($datas)) {
           foreach($datas as $data) {
+            if($data == '') $data = '-1';
             $title = $i ."h-" .($i+1) ."h" .$titleEco[$data];
             $tab .= '<td title="' .$title .'" width=4% style="font-size:8px!important;background-color:' .$color[$data] .';';
             if((int)$dayTS[$idx] + $i * 3600 == $datenowTS) { // heure actuelle
@@ -2140,6 +2151,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
         $idx = substr($cmdLogicalId,9);
         $colD = $cmd->execCmd();
         $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
+        if($colD == '') $colD = '-1';
         $replace["#dataDay{$idx}HC#"] = "{ name: 'Jour', y: 360, color: '" .$color[$colD] ."'}";
         $replace["#dayColor{$idx}#"] = $color[$colD];
       }
