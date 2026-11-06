@@ -234,7 +234,7 @@ class rteEcowatt extends eqLogic {
     if ($response === false)
       log::add(__CLASS__,'warning', "Failed curl_error: " .$curl_error);
     else if (!empty(json_decode($response)->error)) {
-      log::add(__CLASS__,'info', "Error: AuthCode : $authorization_code Response $response");
+      log::add(__CLASS__,'info', "Error: Response $response");
     }
     else
     { log::add(__CLASS__,'debug',__FUNCTION__ ." $response");
@@ -2180,7 +2180,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       }
     }
     else {
-      $replace['#dataActuEcowatt#'] = 'Dernière requête RTE le '.date('j/m/Y H:i:s',$lastcallEcoTS);
+      $replace['#dataActuEcowatt#'] = 'Données RTE du '.date('j/m/Y H:i:s',$lastcallEcoTS);
     }
 
     $refresh = $this->getCmd(null, 'refresh');
@@ -2234,7 +2234,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       else $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
     }
     $lastcallTempoTS = config::byKey('lastcall-tempoEDF', __CLASS__, 0);
-    $replace['#dataActuTempo#'] = 'Dernière requête EDF le '.date('j/m/Y H:i:s',$lastcallTempoTS);
+    $replace['#dataActuTempo#'] = 'Données EDF du : '.date('d/m/Y H:i:s',$lastcallTempoTS);
     if($loglevel == 'debug') {
       $replace['#dataActuTempo#'] .= '. Affichage: '.date('H:i:s');
       $replace['#dataActuTempo#'] .= ' en '.round($t0+microtime(true),3).'s';
@@ -2409,7 +2409,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       else $replace['#hr'.$i .'#'] ='&nbsp;';
     }
     $lastcallTempoTS = (int)config::byKey("lastcall-tempoRTE", __CLASS__, 0);
-    $replace['#dataActuTempo#'] = 'Dernière requête RTE le '.date('j/m/Y H:i:s',$lastcallTempoTS);
+    $replace['#dataActuTempo#'] = 'Données RTE du : '.date('d/m/Y H:i:s',$lastcallTempoTS);
     if($loglevel == 'debug') {
       $replace['#dataActuTempo#'] .= '.<br/>Affichage: '.date('H:i:s');
       $replace['#dataActuTempo#'] .= ' en '.round($t0+microtime(true),3).'s';
