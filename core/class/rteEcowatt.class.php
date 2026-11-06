@@ -22,11 +22,12 @@ require_once __DIR__ . '/../../../../core/php/core.inc.php';
 class rteEcowatt extends eqLogic {
   /*     * *************************Attributs****************************** */
   public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
+  public static $_dataTempo= __DIR__ ."/../../data/dataTempo.json";
 
   public static $_colTempo = array("HCJB"=>"#46A1ED", "HPJB"=>"#00518B",
-                 "HCJW"=>"#DFDFDF", "HPJW"=>"#FFFFFF",
+                 "HCJW"=>"#DFDFDF", "HPJW"=>"#FFF",
                  "HCJR"=>"#F34B32", "HPJR"=>"#C81640",
-                 "UNDEFINED"=>"#7A7A7A", "ERROR"=>"#000000");
+                 "UNDEFINED"=>"#7A7A7A", "ERROR"=>"#000");
 
   // public static function backupExclude() { return(array('data','desktop','plugin_info')); }
   public static function postConfig_IDclientSecretB64($_value) {
@@ -102,7 +103,7 @@ class rteEcowatt extends eqLogic {
           // Chgt de jour today in yesterday, tomorrow in today
       if($datasource == 'tempoRTE') {
         if($chgeDay == 1) {
-          $decData = self::getTempoData(1,0);
+          $decData = self::getTempoDataRTE(1,0);
         }
         $chgeDay = 0;
         $equipmt->updateInfoTempoRTE(0,$decData);
@@ -144,10 +145,10 @@ class rteEcowatt extends eqLogic {
   }
 
   public static function pullDataEcowatt() {
-    /* EDF obsolete */
       // deplacé de cronHourly pour étaler les requetes chez EDF
     $hour = array('tempoEDF' => array(0, 11, 12, 14, 16),
-                  'ejpEDF' => array( 5, 13,14,15,16,17,18,19,20,21,22,23));
+                  'ejpEDF' => array( 5, 13,14,15,16,17,18,19,20,21,22,23),
+                  'tempoForecast' => array( 7,8,9,12,13,18,19,20)); // enough with 8,12,19
     foreach (self::byType(__CLASS__,true) as $equipmt) {
       $datasource = $equipmt->getConfiguration('datasource');
       if(isset($hour[$datasource]) && in_array(date('G'), $hour[$datasource])) {
@@ -399,7 +400,7 @@ class rteEcowatt extends eqLogic {
       $api = "https://digital.iservices.rte-france.com/open_api/ecowatt/v5/signals";
       $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
     }
-    log::add(__CLASS__, 'debug', '  Lastcall: '.$params['lastcall'] .'s');
+    log::add(__CLASS__, 'debug', '  Lastcall: '.date('d-m-Y H:i:s',$params['lastcall']));
     // limitation des requetes 15 minutes pour l'API ecowatt
     if($demo || (!$demo && time() - $params['lastcall'] > 900)) { // plus d'un quart d'heure depuis derniere requete
       $response = self::getResourceRTE($params, $api);
@@ -424,40 +425,6 @@ class rteEcowatt extends eqLogic {
       else return false;
     }
     return $response;
-  }
-
-  public static function valueFromUrl($datasource,$_url) {
-/* Ne fonctionne pas erreur ajax coté Jeedom ?????????????????
-    if($datasource == 'EDFtempoDays') {
-      $ch = curl_init();
-      // configuration des options
-      curl_setopt($ch, CURLOPT_URL, $_url);
-      // curl_setopt($ch, CURLOPT_HEADER, 0);
-      // curl_setopt_array($ch, $curloptions);
-      $response = curl_exec($ch);
-      $curlHttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-      $curl_error = curl_error($ch);
-      curl_close($ch);
-      unset($ch);
-      if ($response === false)
-        log::add(__CLASS__,'error', "Failed curl_error: " .$curl_error);
-
-      return null;
-    }
-    else {
-    }
-*/
-      $request_http = new com_http($_url);
-      $request_http->setLogError(true);
-      $request_http->setUserAgent('Wget/1.20.3 (linux-gnu)'); // User-Agent idem HA
-      $dataUrl = $request_http->exec(20);
-      $file = __DIR__ ."/../../data/$datasource.json";
-      $hdle = fopen($file, "wb");
-      if($hdle !== FALSE) { fwrite($hdle, $dataUrl); fclose($hdle); }
-      if(is_json($dataUrl) === false) {
-        return null;
-      }
-      return json_decode($dataUrl, true);
   }
 
   public function preInsert() {
@@ -497,6 +464,57 @@ class rteEcowatt extends eqLogic {
           'order' => 3,
         )
       );
+    }
+    else if ($datasource == 'tempoForecast') {
+      $cmd_list = array();
+      $order = 10;
+      $useTempoCalendarData = $this->getConfiguration('useTempoCalendarData',0);
+      if($useTempoCalendarData == 1) {
+        for($i = 0; $i < 16; $i++) {
+            $cmd_list["J{$i}Json"] = array(
+              'name' => "Jour + $i - Json", 'subtype' => 'string',
+              'isHistorized' => 0, 'order' => $order++,
+              'showNameOndashboard' => 0, 'showNameOnmobile' => 0,
+              'template' => __CLASS__ ."::TempoCalendarDay",);
+            $cmd_list["J{$i}"] = array(
+              'name' => "Couleur Jour + $i", 'subtype' => 'string',
+              'isVisible' => 0, 'isHistorized' => 0, 'order' => $order++,);
+        }
+        $cmd_list["calTempoGeneratedAt"] = array(
+          'name' => "Date génération", 'subtype' => 'string',
+          'isVisible' => 0,
+          'isHistorized' => 0, 'order' => $order++,);
+        $cmd_list["calTempoNextRedDay5Days"] = array(
+          'name' => "Prochain jour ROUGE (5 jours)", 'subtype' => 'string',
+          'isHistorized' => 0, 'order' => $order++,);
+        $cmd_list["calTempoRedDayRiskNext5Days"] = array(
+          'name' => "Risque jour ROUGE 5 prochains jours", 'subtype' => 'numeric',
+          'unit' => '%',
+          'isHistorized' => 0, 'order' => $order++,);
+      }
+      $useOpenDpe = $this->getConfiguration('useOpenDpeData',0);
+      if($useOpenDpe == 1) {
+        for($i = 0; $i < 9; $i++) {
+            $cmd_list["Dpe_J{$i}Json"] = array(
+              'name' => "Open DPE-Jour + $i - Json", 'subtype' => 'string',
+              'isHistorized' => 0, 'order' => $order++,
+              'showNameOndashboard' => 0, 'showNameOnmobile' => 0,);
+            $cmd_list["Dpe_J{$i}"] = array(
+              'name' => "Open DPE-Couleur Jour + $i", 'subtype' => 'string',
+              'isVisible' => 0, 'isHistorized' => 0, 'order' => $order++,);
+        }
+        $cmd_list["Dpe_retrievedOn"] = array(
+          'name' => "Open DPE-Date récupération", 'subtype' => 'string',
+          'isVisible' => 0,
+          'isHistorized' => 0, 'order' => $order++,);
+        $cmd_list["Dpe_nextRedDay5Days"] = array(
+          'name' => "Open DPE-Prochain jour ROUGE (5 jours)", 'subtype' => 'string',
+          'isHistorized' => 0, 'order' => $order++,);
+        $cmd_list["Dpe_redDayRiskNext5Days"] = array(
+          'name' => "Open DPE-Risque jour ROUGE 5 prochains jours", 'subtype' => 'numeric',
+          'unit' => '%',
+          'isHistorized' => 0, 'order' => $order++,);
+      }
     }
     else if ($datasource == 'consumptionRTE') {
       $cmd_list = array(
@@ -736,6 +754,8 @@ class rteEcowatt extends eqLogic {
       $cmd->setSubType($cmd_info['subtype']);
       $cmd->setEqLogic_id($this->getId());
       if(isset($cmd_info['isHistorized'])) $cmd->setIsHistorized($cmd_info['isHistorized']);
+      if(isset($cmd_info['showNameOndashboard'])) $cmd->setDisplay('showNameOndashboard', $cmd_info['showNameOndashboard']);
+      if(isset($cmd_info['showNameOnmobile'])) $cmd->setDisplay('showNameOnmobile', $cmd_info['showNameOnmobile']);
       $cmd->save();
     }
 
@@ -767,15 +787,17 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $datasource = $this->getConfiguration('datasource');
     $eqName = $this->getName();
     log::add(__CLASS__, 'info', "---------------------- updateInfo $datasource Equipment [$eqName] Fetch: $fetch");
+    $loglevel = log::convertLogLevel(log::getLogLevel(__CLASS__));
     switch ($datasource) {
       case 'tempoRTE': $this->updateInfoTempoRTE($fetch,null); break;
-      case 'consumptionRTE': $this->updateInfoConsumption($fetch);
+      case 'tempoForecast': $this->updateInfoTempoForecast($fetch, $loglevel); break;
+      case 'consumptionRTE': $this->updateInfoConsumptionRTE($fetch);
             // $this->fetchDataConsumptionRTEWeekly($fetch);
             // $this->fetchDataConsumptionRTEyearly($fetch);
       break;
-      case 'ecowattRTE': $this->updateInfoEcowatt($fetch); break;
-      case 'tempoEDF': $this->updateInfoEdfTempo($fetch); break;
-      case 'ejpEDF': $this->updateInfoEdfEjp($fetch); break;
+      case 'ecowattRTE': $this->updateInfoEcowattRTE($fetch); break;
+      case 'tempoEDF': $this->updateInfoTempoEDF($fetch, $loglevel); break;
+      case 'ejpEDF': $this->updateInfoEjpEDF($fetch, $loglevel); break;
       default: 
         if($datasource != '')
           log::add(__CLASS__, 'warning', "UpdateInfo unknown datasource [$datasource]");
@@ -783,10 +805,10 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $this->refreshWidget();
   }
 
-  public function updateInfoEdfEjp($fetch) {
+  public function updateInfoEjpEDF($fetch, $loglevel) {
     $t = time();
     $dat = date('nd');
-    if($dat > 331 && $dat <= 1031) {
+    if($dat > 331 && $dat < 1031) {
       $this->checkAndUpdateCmd('today', 'OUT_OF_PERIOD');
       $this->checkAndUpdateCmd('tomorrow', 'OUT_OF_PERIOD');
       $this->checkAndUpdateCmd('ejpRemainingDays', 0);
@@ -806,38 +828,17 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     $dateSup=date("Y-n-j", strtotime("tomorrow"));
     $url = "https://api-commerce.edf.fr/commerce/activet/v1/calendrier-jours-effacement?option=EJP&dateApplicationBorneInf=$dateInf&dateApplicationBorneSup=$dateSup&identifiantConsommateur=src";
     // log::add(__CLASS__, 'debug', "EJP URL: $url");
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate, br, zstd');
-    $headers = [
-        'Accept: application/json, text/plain, */*',
-        'Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Content-Type: application/json',
-        'Origin: https://particulier.edf.fr',
-        'Referer: https://particulier.edf.fr/',
-        'Sec-Fetch-Dest: document',
-        'Sec-Fetch-Mode: navigate',
-        'Sec-Fetch-Site: cross-site',
-        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
-    ];
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    $response = curl_exec($ch);
-
-    $todayDate = date('Y-m-d',strtotime('now'));
-    $tomorrowDate = date('Y-m-d',strtotime('tomorrow'));
-    $today = 'UNDEFINED'; $tomorrow = 'UNDEFINED'; $ejpDays = 0;
-    if (curl_errno($ch) || $response === false) {
-      log::add(__CLASS__,'warning', "Unable to retrieve EJP information from EDF");
-      $this->checkAndUpdateCmd('today', 'ERROR');
-      $this->checkAndUpdateCmd('tomorrow', 'ERROR');
-      $this->checkAndUpdateCmd('ejpRemainingDays', 0);
-    } else {
-      config::save('lastcall-ejpEdf', $t, __CLASS__);
-      $file = __DIR__ ."/../../data/ejpEDF.json";
-      $hdle = fopen($file, "wb");
-      if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
-      $data = json_decode($response, true);
+    $content = $this->execCurlEdf($url, __FUNCTION__);
+    if($content != -1) {
+      $todayDate = date('Y-m-d',strtotime('now'));
+      $tomorrowDate = date('Y-m-d',strtotime('tomorrow'));
+      $today = 'UNDEFINED'; $tomorrow = 'UNDEFINED'; $ejpDays = 0;
+      if($loglevel == 'debug') {
+        $JsonFile = __DIR__ ."/../../data/" .__FUNCTION__."-" .$this->getId() .".json";
+        $hdle = fopen($JsonFile, "wb");
+        if($hdle !== FALSE) { fwrite($hdle, $content); fclose($hdle); }
+      }
+      $data = json_decode($content, true);
       if(isset($data['content']['options'][0]['calendrier'])) {
         $calendrier = $data['content']['options'][0]['calendrier'];
         // Saison EJP du 1er novembre 2024 au 31 mars 2025
@@ -855,31 +856,122 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
           $dateCal = strtotime($cal['dateApplication']);
           if($cal['statut'] == 'EJP' && $dateCal > $startEjp && $dateCal < $endEjp) $ejpDays++;
           if($cal['statut'] == 'NON_EJP') $cal['statut'] = 'NOT_EJP';
-          elseif($today == 'EJP') $todayEJP = 'EJP'; else $todayEJP = 'UNDEFINED';
+          elseif($cal['statut'] == 'HORS_PERIODE_EJP') $cal['statut'] = 'OUT_OF_PERIOD';
           if($cal['dateApplication'] == $todayDate) $today = $cal['statut'];
-          if($cal['dateApplication'] == $tomorrowDate) {
-            $tomorrow = ($cal['statut'] == 'HORS_PERIODE_EJP') ? 'OUT_OF_PERIOD' : $cal['statut'];
-          }
+          if($cal['dateApplication'] == $tomorrowDate) $tomorrow = $cal['statut'];
         }
         $this->checkAndUpdateCmd('ejpRemainingDays', (22-$ejpDays));
       }
+      log::add(__CLASS__, 'debug', "EJP: Aujourd'hui $todayDate: $today Demain $tomorrowDate: $tomorrow");
+      if($today != 'UNDEFINED') $this->checkAndUpdateCmd('today', $today);
+      // Pas de MAJ de demain à 5hxx
+      if($tomorrow != 'UNDEFINED' && date('G') != 5) $this->checkAndUpdateCmd('tomorrow', $tomorrow);
     }
-    log::add(__CLASS__, 'debug', "EJP: Aujourd'hui $todayDate: $today Demain $tomorrowDate: $tomorrow");
-    if($today != 'UNDEFINED') $this->checkAndUpdateCmd('today', $today);
-    // Pas de MAJ de demain à 5hxx
-    if($tomorrow != 'UNDEFINED' && date('G') != 5) $this->checkAndUpdateCmd('tomorrow', $tomorrow);
+    else {
+      log::add(__CLASS__,'warning', "[Unable to retrieve EJP information from EDF $url]");
+    }
   }
 
-  public function updateInfoEdfTempo($fetch) {
-    $this->checkAndUpdateCmd('blue-remainingDays', -1);
-    $this->checkAndUpdateCmd('white-remainingDays', -1);
-    $this->checkAndUpdateCmd('red-remainingDays', -1);
-    $this->checkAndUpdateCmd('today', 'ERROR');
-    $this->checkAndUpdateCmd('tomorrow', 'ERROR');
-    return; // EDF HS
+  public function execCurlEdf($url,$function) {
+    $headersCurlEdf = [
+        'Accept: application/json, text/plain, */*', 'Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Content-Type: application/json',
+        'Origin: https://particulier.edf.fr', 'Referer: https://particulier.edf.fr/',
+        'Sec-Fetch-Dest: document', 'Sec-Fetch-Mode: navigate', 'Sec-Fetch-Site: cross-site',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0',
+      ];
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate, br, zstd');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headersCurlEdf);
+
+    $content = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if($content === false || $httpCode !== 200) {
+      log::add(__CLASS__, 'warning', "$function codeHTTP $httpCode, cURL error : $error, answer : " . substr((string) $content, 0, 200));
+      return -1;
+    } else {
+      return $content;
+    }
+  }
+
+  public function toPluginColor($frcol) {
+    switch ($frcol) {
+      case 'TEMPO_BLEU': return 'BLUE';
+      case 'TEMPO_BLANC': return 'WHITE';
+      case 'TEMPO_ROUGE': return 'RED';
+      case 'NON_DEFINI': return 'UNDEFINED';
+      default: return $frcol;
+    }
+  }
+
+  public function updateInfoTempoEDF($fetch, $loglevel) {
+    $t = time();
+    $JsonFile = __DIR__ ."/../../data/" .__FUNCTION__."-" .$this->getId();
+    $todayDate = date('Y-m-d',strtotime('now'));
+    $tomorrowDate = date('Y-m-d',strtotime('tomorrow'));
+    $dateInf = date("Y-n-j", strtotime("tomorrow last year"));
+    $dateSup = date("Y-n-j", strtotime("tomorrow"));
+    $url = "https://api-commerce.edf.fr/commerce-activet/api/v1/calendrier-jours-effacement?option=TEMPO&dateApplicationBorneInf={$dateInf}&dateApplicationBorneSup={$dateSup}&identifiantConsommateur=src";
+    $content = $this->execCurlEdf($url, __FUNCTION__);
+    if($content != -1) {
+      if($loglevel == 'debug') {
+        log::add(__CLASS__, 'debug', "  Retrieve OK. Creating file $JsonFile.json");
+        $hdle = fopen($JsonFile .".json", "wb");
+        if($hdle !== FALSE) { fwrite($hdle, $content); fclose($hdle); }
+      }
+      $data = json_decode($content, true);
+      if(isset($data['content']['options'][0]['calendrier'])) {
+        $calendrier = $data['content']['options'][0]['calendrier'];
+        foreach($calendrier as $cal) {
+          if($cal['dateApplication'] == $todayDate) {
+            $today = $this->toPluginColor($cal['statut']);
+            $this->checkAndUpdateCmd('today', $today);
+          }
+          if($cal['dateApplication'] == $tomorrowDate) {
+            $tomorrow = $this->toPluginColor($cal['statut']);
+            $this->checkAndUpdateCmd('tomorrow', $tomorrow);
+          }
+        }
+        config::save('lastcall-tempoEdf', $t, __CLASS__);
+      }
+    }
+    else {
+      log::add(__CLASS__,'warning', "[Unable to retrieve Tempo information from EDF $url]");
+    }
+
+    $urlComptage = "https://api-commerce.edf.fr/commerce-activet/api/v1/saisons/search?option=TEMPO&dateReference=$todayDate";
+    $content = $this->execCurlEdf($urlComptage, __FUNCTION__);
+    if($content != -1) {
+      if($loglevel == 'debug') {
+        log::add(__CLASS__, 'debug', "  Retrieve OK. Creating file {$JsonFile}-comptage.json");
+        $hdle = fopen($JsonFile ."-comptage.json", "wb");
+        if($hdle !== FALSE) { fwrite($hdle, $content); fclose($hdle); }
+      }
+      $data = json_decode($content, true);
+      if(isset($data['content'][0]['typeJourEff'])) {
+        foreach($data['content'] as $cal) {
+          if($cal['typeJourEff'] == 'TEMPO_ROUGE') $idx = 'red-';
+          elseif($cal['typeJourEff'] == 'TEMPO_BLANC') $idx = 'white-';
+          elseif($cal['typeJourEff'] == 'TEMPO_BLEU') $idx = 'blue-';
+          else $idx = '';
+          if($idx != '') {
+     log::add(__CLASS__, 'debug', "$idx Total: {$cal['nombreJours']} Tirés: {$cal['nombreJoursTires']}");
+            $this->checkAndUpdateCmd("{$idx}remainingDays", ($cal['nombreJours'] - $cal['nombreJoursTires']));
+            $this->checkAndUpdateCmd("{$idx}totalDays", $cal['nombreJours']);
+          }
+        }
+      }
+    }
+
+    return; // EDF
   }
    
-  public static function getTempoData($chgeDay = 0,$fetch=0) {
+  public static function getTempoDataRTE($chgeDay = 0,$fetch=0) {
     $t = time();
     if(date('m',$t) < 9) {
       $seasonStart = mktime(0,0,0,9,1,(date('Y',$t)-1));
@@ -893,8 +985,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $leapYear = date('L',$t2);
     }
       // lecture données précédentes
-    $dataTempo= __DIR__ ."/../../data/dataTempo.json";
-    $data = @file_get_contents($dataTempo);
+    $data = @file_get_contents(self::$_dataTempo);
     $decData = null;
     if ($data !== false) {
       $decData = json_decode($data,true);
@@ -903,8 +994,11 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
         $sEnd = strtotime($decData['TempoSeason']['end']);
         if($t < $sStart || $t >= $sEnd) { // changement saison Tempo le 1er septembre
           log::add(__CLASS__, 'debug', "Starting new Tempo Season");
-          @unlink($dataTempo);
-          unset($decData); $decData = null;
+          // unset($decData); $decData = null;
+          $decData["TempoSeason"] = array("start"=>date('c',$seasonStart), "end"=>date('c',$seasonEnd), "leapYear"=>$leapYear);
+          $decData["nbUsedBlue"] = 1;
+          $decData["nbUsedWhite"] = 0;
+          $decData["nbUsedRed"] = 0;
         }
       }
       else {
@@ -937,7 +1031,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $decData["yesterday"] = $decData["today"];
       $decData["today"] = $decData["tomorrow"];
       $decData["tomorrow"] = array("value"=> "UNDEFINED", "datetime"=>date('c',$tsTomorrow));
-      $hdle = fopen($dataTempo, "wb");
+      $hdle = fopen(self::$_dataTempo, "wb");
       if($hdle !== FALSE) { fwrite($hdle, json_encode($decData)); fclose($hdle); }
       return $decData;
     }
@@ -991,7 +1085,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
       $hdle = fopen($file, "wb");
       if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
       $file = __DIR__ ."/../../data/ecowattTempoXML.json";
-      log::add(__CLASS__, 'warning', "getTempoData XML received and converted to JSON saved in $file");
+      log::add(__CLASS__, 'warning', "getTempoDataRTE XML received and converted to JSON saved in $file");
       $hdle = fopen($file, "wb");
       if($hdle !== FALSE) { fwrite($hdle, $json); fclose($hdle); }
       if(isset($dec['Tempo'])) { // 2 dates ==> aujourd'hui et demain
@@ -1040,15 +1134,17 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         return $decData; // Ajout
       }
       else {
-        log::add(__CLASS__, 'debug', "getTempoData XML without Tempo data.");
+        log::add(__CLASS__, 'debug', "getTempoDataRTE XML without Tempo data.");
         return null;
       }
     }
     else if(isset($dec['tempo_like_calendars']['values'])) {
+      /*
       $fileTempo= __DIR__ ."/../../data/ecowattTempo.json";
       $hdle = fopen($fileTempo, "wb");
       if($hdle !== FALSE) { fwrite($hdle, $response); fclose($hdle); }
-      log::add(__CLASS__, 'debug', "getTempoData JSON saved in $fileTempo");
+      log::add(__CLASS__, 'debug', "getTempoDataRTE JSON saved in $fileTempo");
+       */
       config::save('lastcall-tempoRTE', time(), __CLASS__);
       $listeTempo = (isset($decData["TempoDays"]))?$decData["TempoDays"]:array();
       $nbUsedBlue = isset($decData["nbUsedBlue"])?$decData["nbUsedBlue"]:0;
@@ -1108,13 +1204,14 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
         $decData["tomorrow"] = array("value"=> "UNDEFINED", "datetime" => date('c',$tsTomorrow));
       }
       $decData["latestOKdatetime"] = date('c',$latest);
-      $decData["nbUsedBlue"] = $nbUsedBlue;
+      $nbDays = (int)(($latest - $seasonStart) / 86400);
+      $decData["nbUsedBlue"] = $nbDays + 1 -$nbUsedWhite -$nbUsedRed;
       $decData["nbUsedWhite"] = $nbUsedWhite;
       $decData["nbUsedRed"] = $nbUsedRed;
       sort($listeTempo); // tri des jours blancs et rouge ordre chronologique
       $decData["TempoDays"] = $listeTempo;
-      $hdle = fopen($dataTempo, "wb");
-      if($hdle !== FALSE) { fwrite($hdle, json_encode($decData)); fclose($hdle); }
+      $hdle = fopen(self::$_dataTempo, "wb");
+      if($hdle !== FALSE) { fwrite($hdle, json_encode($decData,JSON_PRETTY_PRINT)); fclose($hdle); }
       return $decData;
     }
     else return null;
@@ -1133,12 +1230,191 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     if($txtTempo != '') $this->checkAndUpdateCmd('now', $txtTempo);
   }
 
-  public function updateInfoTempoRTE($fetch,$_decData=null) {
-    if($_decData == null) $decData = self::getTempoData(0,$fetch);
+  public function updateInfoTempoForecast($fetch, $loglevel) {
+    $this->updateInfoTempoCalendarData($fetch, $loglevel);
+    $this->updateInfoTempoOpenDpeData($fetch, $loglevel);
+  }
+
+  public function updateInfoTempoOpenDpeData($fetch, $loglevel) {
+    $useOpenDpeData = $this->getConfiguration('useOpenDpeData',0);
+    if($useOpenDpeData == 1) {
+      $url = "https://open-dpe.fr/assets/tempo_days_lite.json";
+      $ch = curl_init($url);
+      curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT => 10,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_ENCODING => '',
+      ]);
+      $content = curl_exec($ch);
+      $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      $error = curl_error($ch);
+      curl_close($ch);
+
+      if($content === false || $httpCode !== 200) {
+        log::add(__CLASS__, 'warning', " $url codeHTTP $httpCode, cURL error : $error, answer : " . substr((string) $content, 0, 200));
+        return -1;
+      }
+      else if (strlen($content) > 1000) {
+        log::add(__CLASS__, 'warning', "Réponse JSON trop volumineuse " .strlen($content) ."/1000");
+        return -1;
+      } else {
+        if($loglevel == 'debug') {
+          $JsonFile = __DIR__ ."/../../data/" .__FUNCTION__."-" .$this->getId() .".json";
+          log::add(__CLASS__, 'debug', "Creating file $JsonFile");
+          $hdle = fopen($JsonFile, "wb");
+          if($hdle !== FALSE) { fwrite($hdle, $content); fclose($hdle); }
+        }
+        $dec = json_decode($content,true);
+        if($dec !== null) { 
+          config::save('lastcall-tempoOpenDpe', date('Y-m-d H:i:s'), __CLASS__);
+          $nextRed = '';
+          $riskRed = 0;
+          $fields = [ 'date', 'couleur', 'probability' ];
+
+          for($i=0; $i< count($dec); $i++) {
+            $prediction = $dec[$i];
+/* TEST_VALEURS
+if($i == 5) { $prediction['couleur'] = 'ROUGE'; $prediction['probability'] =.52; }
+ */
+
+            $prediction['couleur'] = strtoupper($prediction['couleur']);
+            $val = str_replace('"','&#34;',json_encode($prediction,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+            // message::add(__CLASS__, "Cmd J{$i}Json Val: $val");
+            $col = $prediction['couleur'];
+            $this->checkAndUpdateCmd("Dpe_J{$i}Json", $val);
+            if (in_array($col, ['BLEU', 'BLANC', 'ROUGE'], true))
+              $this->checkAndUpdateCmd("Dpe_J{$i}", $col);
+            else
+              $this->checkAndUpdateCmd("DPE_J{$i}", "UNDEFINED");
+            if($i >= 0 && $i < 5) {
+              if($col == 'ROUGE' ) {
+                if($nextRed == '') $nextRed = $prediction['date'];
+                $riskRed = max($riskRed, round(($prediction['probability'] ?? 0) * 100));
+              }
+            }
+          }
+          $this->checkAndUpdateCmd("Dpe_nextRedDay5Days", $nextRed);
+          $this->checkAndUpdateCmd("Dpe_redDayRiskNext5Days", $riskRed);
+          $this->checkAndUpdateCmd("Dpe_retrievedOn", date('c'));
+        }
+        else {
+          $msg .= "Dec: null";
+          log::add(__CLASS__, 'warning', __FUNCTION__ ." $msg");
+        }
+      }
+    }
+  }
+
+  public function updateInfoTempoCalendarData($fetch, $loglevel) {
+    $useTempoCalendarData = $this->getConfiguration('useTempoCalendarData',0);
+    if($useTempoCalendarData == 1) {
+      $url = "https://www.calendrier-tempo.fr/api/predictions";
+      $ch = curl_init($url);
+      curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => false,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT => 10,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_ENCODING => '',
+      ]);
+      $content = curl_exec($ch);
+      $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      $error = curl_error($ch);
+      curl_close($ch);
+
+      if($content === false || $httpCode !== 200) {
+        log::add(__CLASS__, 'warning', " $url codeHTTP $httpCode, cURL error : $error, answer : " . substr((string) $content, 0, 200));
+        return -1;
+      }
+      else if (strlen($content) > 10000) {
+        log::add(__CLASS__, 'warning', "Réponse JSON trop volumineuse " .strlen($content) ."/10000");
+        return -1;
+      } else {
+        if($loglevel == 'debug') {
+          $JsonFile = __DIR__ ."/../../data/" .__FUNCTION__."-" .$this->getId() .".json";
+          log::add(__CLASS__, 'debug', "Creating file $JsonFile");
+          $hdle = fopen($JsonFile, "wb");
+          if($hdle !== FALSE) { fwrite($hdle, $content); fclose($hdle); }
+        }
+        $dec = json_decode($content,true);
+        if($dec !== null && isset($dec['status']) && $dec['status'] == 'ok') { 
+          config::save('lastcall-tempoForecastCalTempo', date('Y-m-d H:i:s'), __CLASS__);
+          $nextRed = '';
+          $riskRed = 0;
+          $fields = [ 'date', 'couleur_predite', 'probabilite_bleu', 'probabilite_blanc', 'probabilite_rouge', 'temp_moy_prevue',
+                      'raison', 'raison_technique', 'confirmed' ];
+          for($i=0; $i< count($dec['predictions']); $i++) {
+            $prediction = $dec['predictions'][$i];
+            foreach(['raison', 'raison_technique'] as $field) { // sanitize
+              if (isset($prediction[$field]) && is_string($prediction[$field])) {
+                $prediction[$field] = trim(strip_tags($prediction[$field]));
+                $prediction[$field] = preg_replace('/[\x00-\x1F\x7F]/u', '', $prediction[$field]);
+              }
+            }
+            $myPred = array_intersect_key($prediction, array_flip($fields));
+/* TEST_VALEURS
+  switch($i) {
+    case 1:
+    case 3:
+      $myPred['couleur_predite'] = 'BLEU';
+      $myPred['probabilite_rouge'] = .1;
+      break;
+    case 2:
+    case 4:
+      $myPred['couleur_predite'] = 'BLANC';
+      $myPred['probabilite_rouge'] = .2;
+      break;
+    case 0:
+    case 7:
+      $myPred['couleur_predite'] = 'ROUGE';
+      $myPred['probabilite_rouge'] = .488;
+      $myPred['probabilite_bleu'] = .256;
+      $myPred['probabilite_blanc'] = .256;
+      break;
+  }
+ */
+            $val = str_replace('"','&#34;',json_encode($myPred,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+            // message::add(__CLASS__, "Cmd J{$i}Json Val: $val");
+            $this->checkAndUpdateCmd("J{$i}Json", $val);
+            $col = $myPred['couleur_predite'];
+            if (in_array($col, ['BLEU', 'BLANC', 'ROUGE'], true))
+              $this->checkAndUpdateCmd("J{$i}", $col);
+            else
+              $this->checkAndUpdateCmd("J{$i}", "UNDEFINED");
+            if($i > 0 && $i < 6) {
+              if($col == 'ROUGE' && $nextRed == '') {
+                $nextRed = $myPred['date'];
+              }
+              $riskRed = max($riskRed, round(($myPred['probabilite_rouge'] ?? 0) * 100));
+            }
+          }
+          $this->checkAndUpdateCmd("calTempoNextRedDay5Days", $nextRed);
+          $this->checkAndUpdateCmd("calTempoRedDayRiskNext5Days", $riskRed);
+          $this->checkAndUpdateCmd("calTempoGeneratedAt", $dec['generated_at']);
+        }
+        else {
+          $msg = '';
+          if($dec === null) $msg .= "Dec: null";
+          if(!isset($dec['status'])) $msg .= " Status not set";
+          else $msg .= " Status: {$dec['status']}";
+          log::add(__CLASS__, 'warning', __FUNCTION__ ." $msg");
+        }
+      }
+    }
+  }
+
+  public function updateInfoTempoRTE($fetch, $_decData = null) {
+    if($_decData == null) $decData = self::getTempoDataRTE(0,$fetch);
     else $decData = $_decData;
     if($decData === null) {
-      log::add(__CLASS__, 'warning', "decData vide getTempoData(0,$fetch)");
-      // message::add(__CLASS__, "decData vide getTempoData(0,$fetch)");
+      log::add(__CLASS__, 'warning', "decData empty after getTempoRTEData(0,$fetch)");
+      // message::add(__CLASS__, "decData vide getTempoDataRTE(0,$fetch)");
     }
     else {
       // log::add(__CLASS__, 'debug', json_encode($decData));
@@ -1190,7 +1466,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     }
   }
 
-  public function updateInfoConsumption($fetch) {
+  public function updateInfoConsumptionRTE($fetch) {
     $fileConsumption = __DIR__ ."/../../data/consumptionRTE.json";
     $nowTS = time();
     if(file_exists($fileConsumption) && !$fetch) {
@@ -1212,98 +1488,100 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     }
     else {
       $dec = json_decode($response,true);
-      $t = time();
-      $lastcall = config::byKey('lastcall-consumptionRTE', __CLASS__, 0);
-      $this->checkAndUpdateCmd('lastcallTS', $lastcall);
-      if(isset($dec['short_term'])) {
-        foreach($dec['short_term'] as $sTerm) {
-          if(count($sTerm['values'])) {
-            if($sTerm['type'] == 'REALISED') {
-              $cmd = $this->getCmd(null,'REALISED');
-              if(is_object($cmd)) {
-                foreach($sTerm['values'] as $sT) {
-                  $ts = strtotime($sT['start_date']);
-                  $val = $sT['value'];
-                  $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+      if($dec !== null && (isset($dec['short_term']) || isset($dec['weekly_forecasts']))) { 
+        $t = time();
+        $lastcall = config::byKey('lastcall-consumptionRTE', __CLASS__, 0);
+        $this->checkAndUpdateCmd('lastcallTS', $lastcall);
+        if(isset($dec['short_term'])) {
+          foreach($dec['short_term'] as $sTerm) {
+            if(count($sTerm['values'])) {
+              if($sTerm['type'] == 'REALISED') {
+                $cmd = $this->getCmd(null,'REALISED');
+                if(is_object($cmd)) {
+                  foreach($sTerm['values'] as $sT) {
+                    $ts = strtotime($sT['start_date']);
+                    $val = $sT['value'];
+                    $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+                  }
+                  $this->checkAndUpdateCmd('REALISED', $val,date('Y-m-d H:i:s',$ts)); // use last value
                 }
-                $this->checkAndUpdateCmd('REALISED', $val,date('Y-m-d H:i:s',$ts)); // use last value
+                else message::add(__CLASS__,"Cmd REALISED not found. Equipment must be saved");
               }
-              else message::add(__CLASS__,"Cmd REALISED not found. Equipment must be saved");
-            }
-            else if($sTerm['type'] == 'ID') {
-              $cmd = $this->getCmd(null,'ID');
-              if(is_object($cmd)) {
-                foreach($sTerm['values'] as $sT) {
-                  $ts = $st0 = strtotime($sT['start_date']);
-                  $end0 = strtotime($sT['end_date']);
-                  $val = $sT['value'];
-                  $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
-                  if($t >= $st0 && $t < $end0) {
-                    $this->checkAndUpdateCmd('ID', $val,date('Y-m-d H:i:s',$ts));
+              else if($sTerm['type'] == 'ID') {
+                $cmd = $this->getCmd(null,'ID');
+                if(is_object($cmd)) {
+                  foreach($sTerm['values'] as $sT) {
+                    $ts = $st0 = strtotime($sT['start_date']);
+                    $end0 = strtotime($sT['end_date']);
+                    $val = $sT['value'];
+                    $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+                    if($t >= $st0 && $t < $end0) {
+                      $this->checkAndUpdateCmd('ID', $val,date('Y-m-d H:i:s',$ts));
+                    }
                   }
                 }
+                else message::add(__CLASS__,"Cmd ID not found. Equipment must be resaved");
               }
-              else message::add(__CLASS__,"Cmd ID not found. Equipment must be resaved");
-            }
-            else if($sTerm['type'] == 'D-1') {
-              $cmd = $this->getCmd(null,'D-1');
-              if(is_object($cmd)) {
-                foreach($sTerm['values'] as $sT) {
-                  $ts =  strtotime($sT['start_date']);
-                  $st0 = $ts-86400;
-                  $end0 = strtotime($sT['end_date'])-86400;
-                  $val = $sT['value'];
-                  $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
-                  if($t >= $st0 && $t < $end0) {
-                    $this->checkAndUpdateCmd('D-1', $val,date('Y-m-d H:i:s',$ts));
+              else if($sTerm['type'] == 'D-1') {
+                $cmd = $this->getCmd(null,'D-1');
+                if(is_object($cmd)) {
+                  foreach($sTerm['values'] as $sT) {
+                    $ts =  strtotime($sT['start_date']);
+                    $st0 = $ts-86400;
+                    $end0 = strtotime($sT['end_date'])-86400;
+                    $val = $sT['value'];
+                    $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+                    if($t >= $st0 && $t < $end0) {
+                      $this->checkAndUpdateCmd('D-1', $val,date('Y-m-d H:i:s',$ts));
+                    }
                   }
                 }
+                else message::add(__CLASS__,"Cmd D-1 not found. Equipment must be resaved.");
               }
-              else message::add(__CLASS__,"Cmd D-1 not found. Equipment must be resaved.");
-            }
-            else if($sTerm['type'] == 'D-2') {
-              $cmd = $this->getCmd(null,'D-2');
-              if(is_object($cmd)) {
-                foreach($sTerm['values'] as $sT) {
-                  $ts =  strtotime($sT['start_date']);
-                  $st0 = $ts-172800; // -2 jours
-                  $end0 = strtotime($sT['end_date'])-172800;
-                  $val = $sT['value'];
-                  $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
-                  if($t >= $st0 && $t < $end0) {
-                    $this->checkAndUpdateCmd('D-2', $val,date('Y-m-d H:i:s',$ts));
+              else if($sTerm['type'] == 'D-2') {
+                $cmd = $this->getCmd(null,'D-2');
+                if(is_object($cmd)) {
+                  foreach($sTerm['values'] as $sT) {
+                    $ts =  strtotime($sT['start_date']);
+                    $st0 = $ts-172800; // -2 jours
+                    $end0 = strtotime($sT['end_date'])-172800;
+                    $val = $sT['value'];
+                    $cmd->addHistoryValue($val, gmdate('Y-m-d H:i:s',$ts));
+                    if($t >= $st0 && $t < $end0) {
+                      $this->checkAndUpdateCmd('D-2', $val,date('Y-m-d H:i:s',$ts));
+                    }
                   }
                 }
+                else message::add(__CLASS__,"Cmd D-2 not found. Equipment must be resaved.");
               }
-              else message::add(__CLASS__,"Cmd D-2 not found. Equipment must be resaved.");
-            }
-            else if($sTerm['type'] == 'CORRECTED') {
-              $st0 = strtotime($sTerm['start_date']);
-              $end0 = strtotime($sTerm['end_date']); 
-              log::add(__CLASS__, 'debug', "  short_term[CORRECTED] from " .date('Y-m-d H:i:s',$st0) ." to " .date('Y-m-d H:i:s',$end0));
-            }
-            else {
-              $cmd = $this->getCmd(null,$sTerm['type']);
-              message::add(__CLASS__,"Processing [" .$sTerm['type'] ."] type");
-              if(is_object($cmd)) {
-                foreach($sTerm['values'] as $sT) {
-                  $ts = strtotime($sT['end_date']);
-                  $val = $sT['value'];
-                  $cmd->addHistoryValue($sT['value'], date('Y-m-d H:i:s',$ts));
+              else if($sTerm['type'] == 'CORRECTED') {
+                $st0 = strtotime($sTerm['start_date']);
+                $end0 = strtotime($sTerm['end_date']); 
+                log::add(__CLASS__, 'debug', "  short_term[CORRECTED] from " .date('Y-m-d H:i:s',$st0) ." to " .date('Y-m-d H:i:s',$end0));
+              }
+              else {
+                $cmd = $this->getCmd(null,$sTerm['type']);
+                message::add(__CLASS__,"Processing [" .$sTerm['type'] ."] type");
+                if(is_object($cmd)) {
+                  foreach($sTerm['values'] as $sT) {
+                    $ts = strtotime($sT['end_date']);
+                    $val = $sT['value'];
+                    $cmd->addHistoryValue($sT['value'], date('Y-m-d H:i:s',$ts));
+                  }
+                  $this->checkAndUpdateCmd($sTerm['type'], $val, date('Y-m-d H:i:s',$ts));
                 }
-                $this->checkAndUpdateCmd($sTerm['type'], $val, date('Y-m-d H:i:s',$ts));
+                else message::add(__CLASS__,"Cmd " .$sTerm['type'] ." not found");
               }
-              else message::add(__CLASS__,"Cmd " .$sTerm['type'] ." not found");
             }
           }
         }
-      }
-      else if(isset($dec['weekly_forecasts'])) {
+        else if(isset($dec['weekly_forecasts'])) {
+        }
       }
     }
   }
 
-  public function updateInfoEcowatt($fetch) {
+  public function updateInfoEcowattRTE($fetch) {
     $demo = $this->getConfiguration('demoMode',0);
     if($demo) {
       $fileEcowatt = __DIR__ ."/../../data/ecowattRTEsandbox.json";
@@ -1490,6 +1768,8 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     $search[] = '%M'; $replace[] = date('i',$ts);
               // Seconde 00 à 59
     $search[] = '%S'; $replace[] = date('s',$ts);
+              // Heure:minute:seconde
+    $search[] = '%T'; $replace[] = date('H:i:s',$ts);
               // Année 4 chiffres
     $search[] = '%Y'; $replace[] = date('Y',$ts);
               // %% en %
@@ -1501,6 +1781,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
 
   public static function fetchEdf4TempoPrices($url,$power) {
     $pdfContent = @file_get_contents($url);
+log::add(__CLASS__, 'warning', __FUNCTION__ ." Downloading PDF");
     $result = array();
     if ($pdfContent === false) {
       $result["error"] ="Impossible de télécharger le PDF $url";
@@ -1510,7 +1791,7 @@ message::add(__CLASS__, "TOMORROW unknown " .date('c') ." TsTomorrow = " .date('
     file_put_contents($tempPdf, $pdfContent);
 
     $text = shell_exec("pdftotext -layout '$tempPdf' - 2>/dev/null");
-    unlink($tempPdf);
+    @unlink($tempPdf);
 
     /*
     $hdle = fopen(__DIR__ ."/../../data/extractTxtFromPdf.txt", "wb");
@@ -1590,11 +1871,16 @@ log::add(__CLASS__, 'info', __FUNCTION__);
         config::save('HCJR', $result['HCJR'], __CLASS__);
         config::save('HPJR', $result['HPJR'], __CLASS__);
         if(isset($result['tempoExpirationDate'])) {
-          config::save('tempoExpirationDate', $result['tempoExpirationDate'], __CLASS__);
-          message::add(__CLASS__, "Nouveaux tarifs Tempo: {$result["dateOfRates"]}.");
+          log::add(__CLASS__, 'info', "Nouveaux tarifs Tempo: {$result["dateOfRates"]} --> {$result["tempoExpirationDate"]}.");
         }
         else message::add(__CLASS__, "Nouveaux tarifs {$result["dateOfRates"]}. Veuillez corriger la date de fin de validité dans la configuration du plugin.");
-
+      }
+    }
+    if (isset($result["tempoExpirationDate"])) {
+      $oldExpirationDate = trim(config::byKey('tempoExpirationDate', __CLASS__));
+      if ($oldExpirationDate != $result["tempoExpirationDate"]) {
+          config::save('tempoExpirationDate', $result['tempoExpirationDate'], __CLASS__);
+          log::add(__CLASS__, 'info', "ExpirationDate has been updated: {$result["tempoExpirationDate"]}.");
       }
     }
   }
@@ -1614,16 +1900,22 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       }
     }
     $HCJB = trim(config::byKey('HCJB', __CLASS__, 0));
+    // $HCJB = str_replace(",",".",$HCJB);
     if(!is_numeric($HCJB)) $HCJB = '"'.$HCJB .'"';
     $HPJB = trim(config::byKey('HPJB', __CLASS__, 0));
+    // $HPJB = str_replace(",",".",$HPJB);
     if(!is_numeric($HPJB)) $HPJB = '"'.$HPJB .'"';
     $HCJW = trim(config::byKey('HCJW', __CLASS__, 0));
+    // $HCJW = str_replace(",",".",$HCJW);
     if(!is_numeric($HCJW)) $HCJW = '"'.$HCJW .'"';
     $HPJW = trim(config::byKey('HPJW', __CLASS__, 0));
+    // $HPJW = str_replace(",",".",$HPJW);
     if(!is_numeric($HPJW)) $HPJW = '"'.$HPJW .'"';
     $HCJR = trim(config::byKey('HCJR', __CLASS__, 0));
+    // $HCJR = str_replace(",",".",$HCJR);
     if(!is_numeric($HCJR)) $HCJR = '"'.$HCJR .'"';
     $HPJR = trim(config::byKey('HPJR', __CLASS__, 0));
+    // $HPJR = str_replace(",",".",$HPJR);
     if(!is_numeric($HPJR)) $HPJR = '"'.$HPJR .'"';
     if($expDate == '') {
       if($log) log::add(__CLASS__,'warning','Expiration date of Tempo prices not defined');
@@ -1641,6 +1933,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
     $t0 = -microtime(true);
     $color['NOT_EJP'] = '#509E2F';
     $color['OUT_OF_PERIOD'] = '#005BBB';
+    $color['HORS_PERIODE_EJP'] = '#005BBB';
     $color['EJP'] = '#F34B32';
     $color['UNDEFINED'] = self::$_colTempo['UNDEFINED'];
     $color['ERROR'] =  self::$_colTempo['ERROR'];
@@ -1686,7 +1979,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       $replace['#dataActuEjp#'] .= ' en '.round($t0+microtime(true),3).'s';
     }
     if($valLeg['NOT_EJP']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['NOT_EJP'] .'"></i>Non EJP </span>';
-    if($valLeg['OUT_OF_PERIOD']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['OUT_OF_PERIOD'] .'"></i>Période EJP terminée </span>';
+    if($valLeg['OUT_OF_PERIOD']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['OUT_OF_PERIOD'] .'"></i>Hors période EJP </span>';
     if($valLeg['UNDEFINED']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['UNDEFINED'] .'"></i>Non défini </span>';
     if($valLeg['ERROR']) $replace['#legendEjp#'] .= '<span><i class="fa fa-circle fa-lg" style="color:' .$color['ERROR'] .'"></i>Erreur récupération données </span>';
   }
@@ -1737,7 +2030,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       else if($cmdLogicalId == 'datenowTS') {
         $val = $cmd->execCmd();
         if($val == 0) $replace['#datenow#'] = "Valeur actuelle inconnue.";
-        else $replace['#datenow#'] = self::myStrftime('%A %e %B %kh-',$val) .date('G',$val+3600).'h';
+        else $replace['#datenow#'] = self::myStrftime('%A %e %B %kh-',$val) .date('G',(int)$val+3600).'h';
       }
       else if(substr($cmdLogicalId,0,9) == 'dataHourD') {
         $idx = substr($cmdLogicalId,9);
@@ -1746,33 +2039,35 @@ log::add(__CLASS__, 'info', __FUNCTION__);
         $tab = '<table width=100% style="margin-top: 3px"><tr>';
         $i = 0; $icurH = -1;
         $tabHCcolumn = ''; $tabHCbar = '';
-        foreach($datas as $data) {
-          $title = $i ."h-" .($i+1) ."h" .$titleEco[$data];
-          $tab .= '<td title="' .$title .'" width=4% style="font-size:8px!important;background-color:' .$color[$data] .';';
-          if($dayTS[$idx] + $i * 3600 == $datenowTS) { // heure actuelle
-            $tabHCcolumn .= '{ y:2, name: "'.$title .'", color: "' .$color[$data] .'"},';
-            $tabHCbar .= '{ data: [1], name: "'.$title .'", pointWidth: 30, color: "' .$color[$data] .'"},';
-            if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
-            $tab .= ' text-align:center;vertical-align: top"><i class="fa fa-circle fa-lg" style="color: rgb(var(--bg-color));font-size: 7px"></i>';
-          }
-          else {
-            $tabHCcolumn .= '{ y:1, name: "'.$title .'", color: "' .$color[$data] .'"},';
-            if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
-            $tab .= '">&nbsp;';
+        if(count($datas)) {
+          foreach($datas as $data) {
+            $title = $i ."h-" .($i+1) ."h" .$titleEco[$data];
+            $tab .= '<td title="' .$title .'" width=4% style="font-size:8px!important;background-color:' .$color[$data] .';';
+            if((int)$dayTS[$idx] + $i * 3600 == $datenowTS) { // heure actuelle
+              $tabHCcolumn .= '{ y:2, name: "'.$title .'", color: "' .$color[$data] .'"},';
+              $tabHCbar .= '{ data: [1], name: "'.$title .'", pointWidth: 30, color: "' .$color[$data] .'"},';
+              if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
+              $tab .= ' text-align:center;vertical-align: top"><i class="fa fa-circle fa-lg" style="color: rgb(var(--bg-color));font-size: 7px"></i>';
+            }
+            else {
+              $tabHCcolumn .= '{ y:1, name: "'.$title .'", color: "' .$color[$data] .'"},';
+              if($i % 2 && $i != 23) $tab .= 'border-right: 1px solid #000;';
+              $tab .= '">&nbsp;';
 
-            $tabHCbar .= '{ data: [1], name: "'.$title .'", color: "' .$color[$data] .'"},';
+              $tabHCbar .= '{ data: [1], name: "'.$title .'", color: "' .$color[$data] .'"},';
+            }
+            $tab .= '</td>';
+            $dataHighcharts = "{ name: '{$i}h-" .($i+1) ."h', y: 15, color: '" .$color[$data] ."'";
+            if((int)$dayTS[$idx] + $i * 3600 == $datenowTS) {
+              $dataHighcharts .= ", sliced:true, selected: true";
+              $icurH = $i;
+              $curHcolor = $color[$data];
+            }
+            $dataHighcharts .= "},";
+            if($i<12) $dataHCpieAM .= $dataHighcharts;
+            else $dataHCpiePM .= $dataHighcharts;
+            $i++;
           }
-          $tab .= '</td>';
-          $dataHighcharts = "{ name: '{$i}h-" .($i+1) ."h', y: 15, color: '" .$color[$data] ."'";
-          if($dayTS[$idx] + $i * 3600 == $datenowTS) {
-            $dataHighcharts .= ", sliced:true, selected: true";
-            $icurH = $i;
-            $curHcolor = $color[$data];
-          }
-          $dataHighcharts .= "},";
-          if($i<12) $dataHCpieAM .= $dataHighcharts;
-          else $dataHCpiePM .= $dataHighcharts;
-          $i++;
         }
         $tab .= '</tr><tr>'; // 2eme ligne pour afficher les heures
         for($i=0;$i<6;$i++) {
@@ -2273,6 +2568,190 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       $replace['#dataTempo#'] .= '{ x:'.($t*1000) .', y:' .$minVal .', name: "'.$title[$val].'", color: "'.$color[$val] .'" },';
     }
   }
+
+  public function toHtml_tempoForecast(&$replace,$loglevel) {
+    $t0 = -microtime(true);
+    $color['BLEU'] = self::$_colTempo['HPJB']; $title['BLEU'] = 'Jour BLEU';
+    $color['BLANC'] = self::$_colTempo['HPJW']; $title['BLANC'] = 'Jour BLANC';
+    $color['ROUGE'] = self::$_colTempo['HPJR']; $title['ROUGE'] = 'Jour ROUGE';
+    $color['BLEUPREV'] = self::$_colTempo['HCJB']; $title['BLEUPREV'] = 'Jour BLEU prévu';
+    $color['BLANCPREV'] = self::$_colTempo['HCJW']; $title['BLANCPREV'] = 'Jour BLANC prévu';
+    $color['ROUGEPREV'] = self::$_colTempo['HCJR']; $title['ROUGEPREV'] = 'Jour ROUGE prévu';
+    $color['UNDEFINED'] = self::$_colTempo['UNDEFINED']; $title['UNDEFINED'] = 'Couleur invalide. Pb service calendrier-tempo.fr';
+    $color['ERROR'] = self::$_colTempo['ERROR']; $title['ERROR'] = 'Erreur';
+    while ($col = current($color)) {
+      $key = key($color);
+      $replace["#color$key#"] = $col;
+      next($color);
+    }
+
+    $tab = '#calTempoTable#';
+    $useTempoCalendarData = $this->getConfiguration('useTempoCalendarData',0);
+    if($useTempoCalendarData == 1) {
+      $nbDays = $this->getConfiguration('numPredictionDays',6);
+      if($nbDays < 2) $nbDays = 2; if($nbDays > 16) $nbDays = 16;
+      $replace[$tab] = '<div><table width="99%" border="0" style="text-align:center">';
+      $replace[$tab] .= '<tr><td rowspan="2">Date</td><td rowspan="2">Coul.</td><td rowspan="2">Temp.</td><td colspan ="3">Probabilités</td></tr>';
+      $replace[$tab] .= '<tr><td>' .self::myBullet($color['BLEU'], "Jour BLEU", '11px') .'</td><td>' .self::myBullet($color['BLANC'], "Jour BLANC", '11px') .'</td><td>' .self::myBullet($color['ROUGE'], "Jour ROUGE", '11px') .'</td></tr>';
+      $today = date('Y-m-d',time()); $tomorrow = date('Y-m-d',strtotime("tomorrow"));
+      // $today = '2026-11-10'; $tomorrow = '2026-11-11';
+      $todayFound = 0;
+      for($i=0; $i<16; $i++) {
+        $cmd = $this->getCmd(null,"J{$i}Json");
+        if(is_object($cmd)) {
+          $json = $cmd->execCmd();
+          $json = str_replace('&#34;', '"', $json);
+          $dec = json_decode($json,true);
+          if($dec !== null && isset($dec['date'])) {
+            if($todayFound == 0 && $today == $dec['date']) $todayFound = 1;
+            if($todayFound) {
+              $prev = '';
+              if(date('N', strtotime($dec['date'])) == 7) $col = "BLEU"; // Dimanche
+              else {
+                $col = $dec['couleur_predite'];
+                if($dec['confirmed'] === false)  { $col .= 'PREV'; $prev = 'prev'; }
+              }
+              $replace[$tab] .= "<tr><td>";
+              $replace[$tab] .= (($today == $dec['date']) ? "Aujourd'hui" : (($tomorrow == $dec['date']) ? "Demain" : self::myStrftime('%a. %e %b',strtotime($dec['date']))));
+              $raison = htmlspecialchars(($dec['raison'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+              $rtech = htmlspecialchars(($dec['raison_technique'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+              if($loglevel == 'debug' && $raison != $rtech) $raison .= "<br>$rtech";
+              $replace[$tab] .= "</td><td title='{$title[$col]}.<br>$raison'>";
+              $replace[$tab] .= self::myBullet($color[$col]);
+              $replace[$tab] .= "</td><td>";
+              $replace[$tab] .= $dec['temp_moy_prevue'] ."°C";
+              $replace[$tab] .= "</td>";
+              $w = round(($dec['probabilite_blanc'] ?? 0) * 100);
+              $r = round(($dec['probabilite_rouge'] ?? 0) * 100);
+              $b = 100 -$r -$w; // Le total doit etre 100 quelque soit les arrondis sur b et w
+              // $b = ($b == 0)? '-' : "$b%"; $w = ($w == 0)? '-' : "$w%"; $r = ($r == 0)? '-' : "$r%";
+              // $replace[$tab] .= "<td>$b</td><td>$w</td><td>$r</td>";
+              $replace[$tab] .= '<td colspan="3" title="' .$b .'% / ' .$w .'% / ' .$r .'%">';
+              $replace[$tab] .= '<div class="tempo-bar"><div class="tempo-blue' .$prev .'" style="width:' .$b .'%"></div>
+                <div class="tempo-white' .$prev .'" style="width:' .$w .'%"></div>
+                <div class="tempo-red' .$prev .'" style="width:' .$r .'%"></div>
+                </div>';
+              $replace[$tab] .= "</td>";
+
+              $replace[$tab] .= "</tr>";
+              if($todayFound >= $nbDays) break;
+              $todayFound++;
+            }
+          }
+        }
+      }
+      $replace[$tab] .= '<tr><td colspan="6"><div class="copyright" style="font-size:10px; font-style:italic;text-align:left;margin-left:5px;">&nbsp;Source : <a target="_blank" href="https://www.calendrier-tempo.fr">calendrier-tempo.fr</a>. Licence : <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC&nbsp;BY&nbsp;4.0</a></div></td></tr>';
+      $replace[$tab] .= '<tr><td colspan="6"><div class="redDays" style="font-size: 12px;">';
+        // Cmd: nextRedDay5Days
+      $cmd = $this->getCmd(null,"calTempoNextRedDay5Days");
+      if(is_object($cmd)){
+        $redDayDate = strtotime($cmd->execCmd());
+        if($redDayDate === false) {
+          $replace[$tab] .= 'Pas de jour ROUGE prévu dans les 5 prochains jours.';
+        }
+        else {
+          $replace[$tab] .= 'Prochain jour ROUGE : '.self::myStrftime('%a. %e %b',$redDayDate);
+          // Cmd: redDayRiskNext5Days
+          $cmd = $this->getCmd(null,"calTempoRedDayRiskNext5Days");
+          if(is_object($cmd)){
+            $redDayRisk = $cmd->execCmd();
+            $replace[$tab] .= " Risque maxi : $redDayRisk" .$cmd->getUnite();
+          }
+        }
+      }
+
+      $replace[$tab] .= ' </div></td></tr>';
+      if($todayFound == 0) $replace[$tab] .= '<tr><td colspan="6">Pas de prévisions de couleurs. Voir le site <a target="_blank" href="https://www.calendrier-tempo.fr">calendrier-tempo.fr</a></td></tr>';
+      $lastcallTempoTS = strtotime(config::byKey('lastcall-tempoForecastCalTempo', __CLASS__, 0));
+      $replace[$tab] .= '</table>';
+      $replace[$tab] .= '<div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">';
+        // Cmd: generatedAt
+      $cmd = $this->getCmd(null,"calTempoGeneratedAt");
+      if(is_object($cmd)){
+        $genDate = $cmd->execCmd();
+        $replace[$tab] .= 'Données générées le '.self::myStrftime('%a. %e %b %T',strtotime($genDate)) .' récupérées le '.date('j/m/Y H:i:s',$lastcallTempoTS);
+      } else
+        $replace[$tab] .= 'Données  récupérées le '.date('j/m/Y H:i:s',$lastcallTempoTS);
+      $replace[$tab] .= '</div>';
+      $replace[$tab] .= '</div>';
+    }
+    else {
+      $replace[$tab] = '';
+    }
+    $useOpenDpeData = $this->getConfiguration('useOpenDpeData',0);
+    $tab = '#openDpeTable#';
+    if($useOpenDpeData == 1) {
+      $nbDays = $this->getConfiguration('numPredictionDaysDPE',6);
+      if($nbDays < 1) $nbDays = 1; if($nbDays > 9) $nbDays = 9;
+      $replace[$tab] = '<div><table width="99%" border="0" style="text-align:center;margin-top:10px">';
+      $replace[$tab] .= '<tr><td>Date</td><td>Coul.</td><td>Proba.</td></tr>';
+      $today = date('Y-m-d',time()); $tomorrow = date('Y-m-d',strtotime("tomorrow"));
+      // $today = '2026-11-10'; $tomorrow = '2026-11-11';
+      $tomorrowFound = 0;
+      for($i=0; $i<9; $i++) {
+        $cmd = $this->getCmd(null,"Dpe_J{$i}Json");
+        if(is_object($cmd)) {
+          $json = $cmd->execCmd();
+          $json = str_replace('&#34;', '"', $json);
+          $dec = json_decode($json,true);
+          if($dec !== null && isset($dec['date'])) {
+            if($tomorrowFound == 0 && $tomorrow == $dec['date']) $tomorrowFound = 1;
+            if($tomorrowFound) {
+              $col = $dec['couleur'].'PREV';
+              $replace[$tab] .= "<tr><td>";
+              $replace[$tab] .= (($today == $dec['date']) ? "Aujourd'hui" : (($tomorrow == $dec['date']) ? "Demain" : self::myStrftime('%a. %e %b',strtotime($dec['date']))));
+              $replace[$tab] .= "</td><td title='{$title[$col]}'>";
+              $replace[$tab] .= self::myBullet($color[$col]);
+              $replace[$tab] .= "</td>";
+              $proba = round(($dec['probability'] ?? 0) * 100) .'%';
+              $replace[$tab] .= "<td>$proba</td></tr>";
+              if($tomorrowFound >= $nbDays) break;
+              $tomorrowFound++;
+            }
+          }
+        }
+      }
+      $replace[$tab] .= '<tr><td colspan="3"><div class="copyright" style="font-size:10px; font-style:italic;text-align:left;margin-left:5px;">&nbsp;Source : <a target="_blank" href="https://open-dpe.fr/tempo-forecast/">Open DPE</a>. Licence : <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC&nbsp;BY&nbsp;4.0</a></div></td></tr>';
+      $replace[$tab] .= '<tr><td colspan="3"><div class="redDays" style="font-size: 12px;">';
+        // Cmd: Dpe_nextRedDay5Days
+      $cmd = $this->getCmd(null,"Dpe_nextRedDay5Days");
+      if(is_object($cmd)){
+        $redDayDate = strtotime($cmd->execCmd());
+        if($redDayDate === false) {
+          $replace[$tab] .= 'Pas de jour ROUGE prévu dans les 5 prochains jours.';
+        }
+        else {
+          $replace[$tab] .= 'Prochain jour ROUGE : '.self::myStrftime('%a. %e %b',$redDayDate);
+            // Cmd: redDayRiskNext5Days
+          $cmd = $this->getCmd(null,"Dpe_redDayRiskNext5Days");
+          if(is_object($cmd)){
+            $redDayRisk = $cmd->execCmd();
+            $replace[$tab] .= " Proba : $redDayRisk" .$cmd->getUnite();
+          }
+        }
+      }
+      $replace[$tab] .= '</td></tr>';
+      $replace[$tab] .= '</table>';
+        // Cmd: Dpe_retrievedOn
+      $cmd = $this->getCmd(null,"Dpe_retrievedOn");
+      if(is_object($cmd)){
+        $genDate = $cmd->execCmd();
+        $replace[$tab] .= '<div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">';
+        $replace[$tab] .= 'Données récupérées le '.self::myStrftime('%a. %e %b %T',strtotime($genDate));
+        $replace[$tab] .= '</div>';
+      }
+      $replace[$tab] .= '</div>';
+    }
+    else {
+      $replace[$tab] = '';
+    }
+  }
+  public static function myBullet($col, $title = '', $size ='14px') {
+    if($title == '')
+      return '<i class="fa fa-circle" style="color:' .$col .';font-size: ' .$size .';"></i>';
+    else
+      return '<i class="fa fa-circle" style="color:' .$col .';font-size: ' .$size .';" title="' .$title .'"></i>';
+  }
     
   public function toHtml($_version = 'dashboard') {
     $loglevel = log::convertLogLevel(log::getLogLevel(__CLASS__));
@@ -2323,6 +2802,12 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       $this->toHtml_consumptionRTE($replace,$loglevel);
       $template = 'rte_consumption';
     }
+    else if ($datasource == 'tempoForecast') {
+      if($this->getConfiguration('usePluginTemplateTempoCalendar','1') == '0')
+        return parent::toHtml($_version);
+      $this->toHtml_tempoForecast($replace,$loglevel);
+      $template = 'tempoForecast';
+    }
     else {
       log::add(__CLASS__, 'warning', __FUNCTION__ ." Unknown type: $datasource");
       return parent::toHtml($_version);
@@ -2354,8 +2839,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
     $stTs = strtotime($startDate);
     $startTs = mktime(0,0,0,date('m',$stTs),date('d',$stTs),date('Y',$stTs));
     $start = date('c',$startTs);
-    $dataTempo= __DIR__ ."/../../data/dataTempo.json";
-    $data = @file_get_contents($dataTempo);
+    $data = @file_get_contents(self::$_dataTempo);
     if ($data !== false) {
       $decData = json_decode($data,true);
       if($startTs > strtotime($decData["latestOKdatetime"]))
