@@ -236,8 +236,8 @@ class rteEcowatt extends eqLogic {
     else if (!empty(json_decode($response)->error)) {
       log::add(__CLASS__,'info', "Error: Response $response");
     }
-    else
-    { log::add(__CLASS__,'debug',__FUNCTION__ ." $response");
+    else {
+      // log::add(__CLASS__,'debug',__FUNCTION__ ." $response");
       $params['tokenRTE'] = json_decode($response)->access_token;
       config::save('tokenRTE', $params['tokenRTE'], __CLASS__);
         // expire 20s avant
