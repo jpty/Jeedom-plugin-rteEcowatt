@@ -136,9 +136,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     <option value="tempoRTE">{{Tempo (RTE)}}</option>
                     <option value="consumptionRTE">{{Consommation (RTE)}}</option>
 <!--
+                    <option value="signalRTE">{{Signal (RTE)}}</option>
 -->
-                    <option value="tempoEDF">{{Tempo (EDF) HS}}</option>
-                    <option value="ejpEDF">{{Ejp (EDF)}}</option>
+                    <option value="tempoEDF">{{Tempo (EDF)}}</option>
+                    <option value="ejpEDF">{{EJP (EDF)}}</option>
+                    <option value="tempoForecast">{{Prévisions Tempo}}</option>
                   </select>
                 </div>
               </div>
@@ -190,13 +192,13 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
               <div class="datasource tempoEDF">
                 <div class="form-group">
                   <label class="col-sm-4 control-label" ></label>
+<!--
                   <div class="col-sm-8">Ce type d'équipement n'est plus fonctionnel. Les données ne sont plus accessibles sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/tempo.html#/">Web d'EDF</a>.<br/>
 Vous pouvez modifier le Type de source de données ci-dessus en "Tempo (RTE)"
                   </div>
-<!--
+-->
                   <div class="col-sm-7">Pas d'API pour ce type d'équipement. Les données sont récupérées sur le site <a target="blank" href="https://particulier.edf.fr/fr/accueil/gestion-contrat/options/tempo.html#/">Web d'EDF</a> avec cette mention:<br> Seules les informations affichées sur votre compteur sont contractuelles. Les données communiquées sur le site internet le sont à titre indicatif. En effet, pour des raisons techniques, des différences peuvent parfois survenir entre la couleur indiquée et celle réellement pratiquée.
                   </div>
--->
                 </div>
                 <div class="form-group">
                   <label class="col-sm-4 control-label">{{Template}}</label>
@@ -263,6 +265,41 @@ L'API <a target="blank" href="https://data.rte-france.com/catalog/-/api/consumpt
 </label>
                   <div class="col-sm-4">
                     <input size="25" type="input" class="eqLogicAttr" data-l1key="configuration" data-l2key="numConsumptionDays" placeholder="{{Défaut: 6}}">
+                  </div>
+                </div>
+              </div>
+
+              <div class="datasource tempoForecast">
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Prévisions }} <a target="blank" href="https://www.calendrier-tempo.fr">Calendrier Tempo EDF</a></label>
+                  <div class="col-sm-7">
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="useTempoCalendarData" checked>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label">{{Nombre de prévisions à afficher}}
+</label>
+                  <div class="col-sm-4">
+                    <input size="25" type="input" class="eqLogicAttr" data-l1key="configuration" data-l2key="numPredictionDays" placeholder="{{Défaut: 6. Min: 2. Max: 16.}}">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Prévisions }} <a target="blank" href="https://open-dpe.fr/tempo-forecast/">Open DPE</a></label>
+                  <div class="col-sm-7">
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="useOpenDpeData" checked>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label">{{Nombre de prévisions à afficher}}
+</label>
+                  <div class="col-sm-4">
+                    <input size="25" type="input" class="eqLogicAttr" data-l1key="configuration" data-l2key="numPredictionDaysDPE" placeholder="{{Défaut: 5. Min: 1. Max: 9.}}">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" >{{Utiliser le template du plugin}}</label>
+                  <div class="col-sm-7">
+                    <input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="usePluginTemplateTempoCalendar" checked>
                   </div>
                 </div>
               </div>

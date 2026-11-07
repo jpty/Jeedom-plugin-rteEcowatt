@@ -10,7 +10,7 @@
     <a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
   </center>
   <div class="cmds #isVerticalAlign#">
-    <div style="display: none">
+    <div style="display: block">
       <center>
         <span>Aujourd'hui</span><div title="#titleToday#" class="circle#id# borderGrey#id#" style="background-color: #colorToday#"></div>
         <div style="font-size: 10px; text-align:left;margin-left: 5px">
@@ -19,7 +19,7 @@
         <span>Demain</span><div title="#titleTomorrow#" class="circle#id# borderGrey#id#" style="background-color: #colorTomorrow#"></div>
         <br>
         <br/>
-        <span>Jours Tempo restants<sup><i class="fas fa-question-circle tooltips" title="Pour la période du 1er septembre au 31 août"></i></sup>
+        <span>Jours Tempo non tirés<sup><i class="fas fa-question-circle tooltips" title="Pour la période du 1er septembre au 31 août"></i></sup>
         </span>
         <br/>
       </center>
@@ -28,12 +28,11 @@
         <span>#white-remainingDays#</span><div title="Jour blanc" class="circle#id# borderGrey#id#" style="background-color: #colorWHITE#"></div>
         <span>#red-remainingDays#</span><div title="Jour rouge" class="circle#id#" style="background-color: #colorRED#"></div>
       </div>
-    <!--
-    -->
       <div style="font-size: 10px; font-style: italic; text-align:left;margin-left: 5px">
         #dataActuTempo#
       </div>
     </div>
+    <!--
     <div style="display: block;background-color: #005BBB;color: white">
       <center>
         <span style="font-weight: 700;font-size: 18px">
@@ -45,6 +44,7 @@
         </span>
       </center>
     </div>
+    -->
   </div>
   <script>
     if ('#refresh_id#' != '') {
