@@ -2221,10 +2221,12 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       $cmdLogicalId = $cmd->getLogicalId();
       $val = $cmd->execCmd();
       if($cmdLogicalId == 'today') {
+        if($val == '') $val = 'UNDEFINED';
         $replace['#colorToday#'] = $color[$val];
         $replace['#titleToday#'] = $title[$val];
       }
       else if($cmdLogicalId == 'tomorrow') {
+        if($val == '') $val = 'UNDEFINED';
         $replace['#colorTomorrow#'] = $color[$val];
         $replace['#titleTomorrow#'] = $title[$val];
       }
