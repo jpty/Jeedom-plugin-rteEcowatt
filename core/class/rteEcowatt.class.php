@@ -2695,7 +2695,7 @@ log::add(__CLASS__, 'info', __FUNCTION__);
     $useOpenDpeData = $this->getConfiguration('useOpenDpeData',0);
     $tab = '#openDpeTable#';
     if($useOpenDpeData == 1) {
-      $nbDays = $this->getConfiguration('numPredictionDaysDPE',6);
+      $nbDays = $this->getConfiguration('numPredictionDaysDPE',5);
       if($nbDays < 1) $nbDays = 1; if($nbDays > 9) $nbDays = 9;
       $replace[$tab] = '<div><table width="99%" border="0" style="text-align:center;margin-top:10px">';
       $replace[$tab] .= '<tr><td>Date</td><td>Coul.</td><td>Proba.</td></tr>';
