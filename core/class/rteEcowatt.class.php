@@ -103,11 +103,14 @@ class rteEcowatt extends eqLogic {
           // Chgt de jour today in yesterday, tomorrow in today
       if($datasource == 'tempoRTE') {
         if($chgeDay == 1) {
-          $decData = self::getTempoDataRTE(1,0);
+          $decData = self::getTempoDataRTE(1,0); // MAJ dataTempo.json
         }
         $chgeDay = 0;
-        $equipmt->updateInfoTempoRTE(0,$decData);
+        $equipmt->updateInfoTempoRTE(0,$decData); // MAJ equipements
         $equipmt->refreshWidget();
+      }
+      elseif($datasource == 'tempoEDF') {
+        $equipmt->changeDayTempoEdf();
       }
     }
   }
@@ -607,8 +610,20 @@ class rteEcowatt extends eqLogic {
           'subtype' => 'string',
           'order' => 2,
         ),
+        'todayTS' => array(
+          'name' => __('Aujourd\'hui timestamp', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 4,
+          'isVisible' => 0,
+        ),
+        'tomorrowTS' => array(
+          'name' => __('Demain timestamp', __FILE__),
+          'subtype' => 'numeric',
+          'order' => 5,
+          'isVisible' => 0,
+        ),
         'blue-remainingDays' => array(
-          'name' => __('Jours Bleus non placés', __FILE__),
+          'name' => __('Jours Bleus non tirés', __FILE__),
           'subtype' => 'numeric',
           'order' => 3,
         ),
@@ -618,7 +633,7 @@ class rteEcowatt extends eqLogic {
           'order' => 4,
         ),
         'white-remainingDays' => array(
-          'name' => __('Jours Blancs non placés', __FILE__),
+          'name' => __('Jours Blancs non tirés', __FILE__),
           'subtype' => 'numeric',
           'order' => 5,
         ),
@@ -628,7 +643,7 @@ class rteEcowatt extends eqLogic {
           'order' => 6,
         ),
         'red-remainingDays' => array(
-          'name' => __('Jours Rouges non placés', __FILE__),
+          'name' => __('Jours Rouges non tirés', __FILE__),
           'subtype' => 'numeric',
           'order' => 7,
         ),
@@ -839,7 +854,7 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     // log::add(__CLASS__, 'debug', "EJP URL: $url");
     $content = $this->execCurlEdf($url, __FUNCTION__);
     if($content != -1) {
-      $todayDate = date('Y-m-d',strtotime('now'));
+      $todayDate = date('Y-m-d',strtotime('today'));
       $tomorrowDate = date('Y-m-d',strtotime('tomorrow'));
       $today = 'UNDEFINED'; $tomorrow = 'UNDEFINED'; $ejpDays = 0;
       if($loglevel == 'debug') {
@@ -908,76 +923,114 @@ log::add(__CLASS__ ,'debug',__FUNCTION__ ." $msg");
     }
   }
 
-  public function toPluginColor($frcol) {
-    switch ($frcol) {
-      case 'TEMPO_BLEU': return 'BLUE';
-      case 'TEMPO_BLANC': return 'WHITE';
-      case 'TEMPO_ROUGE': return 'RED';
-      case 'NON_DEFINI': return 'UNDEFINED';
-      default: return $frcol;
+  public function changeDayTempoEdf() {
+log::add(__CLASS__, 'debug', __FUNCTION__);
+    $todayTS = strtotime('today');
+    $todayDate = date('Y-m-d', $todayTS);
+    $cmd = $this->getCmd(null,"tomorrowTS");
+    if(is_object($cmd)) {
+      $tomorrowEquipt = date('Y-m-d', (int)$cmd->execCmd());
+log::add(__CLASS__, 'debug', "  Today $todayDate Demain equipement $tomorrowEquipt ");
+      if($tomorrowEquipt == $todayDate) { // transfert de tomorrow dans today
+log::add(__CLASS__, 'debug', "  Transfert TomorrowEquipt $tomorrowEquipt dans TodayEquipt");
+        $cmd = $this->getCmd(null,"tomorrow");
+        if(is_object($cmd)) {
+          $this->checkAndUpdateCmd("today", $cmd->execCmd());
+          $this->checkAndUpdateCmd("todayTS", $todayTS);
+          $this->checkAndUpdateCmd("tomorrow", 'UNDEFINED');
+          $this->checkAndUpdateCmd("tomorrowTS",  strtotime('tomorrow'));
+        }
+      }
     }
   }
 
-  public function updateInfoTempoEDF($fetch, $loglevel) {
+  public function updateInfoTempoEDF($fetch, $loglevel) { // fetch=2 demande MAJ par l'utilisateur
     $t = time();
     $JsonFile = __DIR__ ."/../../data/" .__FUNCTION__."-" .$this->getId();
-    $todayDate = date('Y-m-d',strtotime('now'));
-    $tomorrowDate = date('Y-m-d',strtotime('tomorrow'));
-    $dateInf = date("Y-n-j", strtotime("tomorrow last year"));
-    $dateSup = date("Y-n-j", strtotime("tomorrow"));
-    $url = "https://api-commerce.edf.fr/commerce-activet/api/v1/calendrier-jours-effacement?option=TEMPO&dateApplicationBorneInf={$dateInf}&dateApplicationBorneSup={$dateSup}&identifiantConsommateur=src";
-    $content = $this->execCurlEdf($url, __FUNCTION__);
-    if($content != -1) {
-      if($loglevel == 'debug') {
-        log::add(__CLASS__, 'debug', "  Retrieve OK. Creating file $JsonFile.json");
-        $hdle = fopen($JsonFile .".json", "wb");
-        if($hdle !== FALSE) { fwrite($hdle, $content); fclose($hdle); }
+    $todayDate = date('Y-m-d',strtotime('today'));
+    $nbRemaining = 0;
+    $tempo = array('blue' => 'TEMPO_BLEU', 'white' => 'TEMPO_BLANC', 'red' => 'TEMPO_ROUGE', 'undefined' => 'NON_DEFINI');
+    foreach($tempo as $color => $_) {
+      $cmd = $this->getCmd(null,"{$color}-remainingDays");
+      if(is_object($cmd)) {
+        $val = (int)$cmd->execCmd();
+        $nbRemaining += $val;
       }
-      $data = json_decode($content, true);
-      if(isset($data['content']['options'][0]['calendrier'])) {
-        $calendrier = $data['content']['options'][0]['calendrier'];
-        foreach($calendrier as $cal) {
-          if($cal['dateApplication'] == $todayDate) {
-            $today = $this->toPluginColor($cal['statut']);
-            $this->checkAndUpdateCmd('today', $today);
-          }
-          if($cal['dateApplication'] == $tomorrowDate) {
-            $tomorrow = $this->toPluginColor($cal['statut']);
-            $this->checkAndUpdateCmd('tomorrow', $tomorrow);
-          }
-        }
-        config::save('lastcall-tempoEdf', $t, __CLASS__);
-      }
-    }
-    else {
-      log::add(__CLASS__,'warning', "[Unable to retrieve Tempo information from EDF $url]");
     }
 
+    $nbNewRemaining = 0;
     $urlComptage = "https://api-commerce.edf.fr/commerce-activet/api/v1/saisons/search?option=TEMPO&dateReference=$todayDate";
     $content = $this->execCurlEdf($urlComptage, __FUNCTION__);
     if($content != -1) {
+      $data = json_decode($content, true);
       if($loglevel == 'debug') {
         log::add(__CLASS__, 'debug', "  Retrieve OK. Creating file {$JsonFile}-comptage.json");
         $hdle = fopen($JsonFile ."-comptage.json", "wb");
-        if($hdle !== FALSE) { fwrite($hdle, $content); fclose($hdle); }
+        if($hdle !== FALSE) {
+          if($data === null) fwrite($hdle, $content);
+          else fwrite($hdle, json_encode($data, JSON_PRETTY_PRINT));
+          fclose($hdle);
+        }
       }
-      $data = json_decode($content, true);
       if(isset($data['content'][0]['typeJourEff'])) {
         foreach($data['content'] as $cal) {
-          if($cal['typeJourEff'] == 'TEMPO_ROUGE') $idx = 'red-';
-          elseif($cal['typeJourEff'] == 'TEMPO_BLANC') $idx = 'white-';
-          elseif($cal['typeJourEff'] == 'TEMPO_BLEU') $idx = 'blue-';
-          else $idx = '';
-          if($idx != '') {
-     log::add(__CLASS__, 'debug', "$idx Total: {$cal['nombreJours']} Tirés: {$cal['nombreJoursTires']}");
-            $this->checkAndUpdateCmd("{$idx}remainingDays", ($cal['nombreJours'] - $cal['nombreJoursTires']));
-            $this->checkAndUpdateCmd("{$idx}totalDays", $cal['nombreJours']);
+          $color = array_search($cal['typeJourEff'], $tempo);
+          if($color !== false) {
+            $nbNewRemaining += ($cal['nombreJours'] - $cal['nombreJoursTires']);
+ log::add(__CLASS__, 'debug', "$color Total: {$cal['nombreJours']} Tirés: {$cal['nombreJoursTires']}");
+            $this->checkAndUpdateCmd("{$color}-remainingDays", ($cal['nombreJours'] - $cal['nombreJoursTires']));
+            $this->checkAndUpdateCmd("{$color}-totalDays", $cal['nombreJours']);
           }
         }
       }
     }
+    if($fetch == 2 || $nbRemaining != $nbNewRemaining) {
+      $tomorrowDate = date('Y-m-d',strtotime('tomorrow'));
+      $dateInf = date("Y-n-j", strtotime("tomorrow last year"));
+      $dateSup = date("Y-n-j", strtotime("tomorrow"));
+      $url = "https://api-commerce.edf.fr/commerce-activet/api/v1/calendrier-jours-effacement?option=TEMPO&dateApplicationBorneInf={$dateInf}&dateApplicationBorneSup={$dateSup}&identifiantConsommateur=src";
+      $content = $this->execCurlEdf($url, __FUNCTION__);
+      if($content != -1) {
+        $data = json_decode($content, true);
+        if($loglevel == 'debug') {
+          log::add(__CLASS__, 'debug', "  Retrieve OK. Creating file $JsonFile.json");
+          $hdle = fopen($JsonFile .".json", "wb");
+          if($hdle !== FALSE) {
+            if($data === null) fwrite($hdle, $content);
+            else fwrite($hdle, json_encode($data, JSON_PRETTY_PRINT));
+            fclose($hdle);
+          }
+        }
+        if(isset($data['content']['options'][0]['calendrier'])) {
+          $calendrier = $data['content']['options'][0]['calendrier'];
+          foreach($calendrier as $cal) {
+            if($cal['dateApplication'] == $todayDate) {
+              $today = array_search($cal['statut'], $tempo);
+              if($today !== false) {
+                $this->checkAndUpdateCmd('today', strtoupper($today));
+                $this->checkAndUpdateCmd('todayTS', strtotime($todayDate));
+              }
+            }
+            if($cal['dateApplication'] == $tomorrowDate) {
+              $tomorrow = array_search($cal['statut'], $tempo);
+              if($tomorrow !== false) {
+                $this->checkAndUpdateCmd('tomorrow', strtoupper($tomorrow));
+                $this->checkAndUpdateCmd('tomorrowTS', strtotime($tomorrowDate));
+              }
+            }
+          }
+          config::save('lastcall-tempoEdf', $t, __CLASS__);
+        }
+      }
+      else {
+        log::add(__CLASS__,'warning', "[Unable to retrieve Tempo information from EDF $url]");
+      }
 
-    return; // EDF
+    }
+    else {
+      log::add(__CLASS__, 'debug', "Remaining: $nbRemaining unchanged aborting request");
+    }
+    return; // Tempo EDF
   }
    
   public static function getTempoDataRTE($chgeDay = 0,$fetch=0) {
@@ -1598,12 +1651,10 @@ if($i == 5) { $prediction['couleur'] = 'ROUGE'; $prediction['probability'] =.52;
       $mod = str_pad((date('j') % 3)+3,2,'0',STR_PAD_LEFT);
         // date dans plage du bac à sable. Jour entre 3 et 5
       $nowTS = strtotime("2022-06-$mod " .date('H:i:s'));
-      // $nowTS = strtotime("2022-06-05 05:00:00"); // .date('H:i:s'));
     }
     else {
       $fileEcowatt = __DIR__ ."/../../data/ecowattRTE.json";
       $nowTS = time();
-      // $nowTS = strtotime("2022-11-01 00:00:12"); // .date('H:i:s'));
     }
     if(file_exists($fileEcowatt) && (!$fetch || $demo)) {
       $response = file_get_contents($fileEcowatt);
@@ -2217,33 +2268,30 @@ log::add(__CLASS__, 'info', __FUNCTION__);
       $replace["#color$key#"] = $col;
       next($color);
     }
+
+    $cmd = $this->getCmd(null,'todayTS');
+    if(is_object($cmd)) {
+      $val = (int)$cmd->execCmd();
+      $todayDate = "<br>" .self::myStrftime('%A %e %B %Y',$val);
+    } else $todayDate = '';
+    $cmd = $this->getCmd(null,'tomorrowTS');
+    if(is_object($cmd)) {
+      $val = (int)$cmd->execCmd();
+      $tomorrowDate = "<br>" .self::myStrftime('%A %e %B %Y',$val);
+    } else $tomorrowDate = '';
+
     foreach ($this->getCmd('info') as $cmd) {
       $cmdLogicalId = $cmd->getLogicalId();
       $val = $cmd->execCmd();
       if($cmdLogicalId == 'today') {
         if($val == '') $val = 'UNDEFINED';
         $replace['#colorToday#'] = $color[$val];
-        $replace['#titleToday#'] = $title[$val];
+        $replace['#titleToday#'] = $title[$val] .$todayDate;
       }
       else if($cmdLogicalId == 'tomorrow') {
         if($val == '') $val = 'UNDEFINED';
         $replace['#colorTomorrow#'] = $color[$val];
-        $replace['#titleTomorrow#'] = $title[$val];
-      }
-      else if($cmdLogicalId == 'todayTS') {
-        $ts = $cmd->execCmd();
-        $replace['#todayDate#'] = self::myStrftime('%A %e %B',$val);
-        if(date('m',$val)<9) { // Avant 1er septembre
-          $replace['#endSeason#'] = date('Y');
-          $replace['#startSeason#'] = $replace['#endSeason#']-1;
-        }
-        else {
-          $replace['#startSeason#'] = date('Y');
-          $replace['#endSeason#'] = $replace['#startSeason#']+1;
-        }
-      }
-      else if($cmdLogicalId == 'tomorrowTS') {
-        $replace['#tomorrowDate#'] = self::myStrftime('%A %e %B',$val);
+        $replace['#titleTomorrow#'] = $title[$val] .$tomorrowDate;
       }
       else $replace['#' .$cmdLogicalId .'#'] = $cmd->execCmd();
     }
