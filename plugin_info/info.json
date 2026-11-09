@@ -1,8 +1,8 @@
 {
 	"id" : "rteEcowatt",
 	"name" : "Rte Ecowatt Tempo",
-  "description" : "Plugin qui extrait les données Ecowatt par jour et par heure. Production décarbonée, signaux vert, orange et rouge. Les couleurs des jours EDF Tempo sont aussi récupérées. Seules les APIs de RTE sont utilisées.",
-  "utilization": "Avec Ecowatt, suivant le niveau de consommation électrique des français, Rte attribue un niveau de vigilance pour les coupures d'électricité. Le plugin affiche le niveau de consommation par jour et par heure ainsi que le niveau d'alerte actuel. Faites des scénarios afin de réduire votre consommation électrique lors d'alerte orange ou rouge. Les couleurs du programme Tempo de RTE pour aujourd'hui et demain sont affichées ainsi que le nombre de jours non placés dans chaque couleur.",
+  "description" : "Plugin qui extrait les données Ecowatt RTE par jour et par heure. Production décarbonée, signaux vert, orange et rouge. Les couleurs des jours RTE Tempo, EDF Tempo et EDF EJP sont aussi récupérées.",
+  "utilization": "Avec Ecowatt, suivant le niveau de consommation électrique des français, Rte attribue un niveau de vigilance pour les coupures d'électricité. Le plugin affiche le niveau de consommation par jour et par heure ainsi que le niveau d'alerte actuel. Faites des scénarios afin de réduire votre consommation électrique lors d'alerte orange ou rouge. Les couleurs du programme Tempo de RTE pour aujourd'hui et demain sont affichées ainsi que le nombre de jours non placés dans chaque couleur. Le site web d'EDF peut aussi être utilisé pour les jours EJP et les couleurs Tempo. Les prévisions de couleur des jours Tempo sont disponibles.",
 	"licence" : "AGPL",
 	"author" : "jpty",
 	"require" : "4.2",
